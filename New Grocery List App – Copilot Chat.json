@@ -1,0 +1,2604 @@
+{
+  "requesterUsername": "ryb73",
+  "requesterAvatarIconUri": {
+    "$mid": 1,
+    "path": "/u/943476",
+    "scheme": "https",
+    "authority": "avatars.githubusercontent.com",
+    "query": "v=4"
+  },
+  "responderUsername": "GitHub Copilot",
+  "responderAvatarIconUri": {
+    "id": "copilot"
+  },
+  "initialLocation": "panel",
+  "requests": [
+    {
+      "requestId": "request_f32ae596-9b46-467c-8eae-89aeb65b0946",
+      "message": {
+        "parts": [
+          {
+            "range": {
+              "start": 0,
+              "endExclusive": 10
+            },
+            "editorRange": {
+              "startLineNumber": 1,
+              "startColumn": 1,
+              "endLineNumber": 1,
+              "endColumn": 11
+            },
+            "agent": {
+              "extensionId": {
+                "value": "GitHub.copilot-chat",
+                "_lower": "github.copilot-chat"
+              },
+              "publisherDisplayName": "GitHub",
+              "extensionPublisherId": "GitHub",
+              "extensionDisplayName": "GitHub Copilot Chat",
+              "id": "github.copilot.workspace",
+              "description": "Ask about your workspace",
+              "metadata": {
+                "sampleRequest": "How do I build this project?",
+                "themeIcon": {
+                  "id": "code"
+                },
+                "hasFollowups": true,
+                "isSecondary": true,
+                "supportIssueReporting": false
+              },
+              "name": "workspace",
+              "fullName": "Workspace",
+              "locations": [
+                "panel"
+              ],
+              "slashCommands": [
+                {
+                  "name": "explain",
+                  "description": "Explain how the code in your active editor works"
+                },
+                {
+                  "name": "tests",
+                  "description": "Generate unit tests for the selected code",
+                  "disambiguation": [
+                    {
+                      "category": "create_tests",
+                      "description": "The user wants to generate unit tests.",
+                      "examples": [
+                        "Generate tests for my selection using pytest."
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "fix",
+                  "description": "Propose a fix for the problems in the selected code",
+                  "sampleRequest": "There is a problem in this code. Rewrite the code to show it with the bug fixed."
+                },
+                {
+                  "name": "new",
+                  "description": "Scaffold code for a new file or project in a workspace",
+                  "sampleRequest": "Create a RESTful API server using typescript",
+                  "isSticky": true,
+                  "disambiguation": [
+                    {
+                      "category": "create_new_workspace_or_extension",
+                      "description": "The user wants to create a complete workspace from scratch in Visual Studio Code, such as a new application or Visual Studio Code extension. The user may have specified individual files that you should refer to. The user may have also provided previously used requests, which you can ignore if they are not relevant to the latest user request. Do not use this category to update an existing project or generate individual methods or files.",
+                      "examples": [
+                        "Scaffold a Node server.",
+                        "Create a sample project which uses the fileSystemProvider API.",
+                        "New react application"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "newNotebook",
+                  "description": "Create a new Jupyter Notebook",
+                  "sampleRequest": "How do I create a notebook to load data from a csv file?",
+                  "disambiguation": [
+                    {
+                      "category": "create_jupyter_notebook",
+                      "description": "The user wants to create a new Jupyter notebook in Visual Studio Code.",
+                      "examples": [
+                        "Create a notebook to analyze this CSV file."
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "fixTestFailure",
+                  "description": "Propose a fix for the failing test",
+                  "when": "config.github.copilot.chat.fixTestFailure.enabled"
+                },
+                {
+                  "name": "setupTests",
+                  "description": "Set up tests in your project (Experimental)",
+                  "sampleRequest": "add playwright tests to my project",
+                  "when": "config.github.copilot.chat.setupTests.enabled",
+                  "disambiguation": [
+                    {
+                      "category": "set_up_tests",
+                      "description": "The user wants to configure project test setup, framework, or test runner.",
+                      "examples": [
+                        "Set up tests for this project."
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "disambiguation": [
+                {
+                  "category": "workspace_project_questions",
+                  "description": "The user wants to learn about or update the code or files in their current workspace. Questions in this category may be about understanding what the whole workspace does or locating the implementation of some code. This does not include generating or updating tests.",
+                  "examples": [
+                    "What does this project do?"
+                  ]
+                },
+                {
+                  "category": "generate_with_workspace_context",
+                  "description": "The user wants to generate code based on multiple files in the workspace and did not specify which files to reference.",
+                  "examples": [
+                    "Create a README for this project."
+                  ]
+                }
+              ]
+            },
+            "kind": "agent"
+          },
+          {
+            "range": {
+              "start": 10,
+              "endExclusive": 973
+            },
+            "editorRange": {
+              "startLineNumber": 1,
+              "startColumn": 11,
+              "endLineNumber": 6,
+              "endColumn": 96
+            },
+            "text": " In this workspace is a newly bootstrapped SolidJS project. I would like to make a simple grocery list. The app will be only a single page: it will show the list of items you have in your list, and provide the ability to add or remove items to/from the list.\nFor the start, let's hold this list in memory. In the future, we will be storing the data in a database.\nWhen adding to the list, suggestions should autocomplete from the list of items that have been removed.\nNext to each item should be a checkbox. The checkbox, by default, is checked. Unchecking the box moves that item below all the checked items. Re-checking an item moves it above any unchecked items that may have been above it.\nAfter 24 hours, unchecked items are removed from the list. (Note, though, that they're still included in the list of removed items used for the aforementioned autocomplete).\nAre you able to start on this project? Feel free to ask any questions you have before doing so.",
+            "kind": "text"
+          }
+        ],
+        "text": "@workspace In this workspace is a newly bootstrapped SolidJS project. I would like to make a simple grocery list. The app will be only a single page: it will show the list of items you have in your list, and provide the ability to add or remove items to/from the list.\nFor the start, let's hold this list in memory. In the future, we will be storing the data in a database.\nWhen adding to the list, suggestions should autocomplete from the list of items that have been removed.\nNext to each item should be a checkbox. The checkbox, by default, is checked. Unchecking the box moves that item below all the checked items. Re-checking an item moves it above any unchecked items that may have been above it.\nAfter 24 hours, unchecked items are removed from the list. (Note, though, that they're still included in the list of removed items used for the aforementioned autocomplete).\nAre you able to start on this project? Feel free to ask any questions you have before doing so."
+      },
+      "variableData": {
+        "variables": []
+      },
+      "response": [
+        {
+          "content": {
+            "value": "Collecting workspace information",
+            "uris": {}
+          },
+          "kind": "progressTask",
+          "deferred": {
+            "p": {},
+            "d": {
+              "outcome": 0
+            }
+          },
+          "a": {
+            "z": 0,
+            "g": {
+              "threshold": 175,
+              "name": "2ba8",
+              "h": 0
+            }
+          },
+          "progress": []
+        },
+        {
+          "value": "I can help you build this grocery list application using SolidJS. Let me outline the key components and features we'll need:\n\n1. Components needed:\n- `GroceryList`: Main container component\n- `AddItemForm`: Form with autocomplete for adding new items \n- `GroceryItem`: Individual item component with checkbox\n\n2. State management:\n- List of current grocery items with their checked status and timestamp\n- List of previously removed items for autocomplete\n\n3. Key features:\n- Add/remove items\n- Check/uncheck items with automatic sorting\n- Autocomplete from removed items\n- 24-hour cleanup of unchecked items\n\nBefore I start coding, let me confirm a few implementation details:\n\n1. For the grocery item data structure, I'm thinking:\n```typescript\ninterface GroceryItem {\n  id: string;\n  name: string; \n  checked: boolean;\n  timestamp: number; // For tracking 24h expiry\n}\n```\n\n2. For the list sorting, checked items will appear above unchecked items, and within those groups we'll maintain the original order.\n\n3. For autocomplete, we'll show suggestions as you type if they match previously removed items.\n\nWould you like me to proceed with this approach? Also, do you have any preferences about the UI styling - should we keep using the default styles from the template or create a new stylesheet?",
+          "supportThemeIcons": false,
+          "supportHtml": false
+        }
+      ],
+      "responseId": "response_987a7a55-8019-459c-9915-0808b658ba12",
+      "isHidden": false,
+      "result": {
+        "timings": {
+          "firstProgress": 7267,
+          "totalElapsed": 12068
+        },
+        "metadata": {
+          "codeBlocks": [
+            {
+              "code": "interface GroceryItem {\n  id: string;\n  name: string; \n  checked: boolean;\n  timestamp: number; // For tracking 24h expiry\n}\n",
+              "language": "typescript",
+              "markdownBeforeBlock": "I can help you build this grocery list application using SolidJS. Let me outline the key components and features we'll need:\n\n1. Components needed:\n- `GroceryList`: Main container component\n- `AddItemForm`: Form with autocomplete for adding new items \n- `GroceryItem`: Individual item component with checkbox\n\n2. State management:\n- List of current grocery items with their checked status and timestamp\n- List of previously removed items for autocomplete\n\n3. Key features:\n- Add/remove items\n- Check/uncheck items with automatic sorting\n- Autocomplete from removed items\n- 24-hour cleanup of unchecked items\n\nBefore I start coding, let me confirm a few implementation details:\n\n1. For the grocery item data structure, I'm thinking:\n"
+            }
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "content": "In this workspace is a newly bootstrapped SolidJS project. I would like to make a simple grocery list. The app will be only a single page: it will show the list of items you have in your list, and provide the ability to add or remove items to/from the list.\nFor the start, let's hold this list in memory. In the future, we will be storing the data in a database.\nWhen adding to the list, suggestions should autocomplete from the list of items that have been removed.\nNext to each item should be a checkbox. The checkbox, by default, is checked. Unchecking the box moves that item below all the checked items. Re-checking an item moves it above any unchecked items that may have been above it.\nAfter 24 hours, unchecked items are removed from the list. (Note, though, that they're still included in the list of removed items used for the aforementioned autocomplete).\nAre you able to start on this project? Feel free to ask any questions you have before doing so."
+            },
+            {
+              "role": "assistant",
+              "content": "I can help you build this grocery list application using SolidJS. Let me outline the key components and features we'll need:\n\n1. Components needed:\n- `GroceryList`: Main container component\n- `AddItemForm`: Form with autocomplete for adding new items \n- `GroceryItem`: Individual item component with checkbox\n\n2. State management:\n- List of current grocery items with their checked status and timestamp\n- List of previously removed items for autocomplete\n\n3. Key features:\n- Add/remove items\n- Check/uncheck items with automatic sorting\n- Autocomplete from removed items\n- 24-hour cleanup of unchecked items\n\nBefore I start coding, let me confirm a few implementation details:\n\n1. For the grocery item data structure, I'm thinking:\n```typescript\ninterface GroceryItem {\n  id: string;\n  name: string; \n  checked: boolean;\n  timestamp: number; // For tracking 24h expiry\n}\n```\n\n2. For the list sorting, checked items will appear above unchecked items, and within those groups we'll maintain the original order.\n\n3. For autocomplete, we'll show suggestions as you type if they match previously removed items.\n\nWould you like me to proceed with this approach? Also, do you have any preferences about the UI styling - should we keep using the default styles from the template or create a new stylesheet?"
+            }
+          ],
+          "modelMessageId": "32e52851-518f-40ab-beba-18af1454635c",
+          "responseId": "89b20ecb-178d-4814-ada3-c94632a6e97e",
+          "sessionId": "d9ada6cb-db2d-4aa0-bd77-c936aa547310",
+          "agentId": "github.copilot.workspace"
+        }
+      },
+      "followups": [
+        {
+          "kind": "reply",
+          "agentId": "github.copilot.workspace",
+          "message": "Proceed with the outlined approach."
+        }
+      ],
+      "isCanceled": false,
+      "agent": {
+        "extensionId": {
+          "value": "GitHub.copilot-chat",
+          "_lower": "github.copilot-chat"
+        },
+        "publisherDisplayName": "GitHub",
+        "extensionPublisherId": "GitHub",
+        "extensionDisplayName": "GitHub Copilot Chat",
+        "id": "github.copilot.workspace",
+        "description": "Ask about your workspace",
+        "metadata": {
+          "sampleRequest": "How do I build this project?",
+          "themeIcon": {
+            "id": "code"
+          },
+          "hasFollowups": true,
+          "isSecondary": true,
+          "supportIssueReporting": false
+        },
+        "name": "workspace",
+        "fullName": "Workspace",
+        "locations": [
+          "panel"
+        ],
+        "slashCommands": [
+          {
+            "name": "explain",
+            "description": "Explain how the code in your active editor works"
+          },
+          {
+            "name": "tests",
+            "description": "Generate unit tests for the selected code",
+            "disambiguation": [
+              {
+                "category": "create_tests",
+                "description": "The user wants to generate unit tests.",
+                "examples": [
+                  "Generate tests for my selection using pytest."
+                ]
+              }
+            ]
+          },
+          {
+            "name": "fix",
+            "description": "Propose a fix for the problems in the selected code",
+            "sampleRequest": "There is a problem in this code. Rewrite the code to show it with the bug fixed."
+          },
+          {
+            "name": "new",
+            "description": "Scaffold code for a new file or project in a workspace",
+            "sampleRequest": "Create a RESTful API server using typescript",
+            "isSticky": true,
+            "disambiguation": [
+              {
+                "category": "create_new_workspace_or_extension",
+                "description": "The user wants to create a complete workspace from scratch in Visual Studio Code, such as a new application or Visual Studio Code extension. The user may have specified individual files that you should refer to. The user may have also provided previously used requests, which you can ignore if they are not relevant to the latest user request. Do not use this category to update an existing project or generate individual methods or files.",
+                "examples": [
+                  "Scaffold a Node server.",
+                  "Create a sample project which uses the fileSystemProvider API.",
+                  "New react application"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "newNotebook",
+            "description": "Create a new Jupyter Notebook",
+            "sampleRequest": "How do I create a notebook to load data from a csv file?",
+            "disambiguation": [
+              {
+                "category": "create_jupyter_notebook",
+                "description": "The user wants to create a new Jupyter notebook in Visual Studio Code.",
+                "examples": [
+                  "Create a notebook to analyze this CSV file."
+                ]
+              }
+            ]
+          },
+          {
+            "name": "fixTestFailure",
+            "description": "Propose a fix for the failing test",
+            "when": "config.github.copilot.chat.fixTestFailure.enabled"
+          },
+          {
+            "name": "setupTests",
+            "description": "Set up tests in your project (Experimental)",
+            "sampleRequest": "add playwright tests to my project",
+            "when": "config.github.copilot.chat.setupTests.enabled",
+            "disambiguation": [
+              {
+                "category": "set_up_tests",
+                "description": "The user wants to configure project test setup, framework, or test runner.",
+                "examples": [
+                  "Set up tests for this project."
+                ]
+              }
+            ]
+          }
+        ],
+        "disambiguation": [
+          {
+            "category": "workspace_project_questions",
+            "description": "The user wants to learn about or update the code or files in their current workspace. Questions in this category may be about understanding what the whole workspace does or locating the implementation of some code. This does not include generating or updating tests.",
+            "examples": [
+              "What does this project do?"
+            ]
+          },
+          {
+            "category": "generate_with_workspace_context",
+            "description": "The user wants to generate code based on multiple files in the workspace and did not specify which files to reference.",
+            "examples": [
+              "Create a README for this project."
+            ]
+          }
+        ]
+      },
+      "contentReferences": [
+        {
+          "kind": "reference",
+          "reference": {
+            "$mid": 1,
+            "fsPath": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/.gitignore",
+            "external": "file:///Users/ryan/Documents/proj/local-first/dumb/grocery-list/.gitignore",
+            "path": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/.gitignore",
+            "scheme": "file"
+          }
+        },
+        {
+          "kind": "reference",
+          "reference": {
+            "$mid": 1,
+            "fsPath": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/index.html",
+            "external": "file:///Users/ryan/Documents/proj/local-first/dumb/grocery-list/index.html",
+            "path": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/index.html",
+            "scheme": "file"
+          }
+        },
+        {
+          "kind": "reference",
+          "reference": {
+            "$mid": 1,
+            "fsPath": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/package.json",
+            "external": "file:///Users/ryan/Documents/proj/local-first/dumb/grocery-list/package.json",
+            "path": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/package.json",
+            "scheme": "file"
+          }
+        },
+        {
+          "kind": "reference",
+          "reference": {
+            "$mid": 1,
+            "fsPath": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/pnpm-lock.yaml",
+            "external": "file:///Users/ryan/Documents/proj/local-first/dumb/grocery-list/pnpm-lock.yaml",
+            "path": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/pnpm-lock.yaml",
+            "scheme": "file"
+          }
+        },
+        {
+          "kind": "reference",
+          "reference": {
+            "$mid": 1,
+            "fsPath": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/README.md",
+            "external": "file:///Users/ryan/Documents/proj/local-first/dumb/grocery-list/README.md",
+            "path": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/README.md",
+            "scheme": "file"
+          }
+        },
+        {
+          "kind": "reference",
+          "reference": {
+            "$mid": 1,
+            "fsPath": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/src/App.module.css",
+            "external": "file:///Users/ryan/Documents/proj/local-first/dumb/grocery-list/src/App.module.css",
+            "path": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/src/App.module.css",
+            "scheme": "file"
+          }
+        },
+        {
+          "kind": "reference",
+          "reference": {
+            "$mid": 1,
+            "fsPath": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/src/App.tsx",
+            "external": "file:///Users/ryan/Documents/proj/local-first/dumb/grocery-list/src/App.tsx",
+            "path": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/src/App.tsx",
+            "scheme": "file"
+          }
+        },
+        {
+          "kind": "reference",
+          "reference": {
+            "$mid": 1,
+            "fsPath": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/src/index.css",
+            "external": "file:///Users/ryan/Documents/proj/local-first/dumb/grocery-list/src/index.css",
+            "path": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/src/index.css",
+            "scheme": "file"
+          }
+        },
+        {
+          "kind": "reference",
+          "reference": {
+            "$mid": 1,
+            "fsPath": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/src/index.tsx",
+            "external": "file:///Users/ryan/Documents/proj/local-first/dumb/grocery-list/src/index.tsx",
+            "path": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/src/index.tsx",
+            "scheme": "file"
+          }
+        },
+        {
+          "kind": "reference",
+          "reference": {
+            "$mid": 1,
+            "fsPath": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/tsconfig.json",
+            "external": "file:///Users/ryan/Documents/proj/local-first/dumb/grocery-list/tsconfig.json",
+            "path": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/tsconfig.json",
+            "scheme": "file"
+          }
+        },
+        {
+          "kind": "reference",
+          "reference": {
+            "$mid": 1,
+            "fsPath": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/vite.config.ts",
+            "external": "file:///Users/ryan/Documents/proj/local-first/dumb/grocery-list/vite.config.ts",
+            "path": "/Users/ryan/Documents/proj/local-first/dumb/grocery-list/vite.config.ts",
+            "scheme": "file"
+          }
+        }
+      ],
+      "codeCitations": [],
+      "timestamp": 1737860197068
+    },
+    {
+      "requestId": "request_3cf04a96-6940-4334-af69-c84d12e900ed",
+      "message": {
+        "parts": [
+          {
+            "range": {
+              "start": 0,
+              "endExclusive": 146
+            },
+            "editorRange": {
+              "startLineNumber": 1,
+              "startColumn": 1,
+              "endLineNumber": 3,
+              "endColumn": 123
+            },
+            "text": "This is a great start.\n\nI just had a thought – let's actually use OPFS and wasm to persist the data in a SQLite database. Are you able to do that?",
+            "kind": "text"
+          }
+        ],
+        "text": "This is a great start.\n\nI just had a thought – let's actually use OPFS and wasm to persist the data in a SQLite database. Are you able to do that?"
+      },
+      "variableData": {
+        "variables": []
+      },
+      "response": [
+        {
+          "kind": "progressMessage",
+          "content": {
+            "value": "Determining user intent...",
+            "uris": {}
+          }
+        },
+        {
+          "kind": "progressMessage",
+          "content": {
+            "value": "Searching project template index...",
+            "uris": {}
+          }
+        },
+        {
+          "kind": "progressMessage",
+          "content": {
+            "value": "Fetching project contents...",
+            "uris": {}
+          }
+        },
+        {
+          "kind": "progressMessage",
+          "content": {
+            "value": "Generating workspace preview...",
+            "uris": {}
+          }
+        },
+        {
+          "kind": "progressMessage",
+          "content": {
+            "value": "Generating workspace preview...",
+            "uris": {}
+          }
+        },
+        {
+          "value": "Sure, here's a proposed directory structure for a WASM SQLite app",
+          "supportThemeIcons": false,
+          "supportHtml": false,
+          "uris": {}
+        },
+        {
+          "label": "wasm-sqlite-app",
+          "uri": {
+            "$mid": 1,
+            "external": "vscode-copilot-workspace://ac457f2b-5d90-4927-a359-5920edc23da6/wasm-sqlite-app",
+            "path": "/wasm-sqlite-app",
+            "scheme": "vscode-copilot-workspace",
+            "authority": "ac457f2b-5d90-4927-a359-5920edc23da6"
+          },
+          "children": [
+            {
+              "label": "wasm-sqlite-app",
+              "uri": {
+                "$mid": 1,
+                "fsPath": "/wasm-sqlite-app/wasm-sqlite-app",
+                "external": "vscode-copilot-workspace://ac457f2b-5d90-4927-a359-5920edc23da6/wasm-sqlite-app/wasm-sqlite-app",
+                "path": "/wasm-sqlite-app/wasm-sqlite-app",
+                "scheme": "vscode-copilot-workspace",
+                "authority": "ac457f2b-5d90-4927-a359-5920edc23da6"
+              },
+              "children": [
+                {
+                  "label": "src",
+                  "uri": {
+                    "$mid": 1,
+                    "fsPath": "/wasm-sqlite-app/wasm-sqlite-app/src",
+                    "external": "vscode-copilot-workspace://ac457f2b-5d90-4927-a359-5920edc23da6/wasm-sqlite-app/wasm-sqlite-app/src",
+                    "path": "/wasm-sqlite-app/wasm-sqlite-app/src",
+                    "scheme": "vscode-copilot-workspace",
+                    "authority": "ac457f2b-5d90-4927-a359-5920edc23da6"
+                  },
+                  "children": [
+                    {
+                      "label": "app.ts",
+                      "uri": {
+                        "$mid": 1,
+                        "fsPath": "/wasm-sqlite-app/wasm-sqlite-app/src/app.ts",
+                        "external": "vscode-copilot-workspace://ac457f2b-5d90-4927-a359-5920edc23da6/wasm-sqlite-app/wasm-sqlite-app/src/app.ts",
+                        "path": "/wasm-sqlite-app/wasm-sqlite-app/src/app.ts",
+                        "scheme": "vscode-copilot-workspace",
+                        "authority": "ac457f2b-5d90-4927-a359-5920edc23da6"
+                      }
+                    },
+                    {
+                      "label": "db",
+                      "uri": {
+                        "$mid": 1,
+                        "fsPath": "/wasm-sqlite-app/wasm-sqlite-app/src/db",
+                        "external": "vscode-copilot-workspace://ac457f2b-5d90-4927-a359-5920edc23da6/wasm-sqlite-app/wasm-sqlite-app/src/db",
+                        "path": "/wasm-sqlite-app/wasm-sqlite-app/src/db",
+                        "scheme": "vscode-copilot-workspace",
+                        "authority": "ac457f2b-5d90-4927-a359-5920edc23da6"
+                      },
+                      "children": [
+                        {
+                          "label": "sqlite.ts",
+                          "uri": {
+                            "$mid": 1,
+                            "fsPath": "/wasm-sqlite-app/wasm-sqlite-app/src/db/sqlite.ts",
+                            "external": "vscode-copilot-workspace://ac457f2b-5d90-4927-a359-5920edc23da6/wasm-sqlite-app/wasm-sqlite-app/src/db/sqlite.ts",
+                            "path": "/wasm-sqlite-app/wasm-sqlite-app/src/db/sqlite.ts",
+                            "scheme": "vscode-copilot-workspace",
+                            "authority": "ac457f2b-5d90-4927-a359-5920edc23da6"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "label": "wasm",
+                      "uri": {
+                        "$mid": 1,
+                        "fsPath": "/wasm-sqlite-app/wasm-sqlite-app/src/wasm",
+                        "external": "vscode-copilot-workspace://ac457f2b-5d90-4927-a359-5920edc23da6/wasm-sqlite-app/wasm-sqlite-app/src/wasm",
+                        "path": "/wasm-sqlite-app/wasm-sqlite-app/src/wasm",
+                        "scheme": "vscode-copilot-workspace",
+                        "authority": "ac457f2b-5d90-4927-a359-5920edc23da6"
+                      },
+                      "children": [
+                        {
+                          "label": "sqlite.wasm",
+                          "uri": {
+                            "$mid": 1,
+                            "fsPath": "/wasm-sqlite-app/wasm-sqlite-app/src/wasm/sqlite.wasm",
+                            "external": "vscode-copilot-workspace://ac457f2b-5d90-4927-a359-5920edc23da6/wasm-sqlite-app/wasm-sqlite-app/src/wasm/sqlite.wasm",
+                            "path": "/wasm-sqlite-app/wasm-sqlite-app/src/wasm/sqlite.wasm",
+                            "scheme": "vscode-copilot-workspace",
+                            "authority": "ac457f2b-5d90-4927-a359-5920edc23da6"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "label": "package.json",
+                  "uri": {
+                    "$mid": 1,
+                    "fsPath": "/wasm-sqlite-app/wasm-sqlite-app/package.json",
+                    "external": "vscode-copilot-workspace://ac457f2b-5d90-4927-a359-5920edc23da6/wasm-sqlite-app/wasm-sqlite-app/package.json",
+                    "path": "/wasm-sqlite-app/wasm-sqlite-app/package.json",
+                    "scheme": "vscode-copilot-workspace",
+                    "authority": "ac457f2b-5d90-4927-a359-5920edc23da6"
+                  }
+                },
+                {
+                  "label": "tsconfig.json",
+                  "uri": {
+                    "$mid": 1,
+                    "fsPath": "/wasm-sqlite-app/wasm-sqlite-app/tsconfig.json",
+                    "external": "vscode-copilot-workspace://ac457f2b-5d90-4927-a359-5920edc23da6/wasm-sqlite-app/wasm-sqlite-app/tsconfig.json",
+                    "path": "/wasm-sqlite-app/wasm-sqlite-app/tsconfig.json",
+                    "scheme": "vscode-copilot-workspace",
+                    "authority": "ac457f2b-5d90-4927-a359-5920edc23da6"
+                  }
+                },
+                {
+                  "label": "README.md",
+                  "uri": {
+                    "$mid": 1,
+                    "fsPath": "/wasm-sqlite-app/wasm-sqlite-app/README.md",
+                    "external": "vscode-copilot-workspace://ac457f2b-5d90-4927-a359-5920edc23da6/wasm-sqlite-app/wasm-sqlite-app/README.md",
+                    "path": "/wasm-sqlite-app/wasm-sqlite-app/README.md",
+                    "scheme": "vscode-copilot-workspace",
+                    "authority": "ac457f2b-5d90-4927-a359-5920edc23da6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "command",
+          "command": {
+            "$ident": "github.copilot.createProject /134",
+            "id": "__vsc19d50124-44c1-453a-8162-80d5221e7632",
+            "title": "Create Workspace...",
+            "arguments": [
+              "github.copilot.createProject /134"
+            ]
+          }
+        }
+      ],
+      "responseId": "response_4c2f8dc9-33d6-4151-9dae-518fba1bb914",
+      "isHidden": false,
+      "result": {
+        "timings": {
+          "firstProgress": 5888,
+          "totalElapsed": 5898
+        },
+        "metadata": {
+          "codeBlocks": [],
+          "messages": [
+            {
+              "role": "user",
+              "content": "This is a great start.\n\nI just had a thought – let's actually use OPFS and wasm to persist the data in a SQLite database. Are you able to do that?"
+            },
+            {
+              "role": "assistant",
+              "content": "Sure, here's a proposed directory structure for a WASM SQLite app:\n\n```filetree\nwasm-sqlite-app\n├── src\n│   ├── app.ts\n│   ├── db\n│   │   └── sqlite.ts\n│   └── wasm\n│       └── sqlite.wasm\n├── package.json\n├── tsconfig.json\n└── README.md\n```"
+            }
+          ],
+          "modelMessageId": "f5f4117d-e239-4ac8-a448-527f78e505ea",
+          "responseId": "ac457f2b-5d90-4927-a359-5920edc23da6",
+          "sessionId": "d9ada6cb-db2d-4aa0-bd77-c936aa547310",
+          "agentId": "github.copilot.workspace",
+          "command": "new"
+        }
+      },
+      "followups": [],
+      "isCanceled": false,
+      "agent": {
+        "extensionId": {
+          "value": "GitHub.copilot-chat",
+          "_lower": "github.copilot-chat"
+        },
+        "publisherDisplayName": "GitHub",
+        "extensionPublisherId": "GitHub",
+        "extensionDisplayName": "GitHub Copilot Chat",
+        "id": "github.copilot.workspace",
+        "description": "Ask about your workspace",
+        "metadata": {
+          "sampleRequest": "How do I build this project?",
+          "themeIcon": {
+            "id": "code"
+          },
+          "hasFollowups": true,
+          "isSecondary": true,
+          "supportIssueReporting": false
+        },
+        "name": "workspace",
+        "fullName": "Workspace",
+        "locations": [
+          "panel"
+        ],
+        "slashCommands": [
+          {
+            "name": "explain",
+            "description": "Explain how the code in your active editor works"
+          },
+          {
+            "name": "tests",
+            "description": "Generate unit tests for the selected code",
+            "disambiguation": [
+              {
+                "category": "create_tests",
+                "description": "The user wants to generate unit tests.",
+                "examples": [
+                  "Generate tests for my selection using pytest."
+                ]
+              }
+            ]
+          },
+          {
+            "name": "fix",
+            "description": "Propose a fix for the problems in the selected code",
+            "sampleRequest": "There is a problem in this code. Rewrite the code to show it with the bug fixed."
+          },
+          {
+            "name": "new",
+            "description": "Scaffold code for a new file or project in a workspace",
+            "sampleRequest": "Create a RESTful API server using typescript",
+            "isSticky": true,
+            "disambiguation": [
+              {
+                "category": "create_new_workspace_or_extension",
+                "description": "The user wants to create a complete workspace from scratch in Visual Studio Code, such as a new application or Visual Studio Code extension. The user may have specified individual files that you should refer to. The user may have also provided previously used requests, which you can ignore if they are not relevant to the latest user request. Do not use this category to update an existing project or generate individual methods or files.",
+                "examples": [
+                  "Scaffold a Node server.",
+                  "Create a sample project which uses the fileSystemProvider API.",
+                  "New react application"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "newNotebook",
+            "description": "Create a new Jupyter Notebook",
+            "sampleRequest": "How do I create a notebook to load data from a csv file?",
+            "disambiguation": [
+              {
+                "category": "create_jupyter_notebook",
+                "description": "The user wants to create a new Jupyter notebook in Visual Studio Code.",
+                "examples": [
+                  "Create a notebook to analyze this CSV file."
+                ]
+              }
+            ]
+          },
+          {
+            "name": "fixTestFailure",
+            "description": "Propose a fix for the failing test",
+            "when": "config.github.copilot.chat.fixTestFailure.enabled"
+          },
+          {
+            "name": "setupTests",
+            "description": "Set up tests in your project (Experimental)",
+            "sampleRequest": "add playwright tests to my project",
+            "when": "config.github.copilot.chat.setupTests.enabled",
+            "disambiguation": [
+              {
+                "category": "set_up_tests",
+                "description": "The user wants to configure project test setup, framework, or test runner.",
+                "examples": [
+                  "Set up tests for this project."
+                ]
+              }
+            ]
+          }
+        ],
+        "disambiguation": [
+          {
+            "category": "workspace_project_questions",
+            "description": "The user wants to learn about or update the code or files in their current workspace. Questions in this category may be about understanding what the whole workspace does or locating the implementation of some code. This does not include generating or updating tests.",
+            "examples": [
+              "What does this project do?"
+            ]
+          },
+          {
+            "category": "generate_with_workspace_context",
+            "description": "The user wants to generate code based on multiple files in the workspace and did not specify which files to reference.",
+            "examples": [
+              "Create a README for this project."
+            ]
+          }
+        ]
+      },
+      "slashCommand": {
+        "name": "new",
+        "description": "Scaffold code for a new file or project in a workspace",
+        "sampleRequest": "Create a RESTful API server using typescript",
+        "isSticky": true,
+        "disambiguation": [
+          {
+            "category": "create_new_workspace_or_extension",
+            "description": "The user wants to create a complete workspace from scratch in Visual Studio Code, such as a new application or Visual Studio Code extension. The user may have specified individual files that you should refer to. The user may have also provided previously used requests, which you can ignore if they are not relevant to the latest user request. Do not use this category to update an existing project or generate individual methods or files.",
+            "examples": [
+              "Scaffold a Node server.",
+              "Create a sample project which uses the fileSystemProvider API.",
+              "New react application"
+            ]
+          }
+        ]
+      },
+      "contentReferences": [],
+      "codeCitations": [],
+      "timestamp": 1737860769646
+    },
+    {
+      "requestId": "request_76c27089-47f1-436e-ae71-15ecc9279a60",
+      "message": {
+        "parts": [
+          {
+            "range": {
+              "start": 0,
+              "endExclusive": 397
+            },
+            "editorRange": {
+              "startLineNumber": 1,
+              "startColumn": 1,
+              "endLineNumber": 1,
+              "endColumn": 398
+            },
+            "text": "Actually, I was picturing something different. See the file I have open? It's the README for an existing project called sqlite-wasm which allows a developer to run SQLite in the browser and persist the data in OPFS. Do you see how this can be utilized? Let me know if you can't see the file I'm referring to. If you can see the file, can you tell me the three ways it says you can use SQLite Wasm?",
+            "kind": "text"
+          }
+        ],
+        "text": "Actually, I was picturing something different. See the file I have open? It's the README for an existing project called sqlite-wasm which allows a developer to run SQLite in the browser and persist the data in OPFS. Do you see how this can be utilized? Let me know if you can't see the file I'm referring to. If you can see the file, can you tell me the three ways it says you can use SQLite Wasm?"
+      },
+      "variableData": {
+        "variables": [
+          {
+            "id": "vscode.implicit.viewport",
+            "name": "file:Untitled-1",
+            "value": {
+              "uri": {
+                "$mid": 1,
+                "fsPath": "Untitled-1",
+                "external": "untitled:Untitled-1",
+                "path": "Untitled-1",
+                "scheme": "untitled"
+              },
+              "range": {
+                "startLineNumber": 132,
+                "startColumn": 1,
+                "endLineNumber": 168,
+                "endColumn": 20
+              }
+            },
+            "isFile": true,
+            "isDynamic": true,
+            "modelDescription": "User's current visible code"
+          }
+        ]
+      },
+      "response": [
+        {
+          "value": "Based on the file excerpt I can see, it shows one way to use SQLite WASM - using the Object Oriented API #1 in the main thread without OPFS persistence.\n\nHowever, I can't see the full README file showing all three ways. Could you share the relevant section of the README that describes the three different approaches for using SQLite WASM? This would help me provide better guidance on implementing the grocery list persistence layer.",
+          "supportThemeIcons": false,
+          "supportHtml": false
+        }
+      ],
+      "responseId": "response_befa3f5c-75e7-4542-8f11-e89a1b5df096",
+      "isHidden": false,
+      "result": {
+        "timings": {
+          "firstProgress": 3571,
+          "totalElapsed": 3575
+        },
+        "metadata": {
+          "codeBlocks": [],
+          "messages": [
+            {
+              "role": "user",
+              "content": "Actually, I was picturing something different. See the file I have open? It's the README for an existing project called sqlite-wasm which allows a developer to run SQLite in the browser and persist the data in OPFS. Do you see how this can be utilized? Let me know if you can't see the file I'm referring to. If you can see the file, can you tell me the three ways it says you can use SQLite Wasm?"
+            },
+            {
+              "role": "assistant",
+              "content": "Based on the file excerpt I can see, it shows one way to use SQLite WASM - using the Object Oriented API #1 in the main thread without OPFS persistence.\n\nHowever, I can't see the full README file showing all three ways. Could you share the relevant section of the README that describes the three different approaches for using SQLite WASM? This would help me provide better guidance on implementing the grocery list persistence layer."
+            }
+          ],
+          "modelMessageId": "9e32174b-b227-4571-986e-9a2a32a99af3",
+          "responseId": "d342cb19-70a9-47a7-8194-a5753b8385bd",
+          "sessionId": "a510e379-23f1-4727-9dd6-05a7e4c88686",
+          "agentId": "github.copilot.default"
+        }
+      },
+      "followups": [],
+      "isCanceled": false,
+      "agent": {
+        "extensionId": {
+          "value": "GitHub.copilot-chat",
+          "_lower": "github.copilot-chat"
+        },
+        "publisherDisplayName": "GitHub",
+        "extensionPublisherId": "GitHub",
+        "extensionDisplayName": "GitHub Copilot Chat",
+        "id": "github.copilot.default",
+        "description": "Ask Copilot",
+        "metadata": {
+          "themeIcon": {
+            "id": "copilot"
+          },
+          "hasFollowups": true,
+          "helpTextPrefix": "You can ask me general programming questions, or chat with the following participants which have specialized expertise and can perform actions:",
+          "helpTextVariablesPrefix": "You can also help me understand your question by using the following variables to give me extra context:",
+          "helpTextPostfix": {
+            "value": "To have a great conversation, ask me questions as if I was a real programmer:\n\n* **Show me the code** you want to talk about by having the files open and selecting the most important lines.\n* **Make refinements** by asking me follow-up questions, adding clarifications, providing errors, etc.\n* **Review my suggested code** and tell me about issues or improvements, so I can iterate on it.\n\nYou can also ask me questions about your editor selection by [starting an inline chat session](command:inlineChat.start).\n\nLearn more about [GitHub Copilot](https://docs.github.com/copilot/using-github-copilot/getting-started-with-github-copilot?tool=vscode&utm_source=editor&utm_medium=chat-panel&utm_campaign=2024q3-em-MSFT-getstarted) in [Visual Studio Code](https://code.visualstudio.com/docs/copilot/overview). Or explore the [Copilot walkthrough](command:github.copilot.open.walkthrough).",
+            "isTrusted": {
+              "enabledCommands": [
+                "inlineChat.start",
+                "github.copilot.open.walkthrough"
+              ]
+            },
+            "supportThemeIcons": false,
+            "supportHtml": false,
+            "uris": {
+              "command:inlineChat.start": {
+                "$mid": 1,
+                "path": "inlineChat.start",
+                "scheme": "command"
+              },
+              "https://docs.github.com/copilot/using-github-copilot/getting-started-with-github-copilot?tool=vscode&utm_source=editor&utm_medium=chat-panel&utm_campaign=2024q3-em-MSFT-getstarted": {
+                "$mid": 1,
+                "path": "/copilot/using-github-copilot/getting-started-with-github-copilot",
+                "scheme": "https",
+                "authority": "docs.github.com",
+                "query": "tool=vscode&utm_source=editor&utm_medium=chat-panel&utm_campaign=2024q3-em-MSFT-getstarted"
+              },
+              "https://code.visualstudio.com/docs/copilot/overview": {
+                "$mid": 1,
+                "path": "/docs/copilot/overview",
+                "scheme": "https",
+                "authority": "code.visualstudio.com"
+              },
+              "command:github.copilot.open.walkthrough": {
+                "$mid": 1,
+                "path": "github.copilot.open.walkthrough",
+                "scheme": "command"
+              }
+            }
+          },
+          "supportIssueReporting": false,
+          "supportsSlowVariables": true,
+          "requester": {
+            "name": "ryb73",
+            "icon": {
+              "$mid": 1,
+              "path": "/u/943476",
+              "scheme": "https",
+              "authority": "avatars.githubusercontent.com",
+              "query": "v=4"
+            }
+          }
+        },
+        "name": "GitHubCopilot",
+        "fullName": "GitHub Copilot",
+        "isDefault": true,
+        "locations": [
+          "panel"
+        ],
+        "slashCommands": [],
+        "disambiguation": [
+          {
+            "category": "generate_code_sample",
+            "description": "The user wants to generate code snippets without referencing the contents of the current workspace. This category does not include generating entire projects.",
+            "examples": [
+              "Write an example of computing a SHA256 hash."
+            ]
+          },
+          {
+            "category": "question_about_specific_files",
+            "description": "The user has a question about a specific file or code snippet that they have provided as part of their query, and the question does not require additional workspace context to answer.",
+            "examples": [
+              "What does this file do?"
+            ]
+          }
+        ]
+      },
+      "contentReferences": [
+        {
+          "kind": "reference",
+          "reference": {
+            "uri": {
+              "$mid": 1,
+              "fsPath": "Untitled-1",
+              "external": "untitled:Untitled-1",
+              "path": "Untitled-1",
+              "scheme": "untitled"
+            },
+            "range": {
+              "startLineNumber": 132,
+              "startColumn": 1,
+              "endLineNumber": 168,
+              "endColumn": 20
+            }
+          }
+        }
+      ],
+      "codeCitations": [],
+      "timestamp": 1737861075199
+    },
+    {
+      "requestId": "request_b8be96e3-3479-472f-a429-4857dbfe37c0",
+      "message": {
+        "parts": [
+          {
+            "range": {
+              "start": 0,
+              "endExclusive": 32
+            },
+            "editorRange": {
+              "startLineNumber": 1,
+              "startColumn": 1,
+              "endLineNumber": 1,
+              "endColumn": 33
+            },
+            "text": "Now can you see the full README?",
+            "kind": "text"
+          }
+        ],
+        "text": "Now can you see the full README?"
+      },
+      "variableData": {
+        "variables": [
+          {
+            "id": "copilot.selection",
+            "name": "selection",
+            "fullName": "Selection",
+            "value": "Active selection:\n\n\nFrom the file: Untitled-1\n````markdown\n# SQLite Wasm\n\nSQLite Wasm conveniently wrapped as an ES Module.\n\n> [!Warning]\n>\n> This project wraps the code of\n> [SQLite Wasm](https://sqlite.org/wasm/doc/trunk/index.md) with _no_ changes,\n> apart from added TypeScript types. Please do _not_ file issues or feature\n> requests regarding the underlying SQLite Wasm code here. Instead, please\n> follow the\n> [SQLite bug filing instructions](https://www.sqlite.org/src/wiki?name=Bug+Reports).\n> Filing TypeScript type related issues and feature requests is fine.\n\n## Installation\n\n```bash\nnpm install @sqlite.org/sqlite-wasm\n```\n\n## Usage\n\nThere are three ways to use SQLite Wasm:\n\n- [in the main thread with a wrapped worker](#in-a-wrapped-worker-with-opfs-if-available)\n  (🏆 preferred option)\n- [in a worker](#in-a-worker-with-opfs-if-available)\n- [in the main thread](#in-the-main-thread-without-opfs)\n\nOnly the worker versions allow you to use the origin private file system (OPFS)\nstorage back-end.\n\n### In a wrapped worker (with OPFS if available):\n\n> [!Warning]\n>\n> For this to work, you need to set the following headers on your server:\n>\n> `Cross-Origin-Opener-Policy: same-origin`\n>\n> `Cross-Origin-Embedder-Policy: require-corp`\n\n```js\nimport { sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm';\n\nconst log = console.log;\nconst error = console.error;\n\nconst initializeSQLite = async () => {\n  try {\n    log('Loading and initializing SQLite3 module...');\n\n    const promiser = await new Promise((resolve) => {\n      const _promiser = sqlite3Worker1Promiser({\n        onready: () => resolve(_promiser),\n      });\n    });\n\n    log('Done initializing. Running demo...');\n\n    const configResponse = await promiser('config-get', {});\n    log('Running SQLite3 version', configResponse.result.version.libVersion);\n\n    const openResponse = await promiser('open', {\n      filename: 'file:mydb.sqlite3?vfs=opfs',\n    });\n    const { dbId } = openResponse;\n    log(\n      'OPFS is available, created persisted database at',\n      openResponse.result.filename.replace(/^file:(.*?)\\?vfs=opfs$/, '$1'),\n    );\n    // Your SQLite code here.\n  } catch (err) {\n    if (!(err instanceof Error)) {\n      err = new Error(err.result.message);\n    }\n    error(err.name, err.message);\n  }\n};\n\ninitializeSQLite();\n```\n\nThe `promiser` object above implements the\n[Worker1 API](https://sqlite.org/wasm/doc/trunk/api-worker1.md#worker1-methods).\n\n### In a worker (with OPFS if available):\n\n> [!Warning]\n>\n> For this to work, you need to set the following headers on your server:\n>\n> `Cross-Origin-Opener-Policy: same-origin`\n>\n> `Cross-Origin-Embedder-Policy: require-corp`\n\n```js\n// In `main.js`.\nconst worker = new Worker('worker.js', { type: 'module' });\n```\n\n```js\n// In `worker.js`.\nimport sqlite3InitModule from '@sqlite.org/sqlite-wasm';\n\nconst log = console.log;\nconst error = console.error;\n\nconst start = (sqlite3) => {\n  log('Running SQLite3 version', sqlite3.version.libVersion);\n  const db =\n    'opfs' in sqlite3\n      ? new sqlite3.oo1.OpfsDb('/mydb.sqlite3')\n      : new sqlite3.oo1.DB('/mydb.sqlite3', 'ct');\n  log(\n    'opfs' in sqlite3\n      ? `OPFS is available, created persisted database at ${db.filename}`\n      : `OPFS is not available, created transient database ${db.filename}`,\n  );\n  // Your SQLite code here.\n};\n\nconst initializeSQLite = async () => {\n  try {\n    log('Loading and initializing SQLite3 module...');\n    const sqlite3 = await sqlite3InitModule({ print: log, printErr: error });\n    log('Done initializing. Running demo...');\n    start(sqlite3);\n  } catch (err) {\n    error('Initialization error:', err.name, err.message);\n  }\n};\n\ninitializeSQLite();\n```\n\nThe `db` object above implements the\n[Object Oriented API #1](https://sqlite.org/wasm/doc/trunk/api-oo1.md).\n\n### In the main thread (without OPFS):\n\n```js\nimport sqlite3InitModule from '@sqlite.org/sqlite-wasm';\n\nconst log = console.log;\nconst error = console.error;\n\nconst start = (sqlite3) => {\n  log('Running SQLite3 version', sqlite3.version.libVersion);\n  const db = new sqlite3.oo1.DB('/mydb.sqlite3', 'ct');\n  // Your SQLite code here.\n};\n\nconst initializeSQLite = async () => {\n  try {\n    log('Loading and initializing SQLite3 module...');\n    const sqlite3 = await sqlite3InitModule({\n      print: log,\n      printErr: error,\n    });\n    log('Done initializing. Running demo...');\n    start(sqlite3);\n  } catch (err) {\n    error('Initialization error:', err.name, err.message);\n  }\n};\n\ninitializeSQLite();\n```\n\nThe `db` object above implements the\n[Object Oriented API #1](https://sqlite.org/wasm/doc/trunk/api-oo1.md).\n\n## Usage with vite\n\nIf you are using [vite](https://vitejs.dev/), you need to add the following\nconfig option in `vite.config.js`:\n\n```js\nimport { defineConfig } from 'vite';\n\nexport default defineConfig({\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    exclude: ['@sqlite.org/sqlite-wasm'],\n  },\n});\n```\n\nCheck out a\n[sample project](https://stackblitz.com/edit/vitejs-vite-ttrbwh?file=main.js)\nthat shows this in action.\n\n## Demo\n\nSee the [demo](https://github.com/sqlite/sqlite-wasm/tree/main/demo) folder for\nexamples of how to use this in the main thread and in a worker. (Note that the\nworker variant requires special HTTP headers, so it can't be hosted on GitHub\nPages.) An example that shows how to use this with vite is available on\n[StackBlitz](https://stackblitz.com/edit/vitejs-vite-ttrbwh?file=main.js).\n\n## Projects using this package\n\nSee the list of\n[npm dependents](https://www.npmjs.com/browse/depended/@sqlite.org/sqlite-wasm)\nfor this package.\n\n## Deploying a new version\n\n(These steps can only be executed by maintainers.)\n\n1. Update the version number in `package.json` reflecting the current\n   [SQLite version number](https://sqlite.org/download.html) and add a build\n   identifier suffix like `-build1`. The complete version number should read\n   something like `3.41.2-build1`.\n1. Run `npm run build` to build the ES Module. This downloads the latest SQLite\n   Wasm binary and builds the ES Module.\n1. Run `npm run deploy` to commit the changes, push to GitHub, and publish the\n   new version to npm.\n\n## License\n\nApache 2.0.\n\n## Acknowledgements\n\nThis project is based on [SQLite Wasm](https://sqlite.org/wasm), which it\nconveniently wraps as an ES Module and publishes to npm as\n[`@sqlite.org/sqlite-wasm`](https://www.npmjs.com/package/@sqlite.org/sqlite-wasm).\n````",
+            "references": [
+              {
+                "kind": "reference",
+                "reference": {
+                  "uri": {
+                    "$mid": 1,
+                    "fsPath": "Untitled-1",
+                    "external": "untitled:Untitled-1",
+                    "path": "Untitled-1",
+                    "scheme": "untitled"
+                  },
+                  "range": {
+                    "startLineNumber": 1,
+                    "startColumn": 1,
+                    "endLineNumber": 235,
+                    "endColumn": 1
+                  }
+                }
+              }
+            ],
+            "icon": {
+              "id": "selection"
+            }
+          },
+          {
+            "id": "vscode.implicit.selection",
+            "name": "file:Untitled-1",
+            "value": {
+              "uri": {
+                "$mid": 1,
+                "fsPath": "Untitled-1",
+                "external": "untitled:Untitled-1",
+                "path": "Untitled-1",
+                "scheme": "untitled"
+              },
+              "range": {
+                "startLineNumber": 1,
+                "startColumn": 1,
+                "endLineNumber": 235,
+                "endColumn": 1,
+                "selectionStartLineNumber": 1,
+                "selectionStartColumn": 1,
+                "positionLineNumber": 235,
+                "positionColumn": 1
+              }
+            },
+            "isFile": true,
+            "isDynamic": true,
+            "modelDescription": "User's active selection"
+          }
+        ]
+      },
+      "response": [
+        {
+          "value": "Yes, I can now see the full README. According to the documentation, there are three ways to use SQLite Wasm:\n\n1. In the main thread with a wrapped worker (marked as 🏆 preferred option)\n2. In a worker (with OPFS if available)\n3. In the main thread (without OPFS)\n\nSince we want to persist our grocery list data, we should use either option 1 or 2 since only the worker versions allow using the Origin Private File System (OPFS) storage backend. The documentation recommends the wrapped worker approach (option 1) as the preferred option.\n\nWould you like me to proceed with implementing the grocery list app using the wrapped worker approach with OPFS persistence?",
+          "supportThemeIcons": false,
+          "supportHtml": false
+        }
+      ],
+      "responseId": "response_ca9c7477-3cea-44f3-ba3a-021314886e93",
+      "isHidden": false,
+      "result": {
+        "timings": {
+          "firstProgress": 5566,
+          "totalElapsed": 6507
+        },
+        "metadata": {
+          "codeBlocks": [],
+          "messages": [
+            {
+              "role": "user",
+              "content": "Now can you see the full README?"
+            },
+            {
+              "role": "assistant",
+              "content": "Yes, I can now see the full README. According to the documentation, there are three ways to use SQLite Wasm:\n\n1. In the main thread with a wrapped worker (marked as 🏆 preferred option)\n2. In a worker (with OPFS if available)\n3. In the main thread (without OPFS)\n\nSince we want to persist our grocery list data, we should use either option 1 or 2 since only the worker versions allow using the Origin Private File System (OPFS) storage backend. The documentation recommends the wrapped worker approach (option 1) as the preferred option.\n\nWould you like me to proceed with implementing the grocery list app using the wrapped worker approach with OPFS persistence?"
+            }
+          ],
+          "modelMessageId": "477125cd-fab7-4d78-9d67-92a046e06969",
+          "responseId": "88d386f5-7ef1-4877-88b1-effc02d41b30",
+          "sessionId": "a510e379-23f1-4727-9dd6-05a7e4c88686",
+          "agentId": "github.copilot.default"
+        }
+      },
+      "followups": [],
+      "isCanceled": false,
+      "agent": {
+        "extensionId": {
+          "value": "GitHub.copilot-chat",
+          "_lower": "github.copilot-chat"
+        },
+        "publisherDisplayName": "GitHub",
+        "extensionPublisherId": "GitHub",
+        "extensionDisplayName": "GitHub Copilot Chat",
+        "id": "github.copilot.default",
+        "description": "Ask Copilot",
+        "metadata": {
+          "themeIcon": {
+            "id": "copilot"
+          },
+          "hasFollowups": true,
+          "helpTextPrefix": "You can ask me general programming questions, or chat with the following participants which have specialized expertise and can perform actions:",
+          "helpTextVariablesPrefix": "You can also help me understand your question by using the following variables to give me extra context:",
+          "helpTextPostfix": {
+            "value": "To have a great conversation, ask me questions as if I was a real programmer:\n\n* **Show me the code** you want to talk about by having the files open and selecting the most important lines.\n* **Make refinements** by asking me follow-up questions, adding clarifications, providing errors, etc.\n* **Review my suggested code** and tell me about issues or improvements, so I can iterate on it.\n\nYou can also ask me questions about your editor selection by [starting an inline chat session](command:inlineChat.start).\n\nLearn more about [GitHub Copilot](https://docs.github.com/copilot/using-github-copilot/getting-started-with-github-copilot?tool=vscode&utm_source=editor&utm_medium=chat-panel&utm_campaign=2024q3-em-MSFT-getstarted) in [Visual Studio Code](https://code.visualstudio.com/docs/copilot/overview). Or explore the [Copilot walkthrough](command:github.copilot.open.walkthrough).",
+            "isTrusted": {
+              "enabledCommands": [
+                "inlineChat.start",
+                "github.copilot.open.walkthrough"
+              ]
+            },
+            "supportThemeIcons": false,
+            "supportHtml": false,
+            "uris": {
+              "command:inlineChat.start": {
+                "$mid": 1,
+                "path": "inlineChat.start",
+                "scheme": "command"
+              },
+              "https://docs.github.com/copilot/using-github-copilot/getting-started-with-github-copilot?tool=vscode&utm_source=editor&utm_medium=chat-panel&utm_campaign=2024q3-em-MSFT-getstarted": {
+                "$mid": 1,
+                "path": "/copilot/using-github-copilot/getting-started-with-github-copilot",
+                "scheme": "https",
+                "authority": "docs.github.com",
+                "query": "tool=vscode&utm_source=editor&utm_medium=chat-panel&utm_campaign=2024q3-em-MSFT-getstarted"
+              },
+              "https://code.visualstudio.com/docs/copilot/overview": {
+                "$mid": 1,
+                "path": "/docs/copilot/overview",
+                "scheme": "https",
+                "authority": "code.visualstudio.com"
+              },
+              "command:github.copilot.open.walkthrough": {
+                "$mid": 1,
+                "path": "github.copilot.open.walkthrough",
+                "scheme": "command"
+              }
+            }
+          },
+          "supportIssueReporting": false,
+          "supportsSlowVariables": true,
+          "requester": {
+            "name": "ryb73",
+            "icon": {
+              "$mid": 1,
+              "path": "/u/943476",
+              "scheme": "https",
+              "authority": "avatars.githubusercontent.com",
+              "query": "v=4"
+            }
+          }
+        },
+        "name": "GitHubCopilot",
+        "fullName": "GitHub Copilot",
+        "isDefault": true,
+        "locations": [
+          "panel"
+        ],
+        "slashCommands": [],
+        "disambiguation": [
+          {
+            "category": "generate_code_sample",
+            "description": "The user wants to generate code snippets without referencing the contents of the current workspace. This category does not include generating entire projects.",
+            "examples": [
+              "Write an example of computing a SHA256 hash."
+            ]
+          },
+          {
+            "category": "question_about_specific_files",
+            "description": "The user has a question about a specific file or code snippet that they have provided as part of their query, and the question does not require additional workspace context to answer.",
+            "examples": [
+              "What does this file do?"
+            ]
+          }
+        ]
+      },
+      "contentReferences": [
+        {
+          "kind": "reference",
+          "reference": {
+            "uri": {
+              "$mid": 1,
+              "fsPath": "Untitled-1",
+              "external": "untitled:Untitled-1",
+              "path": "Untitled-1",
+              "scheme": "untitled"
+            },
+            "range": {
+              "startLineNumber": 1,
+              "startColumn": 1,
+              "endLineNumber": 235,
+              "endColumn": 1
+            }
+          }
+        },
+        {
+          "kind": "reference",
+          "reference": {
+            "variableName": "selection",
+            "value": {
+              "uri": {
+                "$mid": 1,
+                "fsPath": "Untitled-1",
+                "external": "untitled:Untitled-1",
+                "path": "Untitled-1",
+                "scheme": "untitled"
+              },
+              "range": {
+                "startLineNumber": 1,
+                "startColumn": 1,
+                "endLineNumber": 235,
+                "endColumn": 1
+              }
+            }
+          }
+        }
+      ],
+      "codeCitations": [],
+      "timestamp": 1737861133233
+    },
+    {
+      "requestId": "request_3043d1df-d26a-4690-aec4-645f61b9391f",
+      "message": {
+        "parts": [
+          {
+            "range": {
+              "start": 0,
+              "endExclusive": 77
+            },
+            "editorRange": {
+              "startLineNumber": 1,
+              "startColumn": 1,
+              "endLineNumber": 1,
+              "endColumn": 78
+            },
+            "text": "Yes, that would be great! Before proceeding, do you have any other questions?",
+            "kind": "text"
+          }
+        ],
+        "text": "Yes, that would be great! Before proceeding, do you have any other questions?"
+      },
+      "variableData": {
+        "variables": [
+          {
+            "id": "vscode.implicit.selection",
+            "name": "file:Untitled-1",
+            "value": {
+              "uri": {
+                "$mid": 1,
+                "fsPath": "Untitled-1",
+                "external": "untitled:Untitled-1",
+                "path": "Untitled-1",
+                "scheme": "untitled"
+              },
+              "range": {
+                "startLineNumber": 1,
+                "startColumn": 1,
+                "endLineNumber": 235,
+                "endColumn": 1,
+                "selectionStartLineNumber": 1,
+                "selectionStartColumn": 1,
+                "positionLineNumber": 235,
+                "positionColumn": 1
+              }
+            },
+            "isFile": true,
+            "isDynamic": true,
+            "modelDescription": "User's active selection"
+          }
+        ]
+      },
+      "response": [
+        {
+          "value": "# Implementation Plan\n\n1. **Project Setup**\n- Configure Vite with required CORS headers\n- Install dependencies: `@sqlite.org/sqlite-wasm` and SolidJS\n\n2. **Database Structure**\n```sql\nCREATE TABLE grocery_items (\n    id TEXT PRIMARY KEY,\n    name TEXT NOT NULL,\n    checked INTEGER DEFAULT 1,\n    created_at INTEGER,\n    last_unchecked_at INTEGER\n);\n\nCREATE TABLE removed_items (\n    name TEXT PRIMARY KEY,\n    last_removed_at INTEGER\n);\n```\n\n3. **File Structure**\n```\nsrc/\n├── components/\n│   ├── GroceryList.tsx\n│   ├── AddItemForm.tsx\n│   └── GroceryItem.tsx\n├── db/\n│   └── database.ts\n├── types/\n│   └── types.ts\n└── App.tsx\n```\n\n4. **Implementation Order**\n- Database initialization and schema setup\n- Basic UI components\n- Add/remove functionality\n- Check/uncheck with sorting\n- Autocomplete from removed items\n- Cleanup job for unchecked items\n\nWould you like me to proceed with implementing these components?",
+          "supportThemeIcons": false,
+          "supportHtml": false
+        }
+      ],
+      "responseId": "response_b3e7922c-7356-4154-978b-efa080f4eb7e",
+      "isHidden": false,
+      "result": {
+        "timings": {
+          "firstProgress": 5279,
+          "totalElapsed": 8033
+        },
+        "metadata": {
+          "codeBlocks": [
+            {
+              "code": "CREATE TABLE grocery_items (\n    id TEXT PRIMARY KEY,\n    name TEXT NOT NULL,\n    checked INTEGER DEFAULT 1,\n    created_at INTEGER,\n    last_unchecked_at INTEGER\n);\n\nCREATE TABLE removed_items (\n    name TEXT PRIMARY KEY,\n    last_removed_at INTEGER\n);\n",
+              "language": "sql",
+              "markdownBeforeBlock": "# Implementation Plan\n\n1. **Project Setup**\n- Configure Vite with required CORS headers\n- Install dependencies: `@sqlite.org/sqlite-wasm` and SolidJS\n\n2. **Database Structure**\n"
+            },
+            {
+              "code": "src/\n├── components/\n│   ├── GroceryList.tsx\n│   ├── AddItemForm.tsx\n│   └── GroceryItem.tsx\n├── db/\n│   └── database.ts\n├── types/\n│   └── types.ts\n└── App.tsx\n",
+              "language": "",
+              "markdownBeforeBlock": "\n3. **File Structure**\n"
+            }
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "content": "Yes, that would be great! Before proceeding, do you have any other questions?"
+            },
+            {
+              "role": "assistant",
+              "content": "# Implementation Plan\n\n1. **Project Setup**\n- Configure Vite with required CORS headers\n- Install dependencies: `@sqlite.org/sqlite-wasm` and SolidJS\n\n2. **Database Structure**\n```sql\nCREATE TABLE grocery_items (\n    id TEXT PRIMARY KEY,\n    name TEXT NOT NULL,\n    checked INTEGER DEFAULT 1,\n    created_at INTEGER,\n    last_unchecked_at INTEGER\n);\n\nCREATE TABLE removed_items (\n    name TEXT PRIMARY KEY,\n    last_removed_at INTEGER\n);\n```\n\n3. **File Structure**\n```\nsrc/\n├── components/\n│   ├── GroceryList.tsx\n│   ├── AddItemForm.tsx\n│   └── GroceryItem.tsx\n├── db/\n│   └── database.ts\n├── types/\n│   └── types.ts\n└── App.tsx\n```\n\n4. **Implementation Order**\n- Database initialization and schema setup\n- Basic UI components\n- Add/remove functionality\n- Check/uncheck with sorting\n- Autocomplete from removed items\n- Cleanup job for unchecked items\n\nWould you like me to proceed with implementing these components?"
+            }
+          ],
+          "modelMessageId": "8e0b3454-7496-465c-8d2a-6fcb1b0cca6d",
+          "responseId": "87aaa8b3-c4ab-4318-be41-f58d82a120c2",
+          "sessionId": "a510e379-23f1-4727-9dd6-05a7e4c88686",
+          "agentId": "github.copilot.default"
+        }
+      },
+      "followups": [],
+      "isCanceled": false,
+      "agent": {
+        "extensionId": {
+          "value": "GitHub.copilot-chat",
+          "_lower": "github.copilot-chat"
+        },
+        "publisherDisplayName": "GitHub",
+        "extensionPublisherId": "GitHub",
+        "extensionDisplayName": "GitHub Copilot Chat",
+        "id": "github.copilot.default",
+        "description": "Ask Copilot",
+        "metadata": {
+          "themeIcon": {
+            "id": "copilot"
+          },
+          "hasFollowups": true,
+          "helpTextPrefix": "You can ask me general programming questions, or chat with the following participants which have specialized expertise and can perform actions:",
+          "helpTextVariablesPrefix": "You can also help me understand your question by using the following variables to give me extra context:",
+          "helpTextPostfix": {
+            "value": "To have a great conversation, ask me questions as if I was a real programmer:\n\n* **Show me the code** you want to talk about by having the files open and selecting the most important lines.\n* **Make refinements** by asking me follow-up questions, adding clarifications, providing errors, etc.\n* **Review my suggested code** and tell me about issues or improvements, so I can iterate on it.\n\nYou can also ask me questions about your editor selection by [starting an inline chat session](command:inlineChat.start).\n\nLearn more about [GitHub Copilot](https://docs.github.com/copilot/using-github-copilot/getting-started-with-github-copilot?tool=vscode&utm_source=editor&utm_medium=chat-panel&utm_campaign=2024q3-em-MSFT-getstarted) in [Visual Studio Code](https://code.visualstudio.com/docs/copilot/overview). Or explore the [Copilot walkthrough](command:github.copilot.open.walkthrough).",
+            "isTrusted": {
+              "enabledCommands": [
+                "inlineChat.start",
+                "github.copilot.open.walkthrough"
+              ]
+            },
+            "supportThemeIcons": false,
+            "supportHtml": false,
+            "uris": {
+              "command:inlineChat.start": {
+                "$mid": 1,
+                "path": "inlineChat.start",
+                "scheme": "command"
+              },
+              "https://docs.github.com/copilot/using-github-copilot/getting-started-with-github-copilot?tool=vscode&utm_source=editor&utm_medium=chat-panel&utm_campaign=2024q3-em-MSFT-getstarted": {
+                "$mid": 1,
+                "path": "/copilot/using-github-copilot/getting-started-with-github-copilot",
+                "scheme": "https",
+                "authority": "docs.github.com",
+                "query": "tool=vscode&utm_source=editor&utm_medium=chat-panel&utm_campaign=2024q3-em-MSFT-getstarted"
+              },
+              "https://code.visualstudio.com/docs/copilot/overview": {
+                "$mid": 1,
+                "path": "/docs/copilot/overview",
+                "scheme": "https",
+                "authority": "code.visualstudio.com"
+              },
+              "command:github.copilot.open.walkthrough": {
+                "$mid": 1,
+                "path": "github.copilot.open.walkthrough",
+                "scheme": "command"
+              }
+            }
+          },
+          "supportIssueReporting": false,
+          "supportsSlowVariables": true,
+          "requester": {
+            "name": "ryb73",
+            "icon": {
+              "$mid": 1,
+              "path": "/u/943476",
+              "scheme": "https",
+              "authority": "avatars.githubusercontent.com",
+              "query": "v=4"
+            }
+          }
+        },
+        "name": "GitHubCopilot",
+        "fullName": "GitHub Copilot",
+        "isDefault": true,
+        "locations": [
+          "panel"
+        ],
+        "slashCommands": [],
+        "disambiguation": [
+          {
+            "category": "generate_code_sample",
+            "description": "The user wants to generate code snippets without referencing the contents of the current workspace. This category does not include generating entire projects.",
+            "examples": [
+              "Write an example of computing a SHA256 hash."
+            ]
+          },
+          {
+            "category": "question_about_specific_files",
+            "description": "The user has a question about a specific file or code snippet that they have provided as part of their query, and the question does not require additional workspace context to answer.",
+            "examples": [
+              "What does this file do?"
+            ]
+          }
+        ]
+      },
+      "contentReferences": [
+        {
+          "kind": "reference",
+          "reference": {
+            "uri": {
+              "$mid": 1,
+              "fsPath": "Untitled-1",
+              "external": "untitled:Untitled-1",
+              "path": "Untitled-1",
+              "scheme": "untitled"
+            },
+            "range": {
+              "startLineNumber": 1,
+              "startColumn": 1,
+              "endLineNumber": 235,
+              "endColumn": 1
+            }
+          }
+        }
+      ],
+      "codeCitations": [],
+      "timestamp": 1737861189716
+    },
+    {
+      "requestId": "request_3d30fe68-1fe8-4f00-9542-5a410bab1f5a",
+      "message": {
+        "parts": [
+          {
+            "range": {
+              "start": 0,
+              "endExclusive": 134
+            },
+            "editorRange": {
+              "startLineNumber": 1,
+              "startColumn": 1,
+              "endLineNumber": 2,
+              "endColumn": 30
+            },
+            "text": "Let's rename `grocery_items` to `active_items` in order to contrast from the other list, `remove_items`.\nOther than that, looks great!",
+            "kind": "text"
+          }
+        ],
+        "text": "Let's rename `grocery_items` to `active_items` in order to contrast from the other list, `remove_items`.\nOther than that, looks great!"
+      },
+      "variableData": {
+        "variables": [
+          {
+            "id": "vscode.implicit.selection",
+            "name": "file:Untitled-1",
+            "value": {
+              "uri": {
+                "$mid": 1,
+                "fsPath": "Untitled-1",
+                "external": "untitled:Untitled-1",
+                "path": "Untitled-1",
+                "scheme": "untitled"
+              },
+              "range": {
+                "startLineNumber": 1,
+                "startColumn": 1,
+                "endLineNumber": 235,
+                "endColumn": 1,
+                "selectionStartLineNumber": 1,
+                "selectionStartColumn": 1,
+                "positionLineNumber": 235,
+                "positionColumn": 1
+              }
+            },
+            "isFile": true,
+            "isDynamic": true,
+            "modelDescription": "User's active selection"
+          }
+        ]
+      },
+      "response": [
+        {
+          "value": "# Step-by-step Implementation Plan\n\n1. **Configure Project**\n```bash\nnpm install @sqlite.org/sqlite-wasm\n```\n\n2. **Configure Vite**\n```typescript\nimport { defineConfig } from 'vite';\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    exclude: ['@sqlite.org/sqlite-wasm'],\n  },\n});\n```\n\n3. **Database Layer**\n```typescript\nimport { sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm';\n\nconst SCHEMA = `\nCREATE TABLE IF NOT EXISTS active_items (\n    id TEXT PRIMARY KEY,\n    name TEXT NOT NULL,\n    checked INTEGER DEFAULT 1,\n    created_at INTEGER,\n    last_unchecked_at INTEGER\n);\n\nCREATE TABLE IF NOT EXISTS removed_items (\n    name TEXT PRIMARY KEY,\n    last_removed_at INTEGER\n);\n`;\n\nexport class Database {\n  private promiser: any;\n  private dbId: string;\n\n  async initialize() {\n    this.promiser = await new Promise((resolve) => {\n      const _promiser = sqlite3Worker1Promiser({\n        onready: () => resolve(_promiser),\n      });\n    });\n\n    const openResponse = await this.promiser('open', {\n      filename: 'file:grocery-list.sqlite3?vfs=opfs',\n    });\n    this.dbId = openResponse.dbId;\n\n    await this.promiser('exec', {\n      dbid: this.dbId,\n      sql: SCHEMA,\n    });\n  }\n\n  async addItem(name: string) {\n    return this.promiser('exec', {\n      dbid: this.dbId,\n      sql: `INSERT INTO active_items (id, name, created_at) VALUES (?, ?, ?)`,\n      bind: [crypto.randomUUID(), name, Date.now()]\n    });\n  }\n\n  // ... additional methods will follow\n}\n\nexport const db = new Database();\n```\n\n4. **Types**\n```typescript\nexport interface GroceryItem {\n  id: string;\n  name: string;\n  checked: boolean;\n  created_at: number;\n  last_unchecked_at: number | null;\n}\n\nexport interface RemovedItem {\n  name: string;\n  last_removed_at: number;\n}\n```\n\nWould you like me to continue with the UI components next?",
+          "supportThemeIcons": false,
+          "supportHtml": false
+        }
+      ],
+      "responseId": "response_7ed80829-f5fa-4610-93c7-26f99f30cc63",
+      "isHidden": false,
+      "result": {
+        "timings": {
+          "firstProgress": 4332,
+          "totalElapsed": 15605
+        },
+        "metadata": {
+          "codeBlocks": [
+            {
+              "code": "npm install @sqlite.org/sqlite-wasm\n",
+              "language": "bash",
+              "markdownBeforeBlock": "# Step-by-step Implementation Plan\n\n1. **Configure Project**\n"
+            },
+            {
+              "code": "import { defineConfig } from 'vite';\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    exclude: ['@sqlite.org/sqlite-wasm'],\n  },\n});\n",
+              "language": "typescript",
+              "markdownBeforeBlock": "\n2. **Configure Vite**\n"
+            },
+            {
+              "code": "import { sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm';\n\nconst SCHEMA = `\nCREATE TABLE IF NOT EXISTS active_items (\n    id TEXT PRIMARY KEY,\n    name TEXT NOT NULL,\n    checked INTEGER DEFAULT 1,\n    created_at INTEGER,\n    last_unchecked_at INTEGER\n);\n\nCREATE TABLE IF NOT EXISTS removed_items (\n    name TEXT PRIMARY KEY,\n    last_removed_at INTEGER\n);\n`;\n\nexport class Database {\n  private promiser: any;\n  private dbId: string;\n\n  async initialize() {\n    this.promiser = await new Promise((resolve) => {\n      const _promiser = sqlite3Worker1Promiser({\n        onready: () => resolve(_promiser),\n      });\n    });\n\n    const openResponse = await this.promiser('open', {\n      filename: 'file:grocery-list.sqlite3?vfs=opfs',\n    });\n    this.dbId = openResponse.dbId;\n\n    await this.promiser('exec', {\n      dbid: this.dbId,\n      sql: SCHEMA,\n    });\n  }\n\n  async addItem(name: string) {\n    return this.promiser('exec', {\n      dbid: this.dbId,\n      sql: `INSERT INTO active_items (id, name, created_at) VALUES (?, ?, ?)`,\n      bind: [crypto.randomUUID(), name, Date.now()]\n    });\n  }\n\n  // ... additional methods will follow\n}\n\nexport const db = new Database();\n",
+              "language": "typescript",
+              "markdownBeforeBlock": "\n3. **Database Layer**\n"
+            },
+            {
+              "code": "export interface GroceryItem {\n  id: string;\n  name: string;\n  checked: boolean;\n  created_at: number;\n  last_unchecked_at: number | null;\n}\n\nexport interface RemovedItem {\n  name: string;\n  last_removed_at: number;\n}\n",
+              "language": "typescript",
+              "markdownBeforeBlock": "\n4. **Types**\n"
+            }
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "content": "Let's rename `grocery_items` to `active_items` in order to contrast from the other list, `remove_items`.\nOther than that, looks great!"
+            },
+            {
+              "role": "assistant",
+              "content": "# Step-by-step Implementation Plan\n\n1. **Configure Project**\n```bash\nnpm install @sqlite.org/sqlite-wasm\n```\n\n2. **Configure Vite**\n```typescript\n// filepath: vite.config.ts\nimport { defineConfig } from 'vite';\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    exclude: ['@sqlite.org/sqlite-wasm'],\n  },\n});\n```\n\n3. **Database Layer**\n```typescript\n// filepath: src/db/database.ts\nimport { sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm';\n\nconst SCHEMA = `\nCREATE TABLE IF NOT EXISTS active_items (\n    id TEXT PRIMARY KEY,\n    name TEXT NOT NULL,\n    checked INTEGER DEFAULT 1,\n    created_at INTEGER,\n    last_unchecked_at INTEGER\n);\n\nCREATE TABLE IF NOT EXISTS removed_items (\n    name TEXT PRIMARY KEY,\n    last_removed_at INTEGER\n);\n`;\n\nexport class Database {\n  private promiser: any;\n  private dbId: string;\n\n  async initialize() {\n    this.promiser = await new Promise((resolve) => {\n      const _promiser = sqlite3Worker1Promiser({\n        onready: () => resolve(_promiser),\n      });\n    });\n\n    const openResponse = await this.promiser('open', {\n      filename: 'file:grocery-list.sqlite3?vfs=opfs',\n    });\n    this.dbId = openResponse.dbId;\n\n    await this.promiser('exec', {\n      dbid: this.dbId,\n      sql: SCHEMA,\n    });\n  }\n\n  async addItem(name: string) {\n    return this.promiser('exec', {\n      dbid: this.dbId,\n      sql: `INSERT INTO active_items (id, name, created_at) VALUES (?, ?, ?)`,\n      bind: [crypto.randomUUID(), name, Date.now()]\n    });\n  }\n\n  // ... additional methods will follow\n}\n\nexport const db = new Database();\n```\n\n4. **Types**\n```typescript\n// filepath: src/types/types.ts\nexport interface GroceryItem {\n  id: string;\n  name: string;\n  checked: boolean;\n  created_at: number;\n  last_unchecked_at: number | null;\n}\n\nexport interface RemovedItem {\n  name: string;\n  last_removed_at: number;\n}\n```\n\nWould you like me to continue with the UI components next?"
+            }
+          ],
+          "modelMessageId": "7e91c37d-7098-4035-afab-ec0d0b83e0b2",
+          "responseId": "b2aefb82-f22a-47a7-bbbf-4cba9d77e36d",
+          "sessionId": "a510e379-23f1-4727-9dd6-05a7e4c88686",
+          "agentId": "github.copilot.default"
+        }
+      },
+      "followups": [],
+      "isCanceled": false,
+      "agent": {
+        "extensionId": {
+          "value": "GitHub.copilot-chat",
+          "_lower": "github.copilot-chat"
+        },
+        "publisherDisplayName": "GitHub",
+        "extensionPublisherId": "GitHub",
+        "extensionDisplayName": "GitHub Copilot Chat",
+        "id": "github.copilot.default",
+        "description": "Ask Copilot",
+        "metadata": {
+          "themeIcon": {
+            "id": "copilot"
+          },
+          "hasFollowups": true,
+          "helpTextPrefix": "You can ask me general programming questions, or chat with the following participants which have specialized expertise and can perform actions:",
+          "helpTextVariablesPrefix": "You can also help me understand your question by using the following variables to give me extra context:",
+          "helpTextPostfix": {
+            "value": "To have a great conversation, ask me questions as if I was a real programmer:\n\n* **Show me the code** you want to talk about by having the files open and selecting the most important lines.\n* **Make refinements** by asking me follow-up questions, adding clarifications, providing errors, etc.\n* **Review my suggested code** and tell me about issues or improvements, so I can iterate on it.\n\nYou can also ask me questions about your editor selection by [starting an inline chat session](command:inlineChat.start).\n\nLearn more about [GitHub Copilot](https://docs.github.com/copilot/using-github-copilot/getting-started-with-github-copilot?tool=vscode&utm_source=editor&utm_medium=chat-panel&utm_campaign=2024q3-em-MSFT-getstarted) in [Visual Studio Code](https://code.visualstudio.com/docs/copilot/overview). Or explore the [Copilot walkthrough](command:github.copilot.open.walkthrough).",
+            "isTrusted": {
+              "enabledCommands": [
+                "inlineChat.start",
+                "github.copilot.open.walkthrough"
+              ]
+            },
+            "supportThemeIcons": false,
+            "supportHtml": false,
+            "uris": {
+              "command:inlineChat.start": {
+                "$mid": 1,
+                "path": "inlineChat.start",
+                "scheme": "command"
+              },
+              "https://docs.github.com/copilot/using-github-copilot/getting-started-with-github-copilot?tool=vscode&utm_source=editor&utm_medium=chat-panel&utm_campaign=2024q3-em-MSFT-getstarted": {
+                "$mid": 1,
+                "path": "/copilot/using-github-copilot/getting-started-with-github-copilot",
+                "scheme": "https",
+                "authority": "docs.github.com",
+                "query": "tool=vscode&utm_source=editor&utm_medium=chat-panel&utm_campaign=2024q3-em-MSFT-getstarted"
+              },
+              "https://code.visualstudio.com/docs/copilot/overview": {
+                "$mid": 1,
+                "path": "/docs/copilot/overview",
+                "scheme": "https",
+                "authority": "code.visualstudio.com"
+              },
+              "command:github.copilot.open.walkthrough": {
+                "$mid": 1,
+                "path": "github.copilot.open.walkthrough",
+                "scheme": "command"
+              }
+            }
+          },
+          "supportIssueReporting": false,
+          "supportsSlowVariables": true,
+          "requester": {
+            "name": "ryb73",
+            "icon": {
+              "$mid": 1,
+              "path": "/u/943476",
+              "scheme": "https",
+              "authority": "avatars.githubusercontent.com",
+              "query": "v=4"
+            }
+          }
+        },
+        "name": "GitHubCopilot",
+        "fullName": "GitHub Copilot",
+        "isDefault": true,
+        "locations": [
+          "panel"
+        ],
+        "slashCommands": [],
+        "disambiguation": [
+          {
+            "category": "generate_code_sample",
+            "description": "The user wants to generate code snippets without referencing the contents of the current workspace. This category does not include generating entire projects.",
+            "examples": [
+              "Write an example of computing a SHA256 hash."
+            ]
+          },
+          {
+            "category": "question_about_specific_files",
+            "description": "The user has a question about a specific file or code snippet that they have provided as part of their query, and the question does not require additional workspace context to answer.",
+            "examples": [
+              "What does this file do?"
+            ]
+          }
+        ]
+      },
+      "contentReferences": [
+        {
+          "kind": "reference",
+          "reference": {
+            "uri": {
+              "$mid": 1,
+              "fsPath": "Untitled-1",
+              "external": "untitled:Untitled-1",
+              "path": "Untitled-1",
+              "scheme": "untitled"
+            },
+            "range": {
+              "startLineNumber": 1,
+              "startColumn": 1,
+              "endLineNumber": 235,
+              "endColumn": 1
+            }
+          }
+        }
+      ],
+      "codeCitations": [
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport soli"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from "
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default define"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default define"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default define"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  "
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  "
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  "
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    "
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    "
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    "
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': "
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': "
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': "
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      '"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      '"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      '"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': '"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': '"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': '"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  "
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  "
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  "
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    "
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    "
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    "
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    exclude: ['@"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    exclude: ['@"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    exclude: ['@"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    exclude: ['@sqlite.org/"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    exclude: ['@sqlite.org/"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    exclude: ['@sqlite.org/"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    exclude: ['@sqlite.org/sqlite-wasm"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    exclude: ['@sqlite.org/sqlite-wasm"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    exclude: ['@sqlite.org/sqlite-wasm"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    exclude: ['@sqlite.org/sqlite-wasm'],\n  },"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    exclude: ['@sqlite.org/sqlite-wasm'],\n  },"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    exclude: ['@sqlite.org/sqlite-wasm'],\n  },"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/sqlite/sqlite-wasm/blob/9e9be795688abd3d1f463e72a88ac84ad7b9910a/README.md",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    exclude: ['@sqlite.org/sqlite-wasm'],\n  },\n});\n```"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/yuekcc/lv1_hanzi/blob/67854e90ea2fa66584d46b084428cf21e55b292a/vite.config.js",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "MIT",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    exclude: ['@sqlite.org/sqlite-wasm'],\n  },\n});\n```"
+        },
+        {
+          "kind": "codeCitation",
+          "value": {
+            "$mid": 1,
+            "path": "/gregoryjjb/shimmer-web/blob/d6d87c019dcb0f63efb6930aa35315a1b88a879a/vite.config.ts",
+            "scheme": "https",
+            "authority": "github.com"
+          },
+          "license": "unknown",
+          "snippet": ";\nimport solid from 'vite-plugin-solid';\n\nexport default defineConfig({\n  plugins: [solid()],\n  server: {\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n  optimizeDeps: {\n    exclude: ['@sqlite.org/sqlite-wasm'],\n  },\n});\n```"
+        }
+      ],
+      "timestamp": 1737861325431
+    }
+  ]
+}
