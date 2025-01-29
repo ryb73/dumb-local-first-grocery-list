@@ -1,4 +1,4 @@
-import { sqlite3Worker1Promiser } from "@sqlite.org/sqlite-wasm";
+import { Promiser, sqlite3Worker1Promiser } from "@sqlite.org/sqlite-wasm";
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS active_items (
@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS removed_items (
 `;
 
 export class Database {
-  private promiser: any;
-  private dbId: string;
+  promiser?: Promiser;
+  dbId?: string; // Changed from private to public
 
   async initialize() {
     this.promiser = await new Promise((resolve) => {
@@ -38,7 +38,7 @@ export class Database {
   }
 
   async addItem(name: string) {
-    return this.promiser("exec", {
+    return this.promiser!("exec", {
       dbid: this.dbId,
       sql: `INSERT INTO active_items (id, name, created_at) VALUES (?, ?, ?)`,
       bind: [crypto.randomUUID(), name, Date.now()],
