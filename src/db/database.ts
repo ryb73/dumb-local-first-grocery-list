@@ -74,7 +74,7 @@ export class Database {
     const suggestions: string[] = [];
     await this.promiser!("exec", {
       dbid: this.dbId,
-      sql: "SELECT name FROM removed_items",
+      sql: "SELECT name, last_removed_at FROM removed_items",
       rowMode: "object",
       callback: (result) => {
         if (result.row) {
