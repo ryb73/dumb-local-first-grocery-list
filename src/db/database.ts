@@ -43,10 +43,16 @@ export class Database {
   }
 
   async addItem(name: string) {
-    return this.promiser!("exec", {
+    await this.promiser!("exec", {
       dbid: this.dbId,
       sql: `INSERT INTO active_items (id, name, created_at) VALUES (?, ?, ?)`,
       bind: [crypto.randomUUID(), name, Date.now()],
+    });
+
+    await this.promiser!("exec", {
+      dbid: this.dbId,
+      sql: `DELETE FROM removed_items WHERE name = ?`,
+      bind: [name],
     });
   }
 
