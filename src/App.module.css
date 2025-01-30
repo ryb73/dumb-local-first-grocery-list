@@ -31,3 +31,8 @@
     transform: rotate(360deg);
   }
 }
+
+.app {
+  min-height: 100vh;
+  background: #f9fafb;
+}

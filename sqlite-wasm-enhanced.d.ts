@@ -1,6 +1,6 @@
 // Copied from https://github.com/sqlite/sqlite-wasm/blob/14a23c0fafbb198c39c1971ac011fb4b35407ef6/index.d.ts
 // https://github.com/sqlite/sqlite-wasm/pull/54/files
-declare module '@sqlite.org/sqlite-wasm' {
+declare module "@sqlite.org/sqlite-wasm" {
   type TODO = any;
 
   /**
@@ -95,7 +95,7 @@ declare module '@sqlite.org/sqlite-wasm' {
          */
         persistent: boolean;
         /** Name of the underlying VFS */
-        vfs: 'string';
+        vfs: "string";
       };
       /** @link https://sqlite.org/wasm/doc/trunk/api-worker1.md#method-close */
     };
@@ -107,7 +107,7 @@ declare module '@sqlite.org/sqlite-wasm' {
       };
       /** @link https://sqlite.org/wasm/doc/trunk/api-worker1.md#method-config-get */
     };
-    'config-get': {
+    "config-get": {
       args: {};
       result: {
         dbID: DbId;
@@ -166,7 +166,7 @@ declare module '@sqlite.org/sqlite-wasm' {
     /** Type of the inbound message */
     type: T;
     /** Operation dependent result */
-    result: PromiserMethods[T]['result'];
+    result: PromiserMethods[T]["result"];
     /** Same value, if any, provided by the inbound message */
     messageId: string;
     /**
@@ -183,7 +183,7 @@ declare module '@sqlite.org/sqlite-wasm' {
   };
 
   type PromiserResponseError = {
-    type: 'error';
+    type: "error";
     /** Operation independent object */
     result: {
       /** Type of the triggereing operation */
@@ -210,14 +210,14 @@ declare module '@sqlite.org/sqlite-wasm' {
       /** The type of the message */
       messageType: T,
       /** The arguments for the message type */
-      messageArguments: PromiserMethods[T]['args'],
+      messageArguments: PromiserMethods[T]["args"]
     ): Promise<PromiserResponse<T>>;
 
     <T extends keyof PromiserMethods>(message: {
       /** The type of the message */
       type: T;
       /** The arguments for the message type */
-      args: PromiserMethods[T]['args'];
+      args: PromiserMethods[T]["args"];
     }): Promise<PromiserResponse<T>>;
   };
 
@@ -254,7 +254,7 @@ declare module '@sqlite.org/sqlite-wasm' {
      * @link https://sqlite.org/wasm/doc/trunk/api-worker1.md#promiser.v2
      */
     v2: (
-      config?: Sqlite3Worker1PromiserConfig | OnreadyFunction,
+      config?: Sqlite3Worker1PromiserConfig | OnreadyFunction
     ) => Promise<Promiser>;
     defaultConfig: Sqlite3Worker1PromiserConfig;
   };

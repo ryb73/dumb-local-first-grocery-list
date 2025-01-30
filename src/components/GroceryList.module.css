@@ -1,0 +1,15 @@
+.container {
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.list {
+  margin-top: 1rem;
+}

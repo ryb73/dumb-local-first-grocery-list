@@ -1,4 +1,9 @@
 import { Promiser, sqlite3Worker1Promiser } from "@sqlite.org/sqlite-wasm";
+import {
+  activeItemSchema,
+  removedItemSchema,
+  ActiveItem,
+} from "../types/schemas";
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS active_items (
@@ -16,8 +21,8 @@ CREATE TABLE IF NOT EXISTS removed_items (
 `;
 
 export class Database {
-  promiser?: Promiser;
-  dbId?: string; // Changed from private to public
+  private promiser?: Promiser;
+  private dbId?: string;
 
   async initialize() {
     this.promiser = await new Promise((resolve) => {
@@ -45,7 +50,87 @@ export class Database {
     });
   }
 
-  // ... additional methods will follow
+  async getItems() {
+    const items: ActiveItem[] = [];
+    await this.promiser!("exec", {
+      dbid: this.dbId,
+      sql: "SELECT * FROM active_items",
+      rowMode: "object",
+      callback: (result) => {
+        if (result.row) {
+          const parsed = activeItemSchema.safeParse(result.row);
+          if (parsed.success) {
+            items.push(parsed.data);
+          } else {
+            console.error("Failed to parse row:", result.row, parsed.error);
+          }
+        }
+      },
+    });
+    return items;
+  }
+
+  async getSuggestions() {
+    const suggestions: string[] = [];
+    await this.promiser!("exec", {
+      dbid: this.dbId,
+      sql: "SELECT name FROM removed_items",
+      rowMode: "object",
+      callback: (result) => {
+        if (result.row) {
+          // For suggestions we only need the name, but validate the full row structure
+          const parsed = removedItemSchema.safeParse(result.row);
+          if (parsed.success) {
+            suggestions.push(parsed.data.name);
+          } else {
+            console.error(
+              "Failed to parse removed item:",
+              result.row,
+              parsed.error
+            );
+          }
+        }
+      },
+    });
+    return suggestions;
+  }
+
+  async toggleItem(id: string, checked: boolean) {
+    const timestamp = Date.now();
+    await this.promiser!("exec", {
+      dbid: this.dbId,
+      sql: `UPDATE active_items
+            SET checked = ?,
+                last_unchecked_at = ?
+            WHERE id = ?`,
+      bind: [checked ? 1 : 0, checked ? null : timestamp, id],
+    });
+  }
+
+  async cleanupOldItems() {
+    // const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
+    const dayAgo = Date.now() - 3000;
+
+    // First, move unchecked items to removed_items
+    await this.promiser!("exec", {
+      dbid: this.dbId,
+      sql: `INSERT OR REPLACE INTO removed_items (name, last_removed_at)
+            SELECT name, last_unchecked_at
+            FROM active_items
+            WHERE checked = 0
+            AND last_unchecked_at < ?`,
+      bind: [dayAgo],
+    });
+
+    // Then delete them from active_items
+    await this.promiser!("exec", {
+      dbid: this.dbId,
+      sql: `DELETE FROM active_items
+            WHERE checked = 0
+            AND last_unchecked_at < ?`,
+      bind: [dayAgo],
+    });
+  }
 }
 
 export const db = new Database();
