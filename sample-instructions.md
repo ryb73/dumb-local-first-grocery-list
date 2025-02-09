@@ -6,6 +6,7 @@ After 24 hours, unchecked items are removed from the list. (Note, though, that t
 
 Here are some guidelines:
 * Prefer a functional style over an OO style
+* Consider accessibility when implementing the UI
 * There should be no duplicates in the list. If the user attempts to add an item already on the list, then it will check the box for that item (or if already checked, leave it checked.)
 
 Are you able to start on this project? Feel free to ask any questions you have before doing so.
