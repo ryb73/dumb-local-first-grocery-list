@@ -18,7 +18,6 @@ export const AddItemForm: Component<Props> = (props) => {
   const handleSubmit = (e: Event) => {
     e.preventDefault();
     if (input().trim()) {
-      debugger;
       props.onAdd(input().trim());
       setInput("");
     }
@@ -26,7 +25,6 @@ export const AddItemForm: Component<Props> = (props) => {
 
   return (
     <form onSubmit={handleSubmit} class={styles.form}>
-      <p>sugg: {props.suggestions}</p>
       <input
         type="text"
         value={input()}
