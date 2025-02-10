@@ -44,8 +44,9 @@ export const AddItemForm: Component<Props> = (props) => {
               <div
                 class={styles.suggestion}
                 onClick={() => {
-                  setInput(suggestion);
+                  setInput("");
                   setShowSuggestions(false);
+                  props.onAdd(suggestion);
                 }}
               >
                 {suggestion}
