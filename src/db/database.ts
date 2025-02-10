@@ -8,7 +8,7 @@ import {
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS active_items (
     id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
+    name TEXT NOT NULL UNIQUE,
     checked INTEGER DEFAULT 1,
     created_at INTEGER,
     last_unchecked_at INTEGER
@@ -43,12 +43,30 @@ export class Database {
   }
 
   async addItem(name: string) {
+    // First try to update an existing item to checked state
+    let existingId: string | null = null;
     await this.promiser!("exec", {
       dbId: this.dbId,
-      sql: `INSERT INTO active_items (id, name, created_at) VALUES (?, ?, ?)`,
-      bind: [crypto.randomUUID(), name, Date.now()],
+      sql: `UPDATE active_items SET checked = 1 WHERE name = ? RETURNING id`,
+      bind: [name],
+      rowMode: "array",
+      callback: (result) => {
+        if (result.row) {
+          existingId = result.row[0];
+        }
+      },
     });
 
+    // If no existing item was found, insert a new one
+    if (!existingId) {
+      await this.promiser!("exec", {
+        dbId: this.dbId,
+        sql: `INSERT INTO active_items (id, name, created_at) VALUES (?, ?, ?)`,
+        bind: [crypto.randomUUID(), name, Date.now()],
+      });
+    }
+
+    // Remove from removed_items if it exists there
     await this.promiser!("exec", {
       dbId: this.dbId,
       sql: `DELETE FROM removed_items WHERE name = ?`,
