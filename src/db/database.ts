@@ -37,20 +37,20 @@ export class Database {
     this.dbId = openResponse.dbId;
 
     await this.promiser("exec", {
-      dbid: this.dbId,
+      dbId: this.dbId,
       sql: SCHEMA,
     });
   }
 
   async addItem(name: string) {
     await this.promiser!("exec", {
-      dbid: this.dbId,
+      dbId: this.dbId,
       sql: `INSERT INTO active_items (id, name, created_at) VALUES (?, ?, ?)`,
       bind: [crypto.randomUUID(), name, Date.now()],
     });
 
     await this.promiser!("exec", {
-      dbid: this.dbId,
+      dbId: this.dbId,
       sql: `DELETE FROM removed_items WHERE name = ?`,
       bind: [name],
     });
@@ -59,7 +59,7 @@ export class Database {
   async getItems() {
     const items: ActiveItem[] = [];
     await this.promiser!("exec", {
-      dbid: this.dbId,
+      dbId: this.dbId,
       sql: "SELECT * FROM active_items",
       rowMode: "object",
       callback: (result) => {
@@ -104,7 +104,7 @@ export class Database {
   async toggleItem(id: string, checked: boolean) {
     const timestamp = Date.now();
     await this.promiser!("exec", {
-      dbid: this.dbId,
+      dbId: this.dbId,
       sql: `UPDATE active_items
             SET checked = ?,
                 last_unchecked_at = ?
@@ -119,7 +119,7 @@ export class Database {
 
     // First, move unchecked items to removed_items
     await this.promiser!("exec", {
-      dbid: this.dbId,
+      dbId: this.dbId,
       sql: `INSERT OR REPLACE INTO removed_items (name, last_removed_at)
             SELECT name, last_unchecked_at
             FROM active_items
@@ -130,7 +130,7 @@ export class Database {
 
     // Then delete them from active_items
     await this.promiser!("exec", {
-      dbid: this.dbId,
+      dbId: this.dbId,
       sql: `DELETE FROM active_items
             WHERE checked = 0
             AND last_unchecked_at < ?`,
