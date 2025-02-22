@@ -1,4 +1,4 @@
-import { Application, Router } from "oak";
+import { Application, Context, Next, Router } from "oak";
 import { Database } from "@db/sqlite";
 
 export interface ServerConfig {
@@ -18,7 +18,7 @@ export class Server {
     this.setupRoutes();
   }
 
-  private authMiddleware = async (ctx: any, next: any) => {
+  private authMiddleware = async (ctx: Context, next: Next) => {
     const auth = ctx.request.headers.get("Authorization");
     if (!auth) {
       ctx.response.status = 401;
@@ -56,9 +56,8 @@ export class Server {
 
         const result = this.db.prepare(query).all(params);
         ctx.response.body = { result };
-      } catch (error) {
+      } catch {
         ctx.response.status = 500;
-        ctx.response.body = { error: error.message };
       }
     });
 
