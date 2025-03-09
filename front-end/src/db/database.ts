@@ -15,8 +15,7 @@ CREATE TABLE IF NOT EXISTS active_items (
 );
 
 CREATE TABLE IF NOT EXISTS removed_items (
-    name TEXT PRIMARY KEY,
-    last_removed_at INTEGER
+    name TEXT PRIMARY KEY
 );
 `;
 
@@ -98,7 +97,7 @@ export class Database {
     const suggestions: string[] = [];
     await this.promiser!("exec", {
       dbid: this.dbId,
-      sql: "SELECT name, last_removed_at FROM removed_items",
+      sql: "SELECT name FROM removed_items",
       rowMode: "object",
       callback: (result) => {
         if (result.row) {
@@ -138,11 +137,10 @@ export class Database {
     // First, move unchecked items to removed_items
     await this.promiser!("exec", {
       dbId: this.dbId,
-      sql: `INSERT OR REPLACE INTO removed_items (name, last_removed_at)
-            SELECT name, last_unchecked_at
+      sql: `INSERT OR REPLACE INTO removed_items (name)
+            SELECT name
             FROM active_items
-            WHERE checked = 0
-            AND last_unchecked_at < ?`,
+            WHERE checked = 0`,
       bind: [dayAgo],
     });
 
