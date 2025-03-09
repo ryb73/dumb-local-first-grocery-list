@@ -1,4 +1,4 @@
-import { Server } from "./server.ts";
+import { Server } from "./server.js";
 
 const server = new Server({
   port: 4000,
@@ -6,11 +6,11 @@ const server = new Server({
   password: "password",
   dbPath: "./data.db",
 });
+server.start().catch(console.error);
 
-// Start server
-await server.start();
-
-// Add cleanup on server shutdown
-addEventListener("unload", () => {
+// Handle shutdown gracefully
+process.on("SIGINT", () => {
+  console.log("Shutting down server...");
   server.shutdown();
+  process.exit(0);
 });

@@ -1,5 +1,6 @@
-import { Application, Context, Next, Router } from "oak";
-import { Database } from "@db/sqlite";
+import express from "express";
+import Sqlite, { Database } from "better-sqlite3";
+import basicAuth from "express-basic-auth";
 
 export interface ServerConfig {
   port: number;
@@ -9,67 +10,76 @@ export interface ServerConfig {
 }
 
 export class Server {
-  private app: Application;
+  private app: express.Application;
   private db: Database;
 
   constructor(private config: ServerConfig) {
-    this.db = new Database(config.dbPath);
-    this.app = new Application();
+    this.db = new Sqlite(config.dbPath);
+    this.app = express();
+    this.setupMiddleware();
     this.setupRoutes();
   }
 
-  private authMiddleware = async (ctx: Context, next: Next) => {
-    const auth = ctx.request.headers.get("Authorization");
-    if (!auth) {
-      ctx.response.status = 401;
-      ctx.response.headers.set("WWW-Authenticate", 'Basic realm="Secure Area"');
-      return;
-    }
+  private setupMiddleware() {
+    this.app.use(express.json());
 
-    const [, credentials] = auth.split(" ");
-    const [username, password] = atob(credentials).split(":");
-
-    if (
-      username !== this.config.username ||
-      password !== this.config.password
-    ) {
-      ctx.response.status = 401;
-      return;
-    }
-
-    await next();
-  };
+    // Basic authentication middleware
+    this.app.use(
+      basicAuth({
+        users: { [this.config.username]: this.config.password },
+        challenge: true,
+        realm: "Secure Area",
+      })
+    );
+  }
 
   private setupRoutes() {
-    const router = new Router();
-
-    router.post("/query", async (ctx) => {
+    // For queries that return data (SELECT statements)
+    this.app.post("/all", (req: express.Request, res: express.Response) => {
       try {
-        const body = await ctx.request.body().value;
-        const { query, params = [] } = body;
+        const { query, params = [] } = req.body;
 
         if (!query) {
-          ctx.response.status = 400;
-          ctx.response.body = { error: "Query is required" };
+          res.status(400).json({ error: "Query is required" });
           return;
         }
 
         const result = this.db.prepare(query).all(params);
-        ctx.response.body = { result };
-      } catch {
-        ctx.response.status = 500;
+        res.json({ result });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({
+          error: "Internal server error",
+          details: error instanceof Error ? error.message : String(error),
+        });
       }
     });
 
-    this.app.use(this.authMiddleware);
-    this.app.use(router.routes());
-    this.app.use(router.allowedMethods());
+    // For queries that don't return data (INSERT, UPDATE, DELETE, CREATE, etc.)
+    this.app.post("/run", (req: express.Request, res: express.Response) => {
+      try {
+        const { query, params = [] } = req.body;
+
+        if (!query) {
+          res.status(400).json({ error: "Query is required" });
+          return;
+        }
+
+        const result = this.db.prepare(query).run(params);
+        res.json({ result });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({
+          error: "Internal server error",
+          details: error instanceof Error ? error.message : String(error),
+        });
+      }
+    });
   }
 
   start() {
     return new Promise<void>((resolve) => {
-      void this.app.listen({ port: this.config.port });
-      this.app.addEventListener("listen", () => {
+      this.app.listen(this.config.port, () => {
         console.log(`Server running on http://localhost:${this.config.port}`);
         resolve();
       });
