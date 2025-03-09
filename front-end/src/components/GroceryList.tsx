@@ -1,12 +1,12 @@
 import { Component, createSignal, onMount, createEffect, For } from "solid-js";
-import { GroceryItem as IGroceryItem } from "../types/types";
 import { db } from "../db/database";
 import { GroceryItem } from "./GroceryItem";
 import { AddItemForm } from "./AddItemForm";
 import styles from "./GroceryList.module.css";
+import { ActiveItem } from "../types/schemas";
 
 export const GroceryList: Component = () => {
-  const [items, setItems] = createSignal<IGroceryItem[]>([]);
+  const [items, setItems] = createSignal<ActiveItem[]>([]);
   const [suggestions, setSuggestions] = createSignal<string[]>([]);
 
   const sortedItems = () => {
