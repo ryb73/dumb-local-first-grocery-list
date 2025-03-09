@@ -66,9 +66,14 @@ export class Server {
     this.app.use(router.allowedMethods());
   }
 
-  async start() {
-    console.log(`Server running on http://localhost:${this.config.port}`);
-    await this.app.listen({ port: this.config.port });
+  start() {
+    return new Promise<void>((resolve) => {
+      void this.app.listen({ port: this.config.port });
+      this.app.addEventListener("listen", () => {
+        console.log(`Server running on http://localhost:${this.config.port}`);
+        resolve();
+      });
+    });
   }
 
   shutdown() {

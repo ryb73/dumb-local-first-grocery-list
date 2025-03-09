@@ -1,7 +1,7 @@
 import { Server } from "./server.ts";
 
 const server = new Server({
-  port: 3000,
+  port: 4000,
   username: "admin",
   password: "password",
   dbPath: "./data.db",
