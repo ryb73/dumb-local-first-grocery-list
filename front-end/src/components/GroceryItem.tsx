@@ -1,9 +1,9 @@
 import { Component } from "solid-js";
 import styles from "./GroceryItem.module.css";
-import { ActiveItem } from "../types/schemas";
+import { Item } from "../types/schemas";
 
 interface Props {
-  item: ActiveItem;
+  item: Item;
   onToggle: (id: string, checked: boolean) => void;
 }
 

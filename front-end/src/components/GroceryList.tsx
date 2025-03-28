@@ -3,10 +3,10 @@ import { db } from "../db/database";
 import { GroceryItem } from "./GroceryItem";
 import { AddItemForm } from "./AddItemForm";
 import styles from "./GroceryList.module.css";
-import { ActiveItem } from "../types/schemas";
+import { Item } from "../types/schemas";
 
 export const GroceryList: Component = () => {
-  const [items, setItems] = createSignal<ActiveItem[]>([]);
+  const [items, setItems] = createSignal<Item[]>([]);
   const [suggestions, setSuggestions] = createSignal<string[]>([]);
 
   const sortedItems = () => {
@@ -35,14 +35,6 @@ export const GroceryList: Component = () => {
     await refreshData();
   });
 
-  createEffect(() => {
-    const interval = setInterval(async () => {
-      await db.cleanupOldItems();
-      await refreshData();
-    }, 5000);
-
-    return () => clearInterval(interval);
-  });
 
   return (
     <div class={styles.container}>

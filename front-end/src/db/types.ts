@@ -1,8 +1,5 @@
-import { ActiveItem } from "../types/schemas";
+import { Item } from "../types/schemas";
 
 export type KyselySchema = {
-  active_items: ActiveItem;
-  removed_items: {
-    name: string;
-  };
+  items: Item;
 };

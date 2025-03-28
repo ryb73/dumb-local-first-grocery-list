@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const activeItemSchema = z.object({
+export const itemSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
   checked: z
@@ -13,9 +13,4 @@ export const activeItemSchema = z.object({
   last_unchecked_at: z.number().int().positive().nullable(),
 });
 
-export const removedItemSchema = z.object({
-  name: z.string(),
-});
-
-export type ActiveItem = z.infer<typeof activeItemSchema>;
-export type RemovedItem = z.infer<typeof removedItemSchema>;
+export type Item = z.infer<typeof itemSchema>;

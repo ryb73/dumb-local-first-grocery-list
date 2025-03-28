@@ -1,0 +1,12 @@
+# Project Framework
+- This project uses SolidJS, not React
+- Use SolidJS syntax (class instead of className, createSignal instead of useState)
+- Use solid-app-router for routing instead of react-router-dom
+
+# Development Guidelines
+- Prefer functional style over classes when possible
+
+# Database Access
+- SQLite database is stored in OPFS
+- Use kysely for database operations
+- Database schema is defined in types/schemas.ts
