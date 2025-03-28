@@ -52,7 +52,7 @@ export function SqliteBrowser() {
       // Simple query validation
       const queryText = query().trim().toLowerCase();
 
-      const result = await sql<unknown>`${query()}`.execute(kysely);
+      const result = await sql<unknown>`${sql.raw(query())}`.execute(kysely);
 
       if (queryText.startsWith("select")) {
         const rows = result.rows;
@@ -71,6 +71,7 @@ export function SqliteBrowser() {
 
       setError("");
     } catch (err) {
+      console.error("Query execution error:", err);
       setError(err instanceof Error ? err.message : "An error occurred");
       setResults([]);
     } finally {
