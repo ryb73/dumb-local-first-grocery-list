@@ -14,6 +14,6 @@ export default defineConfig({
     target: "esnext",
   },
   optimizeDeps: {
-    exclude: ["@sqlite.org/sqlite-wasm"],
+    exclude: ["@sqlite.org/sqlite-wasm", "sqlocal"],
   },
 });

@@ -32,7 +32,6 @@ export const GroceryList: Component = () => {
   };
 
   onMount(async () => {
-    await db.initialize();
     await refreshData();
   });
 

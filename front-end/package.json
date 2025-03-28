@@ -17,8 +17,9 @@
     "vite-plugin-solid": "^2.11.0"
   },
   "dependencies": {
-    "@sqlite.org/sqlite-wasm": "3.48.0-build3",
+    "kysely": "^0.27.6",
     "solid-js": "^1.9.3",
+    "sqlocal": "^0.14.0",
     "zod": "^3.24.1"
   }
 }

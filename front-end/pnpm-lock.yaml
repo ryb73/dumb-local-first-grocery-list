@@ -8,12 +8,15 @@ importers:
 
   .:
     dependencies:
-      '@sqlite.org/sqlite-wasm':
-        specifier: 3.48.0-build3
-        version: 3.48.0-build3
+      kysely:
+        specifier: ^0.27.6
+        version: 0.27.6
       solid-js:
         specifier: ^1.9.3
         version: 1.9.4
+      sqlocal:
+        specifier: ^0.14.0
+        version: 0.14.0(kysely@0.27.6)
       zod:
         specifier: ^3.24.1
         version: 3.24.1
@@ -379,8 +382,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@sqlite.org/sqlite-wasm@3.48.0-build3':
-    resolution: {integrity: sha512-lOx3YYT/cDk4PSbgXHai7XHa9gGzFUh/rmL5vCJB3e+9dQnZi3GYrKsVMJHTkznhTurQ6ud9Hjv9Rhf1dNmJ/Q==}
+  '@sqlite.org/sqlite-wasm@3.48.0-build4':
+    resolution: {integrity: sha512-hI6twvUkzOmyGZhQMza1gpfqErZxXRw6JEsiVjUbo7tFanVD+8Oil0Ih3l2nGzHdxPI41zFmfUQG7GHqhciKZQ==}
     hasBin: true
 
   '@types/babel__core@7.20.5':
@@ -401,6 +404,12 @@ packages:
   '@types/node@20.17.16':
     resolution: {integrity: sha512-vOTpLduLkZXePLxHiHsBLp98mHGnl8RptV4YAO3HfKO5UHjDvySGbxKtpYfy8Sx5+WKcgc45qNreJJRVM3L6mw==}
 
+  '@ungap/structured-clone@1.3.0':
+    resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
+
+  '@ungap/with-resolvers@0.1.0':
+    resolution: {integrity: sha512-g7f0IkJdPW2xhY7H4iE72DAsIyfuwEFc6JWc2tYFwKDMWWAF699vGjrM348cwQuOXgHpe1gWFe+Eiyjx/ewvvw==}
+
   babel-plugin-jsx-dom-expressions@0.39.3:
     resolution: {integrity: sha512-6RzmSu21zYPlV2gNwzjGG9FgODtt9hIWnx7L//OIioIEuRcnpDZoY8Tr+I81Cy1SrH4qoDyKpwHHo6uAMAeyPA==}
     peerDependencies:
@@ -418,6 +427,9 @@ packages:
 
   caniuse-lite@1.0.30001684:
     resolution: {integrity: sha512-G1LRwLIQjBQoyq0ZJGqGIJUXzJ8irpbjHLpVRXDvBEScFJ9b17sgK6vlx0GAJFE21okD7zXl08rRRUfq6HdoEQ==}
+
+  coincident@1.2.3:
+    resolution: {integrity: sha512-Uxz3BMTWIslzeWjuQnizGWVg0j6khbvHUQ8+5BdM7WuJEm4ALXwq3wluYoB+uF68uPBz/oUOeJnYURKyfjexlA==}
 
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
@@ -455,6 +467,9 @@ packages:
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
 
+  gc-hook@0.3.1:
+    resolution: {integrity: sha512-E5M+O/h2o7eZzGhzRZGex6hbB3k4NWqO0eA+OzLRLXxhdbYPajZnynPwAtphnh+cRHPwsj5Z80dqZlfI4eK55A==}
+
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
@@ -483,6 +498,10 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
+  kysely@0.27.6:
+    resolution: {integrity: sha512-FIyV/64EkKhJmjgC0g2hygpBv5RNWVPyNCqSAD7eTCv6eFWNIi4PN1UvdSJGicN/o35bnevgis4Y0UDC0qi8jQ==}
+    engines: {node: '>=14.0.0'}
+
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
@@ -510,6 +529,9 @@ packages:
   postcss@8.5.3:
     resolution: {integrity: sha512-dle9A3yYxlBSrt8Fu+IpjGT8SY8hN0mlaA6GY8t0P5PjIOZemULz/E2Bnm/2dcUOena75OTNkHI76uZBNUUq3A==}
     engines: {node: ^10 || ^12 || >=14}
+
+  proxy-target@3.0.2:
+    resolution: {integrity: sha512-FFE1XNwXX/FNC3/P8HiKaJSy/Qk68RitG/QEcLy/bVnTAPlgTAWPZKh0pARLAnpfXQPKyalBhk009NRTgsk8vQ==}
 
   rollup@4.37.0:
     resolution: {integrity: sha512-iAtQy/L4QFU+rTJ1YUjXqJOJzuwEghqWzCEYD2FEghT7Gsy1VdABntrO4CLopA5IkflTyqNiLNwPcOJ3S7UKLg==}
@@ -541,6 +563,17 @@ packages:
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
+
+  sqlocal@0.14.0:
+    resolution: {integrity: sha512-qhkjWXrvh0aG0IwMeuTznCozNTJvlp2hr+JlSGOx2c1vpjgWoXYvZEf4jcynJ5n/pm05mdKNcDFzb/9KJL/IHQ==}
+    peerDependencies:
+      drizzle-orm: '*'
+      kysely: '*'
+    peerDependenciesMeta:
+      drizzle-orm:
+        optional: true
+      kysely:
+        optional: true
 
   typescript@5.7.2:
     resolution: {integrity: sha512-i5t66RHxDvVN40HfDd1PsEThGNnlMCMT3jMUuoh9/0TaqWevNontacunWyN02LA9/fIbEWlcHZcgTKb9QoaLfg==}
@@ -615,6 +648,18 @@ packages:
       vite: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0
     peerDependenciesMeta:
       vite:
+        optional: true
+
+  ws@8.18.1:
+    resolution: {integrity: sha512-RKW2aJZMXeMxVpnZ6bck+RswznaxmzdULiBr6KY7XkTnW8uvt0iT9H5DkHUChXrc+uurzwa0rVI16n/Xzjdz1w==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
         optional: true
 
   yallist@3.1.1:
@@ -891,7 +936,7 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.37.0':
     optional: true
 
-  '@sqlite.org/sqlite-wasm@3.48.0-build3': {}
+  '@sqlite.org/sqlite-wasm@3.48.0-build4': {}
 
   '@types/babel__core@7.20.5':
     dependencies:
@@ -921,6 +966,10 @@ snapshots:
       undici-types: 6.19.8
     optional: true
 
+  '@ungap/structured-clone@1.3.0': {}
+
+  '@ungap/with-resolvers@0.1.0': {}
+
   babel-plugin-jsx-dom-expressions@0.39.3(@babel/core@7.26.0):
     dependencies:
       '@babel/core': 7.26.0
@@ -944,6 +993,18 @@ snapshots:
       update-browserslist-db: 1.1.1(browserslist@4.24.2)
 
   caniuse-lite@1.0.30001684: {}
+
+  coincident@1.2.3:
+    dependencies:
+      '@ungap/structured-clone': 1.3.0
+      '@ungap/with-resolvers': 0.1.0
+      gc-hook: 0.3.1
+      proxy-target: 3.0.2
+    optionalDependencies:
+      ws: 8.18.1
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   convert-source-map@2.0.0: {}
 
@@ -990,6 +1051,8 @@ snapshots:
   fsevents@2.3.3:
     optional: true
 
+  gc-hook@0.3.1: {}
+
   gensync@1.0.0-beta.2: {}
 
   globals@11.12.0: {}
@@ -1003,6 +1066,8 @@ snapshots:
   jsesc@3.0.2: {}
 
   json5@2.2.3: {}
+
+  kysely@0.27.6: {}
 
   lru-cache@5.1.1:
     dependencies:
@@ -1029,6 +1094,8 @@ snapshots:
       nanoid: 3.3.11
       picocolors: 1.1.1
       source-map-js: 1.2.1
+
+  proxy-target@3.0.2: {}
 
   rollup@4.37.0:
     dependencies:
@@ -1081,6 +1148,16 @@ snapshots:
 
   source-map-js@1.2.1: {}
 
+  sqlocal@0.14.0(kysely@0.27.6):
+    dependencies:
+      '@sqlite.org/sqlite-wasm': 3.48.0-build4
+      coincident: 1.2.3
+    optionalDependencies:
+      kysely: 0.27.6
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
   typescript@5.7.2: {}
 
   undici-types@6.19.8:
@@ -1119,6 +1196,9 @@ snapshots:
   vitefu@1.0.4(vite@6.0.12(@types/node@20.17.16)):
     optionalDependencies:
       vite: 6.0.12(@types/node@20.17.16)
+
+  ws@8.18.1:
+    optional: true
 
   yallist@3.1.1: {}
 
