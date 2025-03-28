@@ -21,7 +21,7 @@ export function SqliteBrowser() {
       // Check if items table exists
       setDbStatus("Checking database tables...");
       const tables = await kysely.introspection.getTables();
-      const itemsTableExists = tables.some(table => table.name === 'items');
+      const itemsTableExists = tables.some((table) => table.name === "items");
 
       if (itemsTableExists) {
         setDbStatus("Database ready - 'items' table exists");
@@ -33,7 +33,9 @@ export function SqliteBrowser() {
         setDbStatus("Database initialized");
       }
     } catch (err) {
-      setDbStatus(`Database error: ${err instanceof Error ? err.message : String(err)}`);
+      setDbStatus(
+        `Database error: ${err instanceof Error ? err.message : String(err)}`
+      );
     }
   });
 
@@ -50,10 +52,9 @@ export function SqliteBrowser() {
       // Simple query validation
       const queryText = query().trim().toLowerCase();
 
-      const result = await sql<unknown>`${query()}`.execute(kysely)
+      const result = await sql<unknown>`${query()}`.execute(kysely);
 
       if (queryText.startsWith("select")) {
-
         const rows = result.rows;
 
         try {
@@ -65,7 +66,6 @@ export function SqliteBrowser() {
           setResults(rows as QueryResult); // Fallback to using the raw results
         }
       } else {
-
         setResults([{ result: "Query executed successfully" }]);
       }
 
@@ -94,10 +94,7 @@ export function SqliteBrowser() {
         </div>
         <div class={styles.exampleQueries}>
           {exampleQueries.map((q) => (
-            <button
-              class={styles.exampleButton}
-              onClick={() => setQuery(q)}
-            >
+            <button class={styles.exampleButton} onClick={() => setQuery(q)}>
               {q}
             </button>
           ))}
@@ -138,9 +135,10 @@ export function SqliteBrowser() {
                 {results().map((row) => (
                   <tr>
                     {Object.values(row).map((value) => (
-                      <td>{typeof value === 'object' && value !== null
-                        ? JSON.stringify(value)
-                        : String(value === null ? 'NULL' : value)}
+                      <td>
+                        {typeof value === "object" && value !== null
+                          ? JSON.stringify(value)
+                          : String(value === null ? "NULL" : value)}
                       </td>
                     ))}
                   </tr>
