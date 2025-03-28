@@ -30,19 +30,40 @@ export function SqliteBrowser() {
 
       const result = await sql<unknown>`${sql.raw(query())}`.execute(kysely);
 
-      if (queryText.startsWith("select")) {
-        const rows = result.rows;
-
+      let queryResults: QueryResult = [];
+      
+      // Handle rows if any were returned
+      if (result.rows.length > 0) {
         try {
-          // Validate the results
-          const validatedResults = QueryResultSchema.parse(rows);
-          setResults(validatedResults);
+          const validatedRows = QueryResultSchema.parse(result.rows);
+          queryResults = validatedRows;
         } catch (validationError) {
           console.error("Result validation error:", validationError);
-          setResults(rows as QueryResult); // Fallback to using the raw results
+          queryResults = result.rows as QueryResult;
         }
+      }
+
+      // Add affected rows/insert ID information if available
+      const additionalInfo: QueryResult = [];
+      if (result.numAffectedRows) {
+        additionalInfo.push({
+          result: `Query affected ${result.numAffectedRows} rows.`
+        });
+      }
+      if (result.insertId) {
+        additionalInfo.push({
+          result: `Insert ID: ${result.insertId}`
+        });
+      }
+
+      // Combine results and set them
+      const finalResults = [...queryResults, ...additionalInfo];
+      
+      // If there are no results to show, add a success message
+      if (finalResults.length === 0) {
+        setResults([{ result: "Query executed successfully." }]);
       } else {
-        setResults([{ result: "Query executed successfully" }]);
+        setResults(finalResults);
       }
 
       setError("");
