@@ -14,30 +14,6 @@ export function SqliteBrowser() {
   const [results, setResults] = createSignal<QueryResult>([]);
   const [error, setError] = createSignal("");
   const [loading, setLoading] = createSignal(false);
-  const [dbStatus, setDbStatus] = createSignal("Checking database...");
-
-  onMount(async () => {
-    try {
-      // Check if items table exists
-      setDbStatus("Checking database tables...");
-      const tables = await kysely.introspection.getTables();
-      const itemsTableExists = tables.some((table) => table.name === "items");
-
-      if (itemsTableExists) {
-        setDbStatus("Database ready - 'items' table exists");
-      } else {
-        setDbStatus("Warning: 'items' table not found. Run migrations first.");
-
-        // Initialize the database if needed
-        await initDatabase();
-        setDbStatus("Database initialized");
-      }
-    } catch (err) {
-      setDbStatus(
-        `Database error: ${err instanceof Error ? err.message : String(err)}`
-      );
-    }
-  });
 
   const executeQuery = async () => {
     if (!query()) {
@@ -90,9 +66,6 @@ export function SqliteBrowser() {
     <div class={styles.browser}>
       <div class={styles.header}>
         <h1>SQLite Browser</h1>
-        <div class={styles.status}>
-          <p>{dbStatus()}</p>
-        </div>
         <div class={styles.exampleQueries}>
           {exampleQueries.map((q) => (
             <button class={styles.exampleButton} onClick={() => setQuery(q)}>
