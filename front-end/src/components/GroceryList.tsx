@@ -1,4 +1,4 @@
-import { Component, createSignal, onMount, For } from "solid-js";
+import { Component, createSignal, onMount, Index } from "solid-js";
 import { isDefined } from "@ryb73/super-duper-parakeet/lib/src/type-checks";
 import { GroceryItem } from "./GroceryItem";
 import { AddItemForm } from "./AddItemForm";
@@ -58,15 +58,15 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
       <h1 class={styles.title}>{props.title}</h1>
       <AddItemForm suggestions={suggestions()} onAdd={handleAdd} />
       <div class={styles.list}>
-        <For each={sortedItems()}>
+        <Index each={sortedItems()}>
           {(item) => (
             <GroceryItem
-              item={item}
+              item={item()}
               onToggle={handleToggle}
               onEdit={handleEdit}
             />
           )}
-        </For>
+        </Index>
       </div>
     </div>
   );
