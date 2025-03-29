@@ -1,4 +1,5 @@
 import { Component, createSignal, onMount, createEffect, For } from "solid-js";
+import { isDefined } from "@ryb73/super-duper-parakeet/lib/src/type-checks";
 import { GroceryItem } from "./GroceryItem";
 import { AddItemForm } from "./AddItemForm";
 import styles from "./GroceryList.module.css";
@@ -8,6 +9,7 @@ import { Database } from "../db/database";
 interface GroceryListProps {
   db: Database;
   title: string;
+  className?: string;
 }
 
 export const GroceryList: Component<GroceryListProps> = (props) => {
@@ -43,7 +45,11 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
   createEffect(refreshData);
 
   return (
-    <div class={styles.container}>
+    <div
+      class={[styles.container, props.className ?? ""]
+        .filter(isDefined)
+        .join(` `)}
+    >
       <h1 class={styles.title}>{props.title}</h1>
       <AddItemForm suggestions={suggestions()} onAdd={handleAdd} />
       <div class={styles.list}>

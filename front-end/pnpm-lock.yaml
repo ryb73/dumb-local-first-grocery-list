@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@ryb73/super-duper-parakeet':
+        specifier: ^12.1.1
+        version: 12.1.1(nanoid@3.3.11)
       '@solidjs/router':
         specifier: ^0.15.3
         version: 0.15.3(solid-js@1.9.4)
@@ -385,6 +388,68 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@ryb73/super-duper-parakeet@12.1.1':
+    resolution: {integrity: sha512-UFMM0c8m3jbKMBXOEKqxglcLogxG5xi39gw87JhmQfs3crTLEO6Uf4jwZblDDu/6tWdeFoSq414edF+Pl3QclQ==}
+    peerDependencies:
+      '@emotion/react': '*'
+      '@emotion/styled': ^11.3.0
+      '@radix-ui/react-collapsible': ^0.1.6 || ^1.0.2
+      axios: ^0.26.1
+      dayjs: '*'
+      fp-ts: ^2.10.4
+      io-ts: ^2.2.16
+      io-ts-reporters: ^2.0.0
+      io-ts-types: ^0.5.16
+      jest: '>=26 <=29'
+      lodash: ^4.17.21
+      monocle-ts: ^2.3.9
+      nanoid: ^3.0.0 || ^4.0.0
+      newtype-ts: ^0.3.4
+      next: '>=9 <=13'
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+      react-query: ^3.13.12
+      typestyle: ^2.4.0
+    peerDependenciesMeta:
+      '@emotion/react':
+        optional: true
+      '@emotion/styled':
+        optional: true
+      '@radix-ui/react-collapsible':
+        optional: true
+      axios:
+        optional: true
+      dayjs:
+        optional: true
+      fp-ts:
+        optional: true
+      io-ts:
+        optional: true
+      io-ts-reporters:
+        optional: true
+      io-ts-types:
+        optional: true
+      jest:
+        optional: true
+      lodash:
+        optional: true
+      monocle-ts:
+        optional: true
+      nanoid:
+        optional: true
+      newtype-ts:
+        optional: true
+      next:
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+      react-query:
+        optional: true
+      typestyle:
+        optional: true
+
   '@solidjs/router@0.15.3':
     resolution: {integrity: sha512-iEbW8UKok2Oio7o6Y4VTzLj+KFCmQPGEpm1fS3xixwFBdclFVBvaQVeibl1jys4cujfAK5Kn6+uG2uBm3lxOMw==}
     peerDependencies:
@@ -488,6 +553,12 @@ packages:
 
   html-entities@2.3.3:
     resolution: {integrity: sha512-DV5Ln36z34NNTDgnz0EWGBLZENelNAtkiFA4kyNOG2tDI6Mz1uSWiq1wAKdyjnJwyDiDO7Fa2SO1CTxPXL8VxA==}
+
+  immer@10.1.1:
+    resolution: {integrity: sha512-s2MPrmjovJcoMaHtx6K11Ra7oD05NT97w1IC5zpMkT6Atjr7H8LjaDd81iIxUYpMKSRRNMJE703M1Fhr/TctHw==}
+
+  invalid-type@1.0.1:
+    resolution: {integrity: sha512-cQH3qUpBrs7iVWCxD3CIcGd6Tqhi+yx+UFFvEfa89WIh7Xo3fzTZiBCiMjTo2hDqvHgjOBLa0/6p9irIPmzOdg==}
 
   is-what@4.1.16:
     resolution: {integrity: sha512-ZhMwEosbFJkA0YhFnNDgTM4ZxDRsS6HqTo7qsZM08fehyRYIYa0yHu5R6mgo1n/8MgaPBXiPimPD77baVFYg+A==}
@@ -944,6 +1015,13 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.37.0':
     optional: true
 
+  '@ryb73/super-duper-parakeet@12.1.1(nanoid@3.3.11)':
+    dependencies:
+      immer: 10.1.1
+      invalid-type: 1.0.1
+    optionalDependencies:
+      nanoid: 3.3.11
+
   '@solidjs/router@0.15.3(solid-js@1.9.4)':
     dependencies:
       solid-js: 1.9.4
@@ -1070,6 +1148,10 @@ snapshots:
   globals@11.12.0: {}
 
   html-entities@2.3.3: {}
+
+  immer@10.1.1: {}
+
+  invalid-type@1.0.1: {}
 
   is-what@4.1.16: {}
 

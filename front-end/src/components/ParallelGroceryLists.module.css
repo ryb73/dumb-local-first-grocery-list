@@ -1,0 +1,19 @@
+.container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.list {
+  width: 50%;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100vh;
+}
