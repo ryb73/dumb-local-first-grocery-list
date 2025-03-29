@@ -35,7 +35,18 @@ export class Database {
   }
 
   async getItems() {
-    return await this.kysely.selectFrom("items").selectAll().execute();
+    const dayAgo = Date.now() - 3000;
+    return await this.kysely
+      .selectFrom("items")
+      .selectAll()
+      .where((eb) =>
+        eb(`items.checked`, "=", 1 as unknown as boolean).or(
+          `items.last_unchecked_at`,
+          ">",
+          dayAgo
+        )
+      )
+      .execute();
   }
 
   async getSuggestions() {

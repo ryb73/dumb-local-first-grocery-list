@@ -1,4 +1,4 @@
-import { Component, createSignal, onMount, createEffect, For } from "solid-js";
+import { Component, createSignal, onMount, For } from "solid-js";
 import { isDefined } from "@ryb73/super-duper-parakeet/lib/src/type-checks";
 import { GroceryItem } from "./GroceryItem";
 import { AddItemForm } from "./AddItemForm";
@@ -40,9 +40,9 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
 
   onMount(async () => {
     await refreshData();
+    const interval = setInterval(refreshData, 5000);
+    return () => clearInterval(interval);
   });
-
-  createEffect(refreshData);
 
   return (
     <div
