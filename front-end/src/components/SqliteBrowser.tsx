@@ -1,19 +1,33 @@
 import { createSignal, onMount } from "solid-js";
-import { initDatabase } from "../db/init";
+import { initTestDatabases } from "../db/init";
 import styles from "./SqliteBrowser.module.css";
 import { z } from "zod";
-import { sql } from "kysely"; // Add the sql import from Kysely
+import { Kysely, sql } from "kysely";
+import { KyselySchema } from "../db/types";
 
 const QueryResultSchema = z.array(z.record(z.unknown()));
 type QueryResult = z.infer<typeof QueryResultSchema>;
 
-const { kysely } = await initDatabase();
+interface DatabaseInfo {
+  name: string;
+  kysely: Kysely<KyselySchema>;
+}
 
 export function SqliteBrowser() {
   const [query, setQuery] = createSignal("");
   const [results, setResults] = createSignal<QueryResult>([]);
   const [error, setError] = createSignal("");
   const [loading, setLoading] = createSignal(false);
+  const [selectedDatabase, setSelectedDatabase] = createSignal(0);
+  const [databases, setDatabases] = createSignal<DatabaseInfo[]>([]);
+
+  onMount(async () => {
+    const { db1, db2 } = await initTestDatabases();
+    setDatabases([
+      { name: "Database 1", kysely: db1.kysely },
+      { name: "Database 2", kysely: db2.kysely },
+    ]);
+  });
 
   const executeQuery = async () => {
     if (!query()) {
@@ -21,56 +35,57 @@ export function SqliteBrowser() {
       return;
     }
 
-    setLoading(true);
     setError("");
+    setLoading(true);
 
     try {
+      const selectedDb = databases()[selectedDatabase()];
+      if (!selectedDb) {
+        throw new Error("No database selected");
+      }
+
       // Simple query validation
       const queryText = query().trim().toLowerCase();
 
-      const result = await sql<unknown>`${sql.raw(query())}`.execute(kysely);
+      const result = await sql<unknown>`${sql.raw(query())}`.execute(
+        selectedDb.kysely
+      );
 
       let queryResults: QueryResult = [];
-      
+
       // Handle rows if any were returned
       if (result.rows.length > 0) {
         try {
-          const validatedRows = QueryResultSchema.parse(result.rows);
-          queryResults = validatedRows;
-        } catch (validationError) {
-          console.error("Result validation error:", validationError);
-          queryResults = result.rows as QueryResult;
+          queryResults = QueryResultSchema.parse(result.rows);
+        } catch (err) {
+          console.error("Failed to parse query results:", err);
+          queryResults = [];
         }
       }
 
-      // Add affected rows/insert ID information if available
       const additionalInfo: QueryResult = [];
       if (result.numAffectedRows) {
         additionalInfo.push({
-          result: `Query affected ${result.numAffectedRows} rows.`
+          result: `Query affected ${result.numAffectedRows} rows.`,
         });
       }
       if (result.insertId) {
         additionalInfo.push({
-          result: `Insert ID: ${result.insertId}`
+          result: `Insert ID: ${result.insertId}`,
         });
       }
 
-      // Combine results and set them
       const finalResults = [...queryResults, ...additionalInfo];
-      
+
       // If there are no results to show, add a success message
       if (finalResults.length === 0) {
         setResults([{ result: "Query executed successfully." }]);
       } else {
         setResults(finalResults);
       }
-
-      setError("");
     } catch (err) {
       console.error("Query execution error:", err);
       setError(err instanceof Error ? err.message : "An error occurred");
-      setResults([]);
     } finally {
       setLoading(false);
     }
@@ -93,6 +108,16 @@ export function SqliteBrowser() {
               {q}
             </button>
           ))}
+        </div>
+        <div class={styles.databaseSelector}>
+          <select
+            value={selectedDatabase()}
+            onChange={(e) => setSelectedDatabase(Number(e.currentTarget.value))}
+          >
+            {databases().map((db, index) => (
+              <option value={index}>{db.name}</option>
+            ))}
+          </select>
         </div>
       </div>
       <div class={styles.content}>

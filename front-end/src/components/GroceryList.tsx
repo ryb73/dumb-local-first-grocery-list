@@ -1,11 +1,16 @@
 import { Component, createSignal, onMount, createEffect, For } from "solid-js";
-import { db } from "../db/database";
 import { GroceryItem } from "./GroceryItem";
 import { AddItemForm } from "./AddItemForm";
 import styles from "./GroceryList.module.css";
 import { Item } from "../types/schemas";
+import { Database } from "../db/database";
 
-export const GroceryList: Component = () => {
+interface GroceryListProps {
+  db: Database;
+  title: string;
+}
+
+export const GroceryList: Component<GroceryListProps> = (props) => {
   const [items, setItems] = createSignal<Item[]>([]);
   const [suggestions, setSuggestions] = createSignal<string[]>([]);
 
@@ -17,17 +22,17 @@ export const GroceryList: Component = () => {
   };
 
   const refreshData = async () => {
-    setItems(await db.getItems());
-    setSuggestions(await db.getSuggestions());
+    setItems(await props.db.getItems());
+    setSuggestions(await props.db.getSuggestions());
   };
 
   const handleAdd = async (name: string) => {
-    await db.addItem(name);
+    await props.db.addItem(name);
     await refreshData();
   };
 
   const handleToggle = async (id: string, checked: boolean) => {
-    await db.toggleItem(id, checked);
+    await props.db.toggleItem(id, checked);
     await refreshData();
   };
 
@@ -35,10 +40,11 @@ export const GroceryList: Component = () => {
     await refreshData();
   });
 
+  createEffect(refreshData);
 
   return (
     <div class={styles.container}>
-      <h1 class={styles.title}>Grocery List</h1>
+      <h1 class={styles.title}>{props.title}</h1>
       <AddItemForm suggestions={suggestions()} onAdd={handleAdd} />
       <div class={styles.list}>
         <For each={sortedItems()}>

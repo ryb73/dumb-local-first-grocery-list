@@ -1,23 +1,28 @@
-import { initDatabase } from "./init";
-
-const { kysely } = await initDatabase();
+import { Kysely } from "kysely";
+import { KyselySchema } from "./types";
 
 export class Database {
+  private readonly kysely: Kysely<KyselySchema>;
+
+  constructor(kysely: Kysely<KyselySchema>) {
+    this.kysely = kysely;
+  }
+
   async addItem(name: string) {
     // First try to update an existing item to checked state
-    const existingRow = await kysely
+    const existingRow = await this.kysely
       .selectFrom("items")
       .selectAll()
       .where("name", "=", name)
       .executeTakeFirst();
     if (existingRow) {
-      await kysely
+      await this.kysely
         .updateTable("items")
         .set({ checked: 1 as unknown as boolean })
         .where("id", "=", existingRow.id)
         .execute();
     } else {
-      await kysely
+      await this.kysely
         .insertInto("items")
         .values({
           id: crypto.randomUUID(),
@@ -30,12 +35,12 @@ export class Database {
   }
 
   async getItems() {
-    return await kysely.selectFrom("items").selectAll().execute();
+    return await this.kysely.selectFrom("items").selectAll().execute();
   }
 
   async getSuggestions() {
     // Get unchecked items as suggestions
-    const results = await kysely
+    const results = await this.kysely
       .selectFrom("items")
       .select(["name"])
       .where("checked", "=", 0 as unknown as boolean)
@@ -45,7 +50,7 @@ export class Database {
 
   async toggleItem(id: string, checked: boolean) {
     const timestamp = Date.now();
-    await kysely
+    await this.kysely
       .updateTable("items")
       .set({
         checked: checked
@@ -57,5 +62,3 @@ export class Database {
       .execute();
   }
 }
-
-export const db = new Database();

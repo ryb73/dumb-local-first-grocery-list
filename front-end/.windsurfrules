@@ -2,6 +2,7 @@
 - This project uses SolidJS, not React
 - Use SolidJS syntax (class instead of className, createSignal instead of useState)
 - Use solid-app-router for routing instead of react-router-dom
+- Use CSS modules for styles
 
 # Development Guidelines
 - Prefer functional style over classes when possible
