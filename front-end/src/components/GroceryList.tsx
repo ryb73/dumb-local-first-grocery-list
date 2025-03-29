@@ -38,6 +38,11 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
     await refreshData();
   };
 
+  const handleEdit = async (id: string, newName: string) => {
+    await props.db.updateItem(id, { name: newName });
+    await refreshData();
+  };
+
   onMount(async () => {
     await refreshData();
     const interval = setInterval(refreshData, 5000);
@@ -54,7 +59,13 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
       <AddItemForm suggestions={suggestions()} onAdd={handleAdd} />
       <div class={styles.list}>
         <For each={sortedItems()}>
-          {(item) => <GroceryItem item={item} onToggle={handleToggle} />}
+          {(item) => (
+            <GroceryItem
+              item={item}
+              onToggle={handleToggle}
+              onEdit={handleEdit}
+            />
+          )}
         </For>
       </div>
     </div>

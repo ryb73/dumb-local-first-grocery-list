@@ -1,5 +1,6 @@
 import { Kysely } from "kysely";
 import { KyselySchema } from "./types";
+import { Item } from "../types/schemas";
 
 export class Database {
   private readonly kysely: Kysely<KyselySchema>;
@@ -59,17 +60,33 @@ export class Database {
     return results.map((result) => result.name);
   }
 
-  async toggleItem(id: string, checked: boolean) {
-    const timestamp = Date.now();
+  async toggleItem(id: string, checked: boolean): Promise<void> {
+    const item = await this.getItem(id);
+    if (!item) return;
+
+    await this.updateItem(id, { checked });
+  }
+
+  async updateItem(
+    id: string,
+    updates: Partial<Omit<Item, "id">>
+  ): Promise<void> {
+    const item = await this.getItem(id);
+    if (!item) return;
+
+    const updatedItem = { ...item, ...updates };
     await this.kysely
       .updateTable("items")
-      .set({
-        checked: checked
-          ? (1 as unknown as boolean)
-          : (0 as unknown as boolean),
-        last_unchecked_at: checked ? null : timestamp,
-      })
+      .set(updatedItem)
       .where("id", "=", id)
       .execute();
+  }
+
+  async getItem(id: string) {
+    return await this.kysely
+      .selectFrom("items")
+      .selectAll()
+      .where("id", "=", id)
+      .executeTakeFirst();
   }
 }

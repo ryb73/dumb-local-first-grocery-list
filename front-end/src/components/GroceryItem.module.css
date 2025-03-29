@@ -1,11 +1,45 @@
-
 .container {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem;
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.itemContainer {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 8px;
+}
+
+.editContainer {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 8px;
+}
+
+.editInput {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.editButton {
+  padding: 4px 8px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.editButton:hover {
+  background-color: #f5f5f5;
 }
 
 .unchecked {
-  color: #666;
+  text-decoration: line-through;
+  color: #888;
 }
