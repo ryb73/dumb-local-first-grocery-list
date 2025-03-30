@@ -1,4 +1,6 @@
 # Project Framework
+- Package manager: pnpm
+- This is an ESM module which uses uses the ".ts" extension for imports
 - This project uses SolidJS, not React
 - Use SolidJS syntax (class instead of className, createSignal instead of useState)
 - Use solid-app-router for routing instead of react-router-dom

@@ -1,7 +1,7 @@
 import { SQLocalKysely } from "sqlocal/kysely";
-import { Kysely, Migrator } from "kysely";
+import { Kysely } from "kysely";
 import { KyselySchema } from "./types";
-import { migrations } from "./migrations/migrations";
+import { createMigrator } from "./migrations/createMigrator";
 
 // Initialize a specific database with migrations
 const initDatabase = async (dbName: string = "grocery-list.sqlite3") => {
@@ -9,14 +9,7 @@ const initDatabase = async (dbName: string = "grocery-list.sqlite3") => {
 
   const kysely = new Kysely<KyselySchema>({ dialect });
 
-  const migrator = new Migrator({
-    db: kysely,
-    provider: {
-      async getMigrations() {
-        return migrations;
-      },
-    },
-  });
+  const migrator = createMigrator(kysely);
 
   const { error, results } = await migrator.migrateToLatest();
 

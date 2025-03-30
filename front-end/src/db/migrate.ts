@@ -1,0 +1,33 @@
+import { Kysely, SqliteDialect } from "kysely";
+import type { KyselySchema } from "./types.ts";
+import { createMigrator } from "./migrations/createMigrator.ts";
+import BetterSqlite3 from "better-sqlite3";
+
+async function migrate() {
+  try {
+    const db = new Kysely<KyselySchema>({
+      dialect: new SqliteDialect({
+        database: BetterSqlite3(`local-db.sqlite3`),
+      }),
+    });
+
+    const migrator = createMigrator(db);
+    const { error, results } = await migrator.migrateUp();
+
+    if (error) {
+      console.error("Migration failed:", error);
+      process.exit(1);
+    }
+
+    if (results) {
+      console.log("Migration results:", results);
+    }
+
+    await db.destroy();
+  } catch (error) {
+    console.error("Error during migration:", error);
+    process.exit(1);
+  }
+}
+
+migrate();
