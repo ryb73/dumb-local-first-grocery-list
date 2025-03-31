@@ -1,12 +1,14 @@
-import { Component, createSignal } from "solid-js";
+import { defined } from "@ryb73/super-duper-parakeet/lib/src/type-checks";
+import type { Component } from "solid-js";
+import { createSignal } from "solid-js";
+import type { Item } from "../types/schemas";
 import styles from "./GroceryItem.module.css";
-import { Item } from "../types/schemas";
 
-interface Props {
+type Props = {
   item: Item;
-  onToggle: (id: string, checked: boolean) => void;
   onEdit: (id: string, newName: string) => void;
-}
+  onToggle: (id: string, checked: boolean) => void;
+};
 
 export const GroceryItem: Component<Props> = (props) => {
   const [isEditing, setIsEditing] = createSignal(false);
@@ -29,23 +31,22 @@ export const GroceryItem: Component<Props> = (props) => {
   };
 
   return (
-    <div class={styles.container}>
+    <div class={defined(styles[`container`])}>
       <input
-        type="checkbox"
         checked={props.item.checked === 1}
         onChange={(e) => props.onToggle(props.item.id, e.target.checked)}
+        type="checkbox"
       />
       {isEditing() ? (
-        <div class={styles.editContainer}>
+        <div class={defined(styles[`editContainer`])}>
           <input
-            type="text"
-            value={newName()}
-            onChange={(e) => setNewName(e.target.value)}
+            class={defined(styles[`editInput`])}
             onBlur={handleEditSubmit}
+            onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => {
               setNewName(e.currentTarget.value);
-              if (e.key === "Enter") handleEditSubmit();
-              if (e.key === "Escape") handleEditCancel();
+              if (e.key === `Enter`) handleEditSubmit();
+              if (e.key === `Escape`) handleEditCancel();
             }}
             ref={(el) => {
               if (el) {
@@ -54,21 +55,31 @@ export const GroceryItem: Component<Props> = (props) => {
                 }, 1);
               }
             }}
-            class={styles.editInput}
+            type="text"
+            value={newName()}
           />
-          <button onClick={handleEditSubmit} class={styles.editButton}>
+          <button
+            class={defined(styles[`editButton`])}
+            onClick={handleEditSubmit}
+          >
             ✓
           </button>
-          <button onClick={handleEditCancel} class={styles.editButton}>
+          <button
+            class={defined(styles[`editButton`])}
+            onClick={handleEditCancel}
+          >
             ✕
           </button>
         </div>
       ) : (
-        <div class={styles.itemContainer}>
-          <span class={props.item.checked ? "" : styles.unchecked}>
+        <div class={defined(styles[`itemContainer`])}>
+          <span class={props.item.checked ? `` : defined(styles[`unchecked`])}>
             {props.item.name}
           </span>
-          <button onClick={handleEditClick} class={styles.editButton}>
+          <button
+            class={defined(styles[`editButton`])}
+            onClick={handleEditClick}
+          >
             ✎
           </button>
         </div>

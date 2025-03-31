@@ -1,6 +1,6 @@
-import { Kysely } from "kysely";
-import { DB } from "../../db";
-import { ItemUpdate } from "../types/schemas";
+import type { Kysely } from "kysely";
+import type { DB } from "../../db";
+import type { ItemUpdate } from "../types/schemas";
 
 export class Database {
   private readonly kysely: Kysely<DB>;
@@ -12,36 +12,32 @@ export class Database {
   async addItem(name: string) {
     // First try to update an existing item to checked state
     const existingRow = await this.kysely
-      .selectFrom("items")
+      .selectFrom(`items`)
       .selectAll()
-      .where("name", "=", name)
+      .where(`name`, `=`, name)
       .executeTakeFirst();
-    if (existingRow) {
-      await this.kysely
-        .updateTable("items")
+    await (existingRow ? this.kysely
+        .updateTable(`items`)
         .set({ checked: 1 })
-        .where("id", "=", existingRow.id)
-        .execute();
-    } else {
-      await this.kysely
-        .insertInto("items")
+        .where(`id`, `=`, existingRow.id)
+        .execute() : this.kysely
+        .insertInto(`items`)
         .values({
           id: crypto.randomUUID(),
           name,
           created_at: Date.now(),
           checked: 1,
         })
-        .execute();
-    }
+        .execute());
   }
 
   async getItems() {
     const dayAgo = Date.now() - 3000;
     return await this.kysely
-      .selectFrom("items")
+      .selectFrom(`items`)
       .selectAll()
       .where((eb) =>
-        eb(`items.checked`, "=", 1).or(`items.last_unchecked_at`, ">", dayAgo)
+        eb(`items.checked`, `=`, 1).or(`items.last_unchecked_at`, `>`, dayAgo)
       )
       .execute();
   }
@@ -49,9 +45,9 @@ export class Database {
   async getSuggestions() {
     // Get unchecked items as suggestions
     const results = await this.kysely
-      .selectFrom("items")
-      .select(["name"])
-      .where("checked", "=", 0)
+      .selectFrom(`items`)
+      .select([`name`])
+      .where(`checked`, `=`, 0)
       .execute();
     return results.map((result) => result.name);
   }
@@ -69,17 +65,17 @@ export class Database {
 
     const updatedItem = { ...item, ...updates };
     await this.kysely
-      .updateTable("items")
+      .updateTable(`items`)
       .set(updatedItem)
-      .where("id", "=", id)
+      .where(`id`, `=`, id)
       .execute();
   }
 
   async getItem(id: string) {
     return await this.kysely
-      .selectFrom("items")
+      .selectFrom(`items`)
       .selectAll()
-      .where("id", "=", id)
+      .where(`id`, `=`, id)
       .executeTakeFirst();
   }
 }

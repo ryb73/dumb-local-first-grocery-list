@@ -1,10 +1,10 @@
-import { SQLocalKysely } from "sqlocal/kysely";
 import { Kysely } from "kysely";
+import { SQLocalKysely } from "sqlocal/kysely";
+import type { DB } from "../../db";
 import { createMigrator } from "./migrations/createMigrator";
-import { DB } from "../../db";
 
 // Initialize a specific database with migrations
-const initDatabase = async (dbName: string = "grocery-list.sqlite3") => {
+const initDatabase = async (dbName = `grocery-list.sqlite3`) => {
   const { dialect } = new SQLocalKysely(dbName);
 
   const kysely = new Kysely<DB>({ dialect });
@@ -14,14 +14,14 @@ const initDatabase = async (dbName: string = "grocery-list.sqlite3") => {
   const { error, results } = await migrator.migrateToLatest();
 
   if (error) {
-    console.error("Migration failed:", error);
+    console.error(`Migration failed:`, error);
     throw error;
   }
 
   if (results?.length) {
-    console.log("Migrations completed:", results);
+    console.log(`Migrations completed:`, results);
   } else {
-    console.log("No migrations were needed");
+    console.log(`No migrations were needed`);
   }
 
   return { kysely, migrator };
@@ -29,7 +29,7 @@ const initDatabase = async (dbName: string = "grocery-list.sqlite3") => {
 
 // Initialize both databases for testing
 export const initTestDatabases = async () => {
-  const db1 = await initDatabase("grocery-list.sqlite3");
-  const db2 = await initDatabase("grocery-list-2.sqlite3");
+  const db1 = await initDatabase(`grocery-list.sqlite3`);
+  const db2 = await initDatabase(`grocery-list-2.sqlite3`);
   return { db1, db2 };
 };

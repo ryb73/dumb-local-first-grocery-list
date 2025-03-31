@@ -1,6 +1,6 @@
 import { type Kysely, Migrator } from "kysely";
+import type { DB } from "../../../db";
 import { migrations } from "./migrations.ts";
-import { DB } from "../../../db";
 
 export function createMigrator(kysely: Kysely<DB>) {
   return new Migrator({

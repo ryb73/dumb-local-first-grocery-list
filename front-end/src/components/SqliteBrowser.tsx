@@ -1,22 +1,24 @@
+import { defined } from "@ryb73/super-duper-parakeet/lib/src/type-checks";
+import type { Kysely } from "kysely";
+import { sql } from "kysely";
 import { createSignal, onMount } from "solid-js";
+import { z } from "zod";
+import type { DB } from "../../db";
 import { initTestDatabases } from "../db/init";
 import styles from "./SqliteBrowser.module.css";
-import { z } from "zod";
-import { Kysely, sql } from "kysely";
-import { DB } from "../../db";
 
 const QueryResultSchema = z.array(z.record(z.unknown()));
 type QueryResult = z.infer<typeof QueryResultSchema>;
 
-interface DatabaseInfo {
-  name: string;
+type DatabaseInfo = {
   kysely: Kysely<DB>;
-}
+  name: string;
+};
 
 export function SqliteBrowser() {
-  const [query, setQuery] = createSignal("");
+  const [query, setQuery] = createSignal(``);
   const [results, setResults] = createSignal<QueryResult>([]);
-  const [error, setError] = createSignal("");
+  const [error, setError] = createSignal(``);
   const [loading, setLoading] = createSignal(false);
   const [selectedDatabase, setSelectedDatabase] = createSignal(0);
   const [databases, setDatabases] = createSignal<DatabaseInfo[]>([]);
@@ -24,24 +26,24 @@ export function SqliteBrowser() {
   onMount(async () => {
     const { db1, db2 } = await initTestDatabases();
     setDatabases([
-      { name: "Database 1", kysely: db1.kysely },
-      { name: "Database 2", kysely: db2.kysely },
+      { name: `Database 1`, kysely: db1.kysely },
+      { name: `Database 2`, kysely: db2.kysely },
     ]);
   });
 
   const executeQuery = async () => {
     if (!query()) {
-      setError("Please enter a query");
+      setError(`Please enter a query`);
       return;
     }
 
-    setError("");
+    setError(``);
     setLoading(true);
 
     try {
       const selectedDb = databases()[selectedDatabase()];
       if (!selectedDb) {
-        throw new Error("No database selected");
+        throw new Error(`No database selected`);
       }
 
       // Simple query validation
@@ -58,7 +60,7 @@ export function SqliteBrowser() {
         try {
           queryResults = QueryResultSchema.parse(result.rows);
         } catch (err) {
-          console.error("Failed to parse query results:", err);
+          console.error(`Failed to parse query results:`, err);
           queryResults = [];
         }
       }
@@ -79,40 +81,43 @@ export function SqliteBrowser() {
 
       // If there are no results to show, add a success message
       if (finalResults.length === 0) {
-        setResults([{ result: "Query executed successfully." }]);
+        setResults([{ result: `Query executed successfully.` }]);
       } else {
         setResults(finalResults);
       }
     } catch (err) {
-      console.error("Query execution error:", err);
-      setError(err instanceof Error ? err.message : "An error occurred");
+      console.error(`Query execution error:`, err);
+      setError(err instanceof Error ? err.message : `An error occurred`);
     } finally {
       setLoading(false);
     }
   };
 
   const exampleQueries = [
-    "SELECT * FROM items",
-    "SELECT name, checked FROM items WHERE checked = 0",
-    "SELECT COUNT(*) as total_items FROM items",
-    "PRAGMA table_list",
+    `SELECT * FROM items`,
+    `SELECT name, checked FROM items WHERE checked = 0`,
+    `SELECT COUNT(*) as total_items FROM items`,
+    `PRAGMA table_list`,
   ];
 
   return (
-    <div class={styles.browser}>
-      <div class={styles.header}>
+    <div class={defined(styles[`browser`])}>
+      <div class={defined(styles[`header`])}>
         <h1>SQLite Browser</h1>
-        <div class={styles.exampleQueries}>
+        <div class={defined(styles[`exampleQueries`])}>
           {exampleQueries.map((q) => (
-            <button class={styles.exampleButton} onClick={() => setQuery(q)}>
+            <button
+              class={defined(styles[`exampleButton`])}
+              onClick={() => setQuery(q)}
+            >
               {q}
             </button>
           ))}
         </div>
-        <div class={styles.databaseSelector}>
+        <div class={defined(styles[`databaseSelector`])}>
           <select
-            value={selectedDatabase()}
             onChange={(e) => setSelectedDatabase(Number(e.currentTarget.value))}
+            value={selectedDatabase()}
           >
             {databases().map((db, index) => (
               <option value={index}>{db.name}</option>
@@ -120,33 +125,33 @@ export function SqliteBrowser() {
           </select>
         </div>
       </div>
-      <div class={styles.content}>
-        <div class={styles.querySection}>
+      <div class={defined(styles[`content`])}>
+        <div class={defined(styles[`querySection`])}>
           <textarea
-            class={styles.queryInput}
-            value={query()}
+            class={defined(styles[`queryInput`])}
             onInput={(e) => setQuery(e.currentTarget.value)}
             placeholder="Enter your SQL query here..."
+            value={query()}
           />
           <button
-            class={styles.executeButton}
-            onClick={executeQuery}
+            class={defined(styles[`executeButton`])}
             disabled={loading()}
+            onClick={executeQuery}
           >
-            {loading() ? "Executing..." : "Execute Query"}
+            {loading() ? `Executing...` : `Execute Query`}
           </button>
         </div>
         {error() && (
-          <div class={styles.error}>
+          <div class={defined(styles[`error`])}>
             <p>Error: {error()}</p>
           </div>
         )}
         {results().length > 0 && (
-          <div class={styles.results}>
+          <div class={defined(styles[`results`])}>
             <table>
               <thead>
                 <tr>
-                  {Object.keys(results()[0]).map((key) => (
+                  {Object.keys(results()[0]!).map((key) => (
                     <th>{key}</th>
                   ))}
                 </tr>
@@ -156,9 +161,9 @@ export function SqliteBrowser() {
                   <tr>
                     {Object.values(row).map((value) => (
                       <td>
-                        {typeof value === "object" && value !== null
+                        {typeof value === `object` && value !== null
                           ? JSON.stringify(value)
-                          : String(value === null ? "NULL" : value)}
+                          : String(value === null ? `NULL` : value)}
                       </td>
                     ))}
                   </tr>

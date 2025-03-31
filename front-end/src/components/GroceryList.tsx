@@ -1,27 +1,30 @@
-import { Component, createSignal, onMount, Index } from "solid-js";
-import { isDefined } from "@ryb73/super-duper-parakeet/lib/src/type-checks";
-import { GroceryItem } from "./GroceryItem";
+import {
+  defined,
+  isDefined,
+} from "@ryb73/super-duper-parakeet/lib/src/type-checks";
+import type { Component } from "solid-js";
+import { Index, createSignal, onMount } from "solid-js";
+import type { Database } from "../db/database";
+import type { Item } from "../types/schemas";
 import { AddItemForm } from "./AddItemForm";
+import { GroceryItem } from "./GroceryItem";
 import styles from "./GroceryList.module.css";
-import { Item } from "../types/schemas";
-import { Database } from "../db/database";
 
-interface GroceryListProps {
+type GroceryListProps = {
+  className?: string;
   db: Database;
   title: string;
-  className?: string;
-}
+};
 
 export const GroceryList: Component<GroceryListProps> = (props) => {
   const [items, setItems] = createSignal<Item[]>([]);
   const [suggestions, setSuggestions] = createSignal<string[]>([]);
 
-  const sortedItems = () => {
-    return [...items()].sort((a, b) => {
+  const sortedItems = () =>
+    Array.from(items()).sort((a, b) => {
       if (a.checked === b.checked) return 0;
       return a.checked ? -1 : 1;
     });
-  };
 
   const refreshData = async () => {
     setItems(await props.db.getItems());
@@ -51,19 +54,19 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
 
   return (
     <div
-      class={[styles.container, props.className ?? ""]
+      class={[defined(styles[`container`]), props.className ?? ``]
         .filter(isDefined)
         .join(` `)}
     >
-      <h1 class={styles.title}>{props.title}</h1>
-      <AddItemForm suggestions={suggestions()} onAdd={handleAdd} />
-      <div class={styles.list}>
+      <h1 class={defined(styles[`title`])}>{props.title}</h1>
+      <AddItemForm onAdd={handleAdd} suggestions={suggestions()} />
+      <div class={defined(styles[`list`])}>
         <Index each={sortedItems()}>
           {(item) => (
             <GroceryItem
               item={item()}
-              onToggle={handleToggle}
               onEdit={handleEdit}
+              onToggle={handleToggle}
             />
           )}
         </Index>

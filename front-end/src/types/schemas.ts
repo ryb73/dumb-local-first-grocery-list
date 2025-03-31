@@ -1,5 +1,5 @@
-import { Insertable, Selectable, Updateable } from "kysely";
-import { Items } from "../../db";
+import type { Insertable, Selectable, Updateable } from "kysely";
+import type { Items } from "../../db";
 
 // types at all. These types can be useful when typing function arguments.
 export type Item = Selectable<Items>;

@@ -1,13 +1,15 @@
-import { Component, createSignal, For } from "solid-js";
+import { defined } from "@ryb73/super-duper-parakeet/lib/src/type-checks";
+import type { Component } from "solid-js";
+import { For, createSignal } from "solid-js";
 import styles from "./AddItemForm.module.css";
 
-interface Props {
-  suggestions: string[];
+type Props = {
   onAdd: (name: string) => void;
-}
+  suggestions: string[];
+};
 
 export const AddItemForm: Component<Props> = (props) => {
-  const [input, setInput] = createSignal("");
+  const [input, setInput] = createSignal(``);
   const [showSuggestions, setShowSuggestions] = createSignal(false);
 
   const filteredSuggestions = () =>
@@ -19,32 +21,32 @@ export const AddItemForm: Component<Props> = (props) => {
     e.preventDefault();
     if (input().trim()) {
       props.onAdd(input().trim());
-      setInput("");
+      setInput(``);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} class={styles.form}>
+    <form class={defined(styles[`form`])} onSubmit={handleSubmit}>
       <input
-        type="text"
-        value={input()}
+        class={defined(styles[`input`])}
+        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
         onInput={(e) => {
           setInput(e.currentTarget.value);
           setShowSuggestions(true);
         }}
-        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
         placeholder="Add item..."
-        class={styles.input}
+        type="text"
+        value={input()}
       />
 
       {showSuggestions() && input() && (
-        <div class={styles.suggestions}>
+        <div class={defined(styles[`suggestions`])}>
           <For each={filteredSuggestions()}>
             {(suggestion) => (
               <div
-                class={styles.suggestion}
+                class={defined(styles[`suggestion`])}
                 onClick={() => {
-                  setInput("");
+                  setInput(``);
                   setShowSuggestions(false);
                   props.onAdd(suggestion);
                 }}

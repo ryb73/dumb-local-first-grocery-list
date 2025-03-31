@@ -7,6 +7,7 @@
     "build": "vite build",
     "dev": "vite",
     "generate-kysely-types": "DATABASE_URL=./local-db-for-codegen.sqlite3 kysely-codegen --out-file db.d.ts",
+    "lint": "eslint . --ext ts --ext tsx --ext js --ext jsx",
     "migrate-for-codegen": "node ./src/db/migrate-for-codegen.ts",
     "serve": "vite preview",
     "start": "vite",
@@ -14,7 +15,9 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@ryb73/eslint-config": "^14.0.0",
     "@types/better-sqlite3": "^7.6.12",
+    "@typescript-eslint/utils": "^8.28.0",
     "kysely-codegen": "^0.18.3",
     "typescript": "^5.7.2",
     "vite": "^6.0.0",

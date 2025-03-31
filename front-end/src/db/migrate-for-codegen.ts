@@ -1,7 +1,7 @@
-import { Kysely, SqliteDialect } from "kysely";
-import { createMigrator } from "./migrations/createMigrator.ts";
 import BetterSqlite3 from "better-sqlite3";
-import { DB } from "../../db";
+import { Kysely, SqliteDialect } from "kysely";
+import type { DB } from "../../db";
+import { createMigrator } from "./migrations/createMigrator.ts";
 
 async function migrate() {
   try {
@@ -15,17 +15,17 @@ async function migrate() {
     const { error, results } = await migrator.migrateToLatest();
 
     if (error) {
-      console.error("Migration failed:", error);
+      console.error(`Migration failed:`, error);
       process.exit(1);
     }
 
     if (results) {
-      console.log("Migration results:", results);
+      console.log(`Migration results:`, results);
     }
 
     await db.destroy();
   } catch (error) {
-    console.error("Error during migration:", error);
+    console.error(`Error during migration:`, error);
     process.exit(1);
   }
 }
