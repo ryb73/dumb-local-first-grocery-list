@@ -1,13 +1,13 @@
 import { SQLocalKysely } from "sqlocal/kysely";
 import { Kysely } from "kysely";
-import { KyselySchema } from "./types";
 import { createMigrator } from "./migrations/createMigrator";
+import { DB } from "../../db";
 
 // Initialize a specific database with migrations
 const initDatabase = async (dbName: string = "grocery-list.sqlite3") => {
   const { dialect } = new SQLocalKysely(dbName);
 
-  const kysely = new Kysely<KyselySchema>({ dialect });
+  const kysely = new Kysely<DB>({ dialect });
 
   const migrator = createMigrator(kysely);
 

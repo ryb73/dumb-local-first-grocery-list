@@ -32,7 +32,7 @@ export const GroceryItem: Component<Props> = (props) => {
     <div class={styles.container}>
       <input
         type="checkbox"
-        checked={props.item.checked}
+        checked={props.item.checked === 1}
         onChange={(e) => props.onToggle(props.item.id, e.target.checked)}
       />
       {isEditing() ? (

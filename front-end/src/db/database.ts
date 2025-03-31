@@ -1,11 +1,11 @@
 import { Kysely } from "kysely";
-import { KyselySchema } from "./types";
-import { Item } from "../types/schemas";
+import { DB } from "../../db";
+import { ItemUpdate } from "../types/schemas";
 
 export class Database {
-  private readonly kysely: Kysely<KyselySchema>;
+  private readonly kysely: Kysely<DB>;
 
-  constructor(kysely: Kysely<KyselySchema>) {
+  constructor(kysely: Kysely<DB>) {
     this.kysely = kysely;
   }
 
@@ -19,7 +19,7 @@ export class Database {
     if (existingRow) {
       await this.kysely
         .updateTable("items")
-        .set({ checked: 1 as unknown as boolean })
+        .set({ checked: 1 })
         .where("id", "=", existingRow.id)
         .execute();
     } else {
@@ -29,7 +29,7 @@ export class Database {
           id: crypto.randomUUID(),
           name,
           created_at: Date.now(),
-          checked: 1 as unknown as boolean,
+          checked: 1,
         })
         .execute();
     }
@@ -41,11 +41,7 @@ export class Database {
       .selectFrom("items")
       .selectAll()
       .where((eb) =>
-        eb(`items.checked`, "=", 1 as unknown as boolean).or(
-          `items.last_unchecked_at`,
-          ">",
-          dayAgo
-        )
+        eb(`items.checked`, "=", 1).or(`items.last_unchecked_at`, ">", dayAgo)
       )
       .execute();
   }
@@ -55,7 +51,7 @@ export class Database {
     const results = await this.kysely
       .selectFrom("items")
       .select(["name"])
-      .where("checked", "=", 0 as unknown as boolean)
+      .where("checked", "=", 0)
       .execute();
     return results.map((result) => result.name);
   }
@@ -64,13 +60,10 @@ export class Database {
     const item = await this.getItem(id);
     if (!item) return;
 
-    await this.updateItem(id, { checked });
+    await this.updateItem(id, { checked: checked ? 1 : 0 });
   }
 
-  async updateItem(
-    id: string,
-    updates: Partial<Omit<Item, "id">>
-  ): Promise<void> {
+  async updateItem(id: string, updates: Omit<ItemUpdate, "id">): Promise<void> {
     const item = await this.getItem(id);
     if (!item) return;
 

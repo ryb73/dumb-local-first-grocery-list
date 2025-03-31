@@ -4,16 +4,18 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "start": "vite",
-    "dev": "vite",
     "build": "vite build",
+    "dev": "vite",
+    "generate-kysely-types": "DATABASE_URL=./local-db-for-codegen.sqlite3 kysely-codegen --out-file db.d.ts",
+    "migrate-for-codegen": "node ./src/db/migrate-for-codegen.ts",
     "serve": "vite preview",
-    "typewatch": "tsc -w",
-    "migrate": "node ./src/db/migrate.ts"
+    "start": "vite",
+    "typewatch": "tsc -w"
   },
   "license": "MIT",
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.12",
+    "kysely-codegen": "^0.18.3",
     "typescript": "^5.7.2",
     "vite": "^6.0.0",
     "vite-plugin-solid": "^2.11.0"

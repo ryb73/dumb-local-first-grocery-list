@@ -3,14 +3,14 @@ import { initTestDatabases } from "../db/init";
 import styles from "./SqliteBrowser.module.css";
 import { z } from "zod";
 import { Kysely, sql } from "kysely";
-import { KyselySchema } from "../db/types";
+import { DB } from "../../db";
 
 const QueryResultSchema = z.array(z.record(z.unknown()));
 type QueryResult = z.infer<typeof QueryResultSchema>;
 
 interface DatabaseInfo {
   name: string;
-  kysely: Kysely<KyselySchema>;
+  kysely: Kysely<DB>;
 }
 
 export function SqliteBrowser() {
