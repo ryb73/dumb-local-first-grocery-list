@@ -1,8 +1,13 @@
+---
+description:
+globs:
+alwaysApply: true
+---
 # Project Framework
 - Package manager: pnpm
 - This is an ESM module which uses uses the ".ts" extension for imports
 - This project uses SolidJS, not React
-- Use SolidJS syntax (class instead of className, createSignal instead of useState)
+- Use SolidJS syntax (e.g. class instead of className, createSignal instead of useState)
 - Use solid-app-router for routing instead of react-router-dom
 - Use CSS modules for styles
 
@@ -12,4 +17,4 @@
 # Database Access
 - SQLite database is stored in OPFS
 - Use kysely for database operations
-- Database schema is defined in types/schemas.ts
+- Database schema is defined in [schemas.ts](mdc:front-end/src/types/schemas.ts)
