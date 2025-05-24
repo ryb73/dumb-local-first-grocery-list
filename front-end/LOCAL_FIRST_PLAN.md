@@ -9,7 +9,12 @@ This is a local-first grocery list app. The UI, for development purposes, curren
 - **Abstract Operation Log:**
   - All user actions that mutate the database are recorded as abstract operations, e.g. `{ type: 'addItem', payload: { name, created_at, checked } }`.
   - Each operation includes enough information to be losslessly reversible (e.g., a `deleteItem` operation logs the full item so it can be re-added).
-  - **Migrations** are also handled as abstract operations, e.g. `{ type: 'migrationUp', payload: { migrationId } }`. Migrations will continue to be defined in `migrations.ts`, but their execution will be orchestrated as part of the operation log.
+
+- **Migration Compatibility:**
+  - Migrations are handled separately from the operation log using the existing migration infrastructure.
+  - All available migrations are run at app initialization for both client and server.
+  - Before any sync operation, the client and server must verify they have the same migration state (e.g., same highest applied migration ID).
+  - If migration states differ, sync is blocked until both sides are updated to the same migration level.
 
 - **Operation Log Storage:**
   - The operation log itself will be stored in SQLite. This leverages the same durability, queryability, and transactional guarantees as the main app data, and keeps all local-first state in a single technology. (If a better approach is identified, it can be considered.)
@@ -17,6 +22,7 @@ This is a local-first grocery list app. The UI, for development purposes, curren
 
 - **Detailed Sync Algorithm:**
   The following steps outline the synchronization process when a user initiates a sync:
+  0.  **Migration Compatibility Check:** Before any data sync operations, the client and server verify they have the same migration state. If migration states differ, sync is aborted with an error indicating that one or both sides need to be updated.
   1.  **Client Requests Changes:** The client requests from the server all changes (`remoteOps`) that were applied on the server after the timestamp/version of the most recent server change known to the client. The server also returns its current version identifier (e.g., timestamp or hash).
   2.  **Client Unwinds Local Changes:** The client unwinds (rolls back) any local, unsynced changes (`localOps`) that have been applied since the last known server state. This returns the client's database to the state it was in at the point of the last successful sync with the server.
   3.  **Build Rebased Local Operations List (`rebasedLocalOps`):** The client transforms its `localOps` based on the server's `remoteOps` to produce a new list of changes to be reapplied (`rebasedLocalOps`). This process ensures that local changes are adjusted as if they were made *after* the server's changes.
@@ -46,7 +52,7 @@ This is a local-first grocery list app. The UI, for development purposes, curren
 - **Key Considerations for Sync Algorithm:**
     - **Atomicity:** Client-side application of `remoteOps` and `rebasedLocalOps`, and server-side application of `rebasedLocalOps` must be atomic (all-or-nothing transactions).
     - **Server Concurrency:** Optimistic locking (version checking) on the server is crucial to handle concurrent sync attempts from multiple clients.
-    - **Migration Handling:** Syncing data operations across schema migrations requires careful design. It might involve pausing data sync during migrations or having `resolveConflict` understand how to transform operations across specific schema changes (which is complex). This needs further thought based on how migrations are applied within the operation log.
+    - **Migration Compatibility:** Both client and server must be on the same migration level before any sync operations. This ensures that all operations are applied against compatible database schemas.
     - **Idempotency and Correct Sequencing:** The rebase approach transforms original `localOps` into `rebasedLocalOps`. It's vital that the operations within `rebasedLocalOps` are either idempotent or, if not inherently idempotent (e.g., an increment), their generation by `resolveConflict` and their application after `remoteOps` are carefully managed to prevent incorrect state if retries occur.
       An operation is idempotent if applying it multiple times has the same effect as applying it once (e.g., `SET status = 'complete'`). Non-idempotent operations (e.g., `INCREMENT count`) require more care.
       Idempotency of the resulting `rebasedLocalOps` provides fault tolerance, especially if the client or server needs to retry applying a batch of these operations.
@@ -61,7 +67,7 @@ This is a local-first grocery list app. The UI, for development purposes, curren
 ## Implementation Plan
 
 1.  **Define Operation Types & `resolveConflict` Logic:**
-    *   Specify all abstract operations (e.g., `addItem`, `deleteItem`, `updateItem`, `toggleItem`, `migrationUp`).
+    *   Specify all abstract operations (e.g., `addItem`, `deleteItem`, `updateItem`, `toggleItem`).
     *   Ensure each operation's payload contains all data needed for reversal and for the chosen conflict resolution strategy (e.g., timestamps, logical clocks, full before/after states).
     *   Implement the core `resolveConflict(remoteOp, localOp)` function, encapsulating the chosen conflict resolution strategy.
 
@@ -69,22 +75,23 @@ This is a local-first grocery list app. The UI, for development purposes, curren
     *   Create an SQLite schema for the operation log (e.g., `groceries.log.sqlite3`).
     *   Intercept all mutating database actions to log operations to this SQLite log.
 
-3.  **Implement Rollback & Re-application Engine:**
+3.  **Implement Migration Compatibility Checking:**
+    *   Create functions to query the current migration state from both client and server databases.
+    *   Implement migration compatibility verification before sync operations.
+    *   Provide clear error messages when migration states differ.
+
+4.  **Implement Rollback & Re-application Engine:**
     *   For each operation type, implement its corresponding inverse operation.
     *   Create functions to:
         *   Apply a list of operations to the database.
         *   Roll back (apply inverse of) a list of operations.
 
-4.  **Implement Client-Side Sync Orchestration:**
-    *   Implement the client-side logic for steps 1-5 of the "Detailed Sync Algorithm".
-    *   This includes fetching `remoteOps`, unwinding `localOps`, building `rebasedLocalOps` using the `reduce` and `resolveConflict` logic, and applying `remoteOps` then `rebasedLocalOps` in a transaction.
+5.  **Implement Client-Side Sync Orchestration:**
+    *   Implement the client-side logic for steps 0-5 of the "Detailed Sync Algorithm".
+    *   This includes migration compatibility checking, fetching `remoteOps`, unwinding `localOps`, building `rebasedLocalOps` using the `reduce` and `resolveConflict` logic, and applying `remoteOps` then `rebasedLocalOps` in a transaction.
     *   Manage local markers for "last known server state/version".
 
-5.  **Implement Server-Side Sync Endpoint:**
+6.  **Implement Server-Side Sync Endpoint:**
     *   Develop the server endpoint to handle step 6 of the "Detailed Sync Algorithm".
-    *   This includes version checking and atomic application of `rebasedLocalOps`.
+    *   This includes migration compatibility checking, version checking, and atomic application of `rebasedLocalOps`.
     *   (Initially, this will be simulated against the second local SQLite DB).
-
-6.  **Integrate Migration Operations:**
-    *   Determine how `migrationUp` operations flow through the sync process.
-    *   Consider if `resolveConflict` needs special logic for data operations encountering migration operations, or if migrations enforce a more linear, blocking sync model.
