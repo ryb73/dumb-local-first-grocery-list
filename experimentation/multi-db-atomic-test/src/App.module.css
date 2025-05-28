@@ -1,0 +1,57 @@
+.container {
+  font-family: sans-serif;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.controls button {
+  margin-right: 10px;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #f0f0f0;
+}
+
+.controls button:hover {
+  background-color: #e0e0e0;
+}
+
+.controls button:disabled {
+  background-color: #f8f8f8;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.logs {
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  max-height: 400px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+.logEntry {
+  padding: 2px 0;
+  border-bottom: 1px dotted #ddd;
+}
+
+.logEntry.error {
+  color: red;
+}
+
+.logEntry.success {
+  color: green;
+}
+
+.logEntry.warn {
+  color: orange;
+}
