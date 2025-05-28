@@ -68,6 +68,7 @@ This is a local-first grocery list app. The UI, for development purposes, curren
 
 1.  **Define Operation Types & `resolveConflict` Logic:**
     *   Specify all abstract operations (e.g., `addItem`, `deleteItem`, `updateItem`, `toggleItem`).
+    *   **NOTE**: the operations mentioned in this document are hypothetical. The actual set of operation that will be needed is an indeterminate implementation detail.
     *   Ensure each operation's payload contains all data needed for reversal and for the chosen conflict resolution strategy (e.g., timestamps, logical clocks, full before/after states).
     *   Implement the core `resolveConflict(remoteOp, localOp)` function, encapsulating the chosen conflict resolution strategy.
 
