@@ -7,17 +7,20 @@ export type MigrationId = string;
 
 /**
  * A generic base for all operations.
+ * This structure aligns with the `operations` table in `groceries.log.sqlite3`.
  */
-export interface BaseOperation<T extends string, P> {
-  /** A unique ID for this specific operation instance */
-  opId: string;
+type BaseOperation<T extends string, P> = {
+  /** Unique ID for this specific operation instance. */
+  id: string;
+  /** The type of operation. */
   type: T;
-  /** Timestamp of when the operation was created on the client. */
-  timestamp: number;
+  /** Timestamp (UTC ms since epoch) when the operation was created on the client. */
+  clientCreatedAt: number;
+  /** Timestamp (UTC ms since epoch) when the operation was committed to the server, or null if not yet committed. */
+  serverCommittedAt: number | null;
+  /** The payload of the operation, containing all necessary details to apply or reverse the operation. */
   payload: P;
-  /** Optional: ID of the entity this operation primarily targets (e.g. item ID) */
-  entityId?: string;
-}
+};
 
 // --- Item Operations ---
 
@@ -40,14 +43,13 @@ export type CreateItemOperation = BaseOperation<
 export type UpdateItemPayload = {
   id: Item["id"];
   /** The changes applied to the item. Only includes fields that were changed. */
-  changes: Partial<Omit<ItemUpdate, "id">>;
-  /** The original values of the fields that were changed. */
-  originalValues: Partial<Omit<ItemUpdate, "id">>;
+  changes: Omit<ItemUpdate, "id">;
+  /** The original values of the fields that were changed. Necessary for rollbacks/conflict resolution. */
+  originalValues: Omit<ItemUpdate, "id">;
 };
 export type UpdateItemOperation = BaseOperation<
   "updateItem",
   UpdateItemPayload
 >;
 
-// A union type for all possible operations
 export type Operation = CreateItemOperation | UpdateItemOperation;
