@@ -1,6 +1,10 @@
 import type { Kysely } from "kysely";
 import { sql } from "kysely";
 
+/**
+ * This object contains all migrations for the database.
+ * Migrations are executed by Kysely in alphabetical order!!!
+ */
 const migrations = {
   "2025-03-28": {
     productionReady: true,
