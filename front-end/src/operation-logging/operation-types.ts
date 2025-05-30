@@ -35,21 +35,49 @@ export type CreateItemOperation = BaseOperation<
 >;
 
 /**
- * Operation for updating an existing item.
- * This can be used by `Database.toggleItem` and the case in `Database.addItem`
- * where `existingRow` is found (which then updates the 'checked' status).
- * It can also be used by the general `Database.updateItem`.
+ * Payload for when an item is marked as checked.
+ * Assumes the item was previously unchecked (checked: 0).
  */
-export type UpdateItemPayload = {
-  id: Item["id"];
-  /** The changes applied to the item. Only includes fields that were changed. */
-  changes: Omit<ItemUpdate, "id">;
-  /** The original values of the fields that were changed. Necessary for rollbacks/conflict resolution. */
-  originalValues: Omit<ItemUpdate, "id">;
+export type SetItemCheckedPayload = {
+  itemId: Item["id"];
 };
-export type UpdateItemOperation = BaseOperation<
-  "updateItem",
-  UpdateItemPayload
+export type SetItemCheckedOperation = BaseOperation<
+  "setItemChecked",
+  SetItemCheckedPayload
 >;
 
-export type Operation = CreateItemOperation | UpdateItemOperation;
+/**
+ * Payload for when an item is marked as unchecked.
+ * Assumes the item was previously checked (checked: 1).
+ * Includes the timestamp for when the item was unchecked.
+ */
+export type SetItemUncheckedPayload = {
+  itemId: Item["id"];
+  /** The new timestamp (UTC ms since epoch) when the item was marked as unchecked. */
+  newLastUncheckedAt: number;
+  /** The original value of last_unchecked_at. Necessary for rollbacks. */
+  originalLastUncheckedAt: Item["last_unchecked_at"];
+};
+export type SetItemUncheckedOperation = BaseOperation<
+  "setItemUnchecked",
+  SetItemUncheckedPayload
+>;
+
+/**
+ * Payload for when an item's name is changed.
+ */
+export type RenameItemPayload = {
+  itemId: Item["id"];
+  newName: Item["name"];
+  originalName: Item["name"];
+};
+export type RenameItemOperation = BaseOperation<
+  "renameItem",
+  RenameItemPayload
+>;
+
+export type Operation =
+  | CreateItemOperation
+  | SetItemCheckedOperation
+  | SetItemUncheckedOperation
+  | RenameItemOperation;
