@@ -67,32 +67,32 @@ This is a local-first grocery list app. The UI, for development purposes, curren
 ## Implementation Plan
 
 1.  **Define Operation Types & `resolveConflict` Logic:**
-    *   Specify all abstract operations (e.g., `addItem`, `deleteItem`, `updateItem`, `toggleItem`).
-    *   **NOTE**: the operations mentioned in this document are hypothetical. The actual set of operation that will be needed is an indeterminate implementation detail.
-    *   Ensure each operation's payload contains all data needed for reversal and for the chosen conflict resolution strategy (e.g., timestamps, logical clocks, full before/after states).
-    *   Implement the core `resolveConflict(remoteOp, localOp)` function, encapsulating the chosen conflict resolution strategy.
+    - [x] Specify all abstract operations (e.g., `addItem`, `deleteItem`, `updateItem`, `toggleItem`).
+    - **NOTE**: the operations mentioned in this document are hypothetical. The actual set of operation that will be needed is an indeterminate implementation detail.
+    - [x] Ensure each operation's payload contains all data needed for reversal and for the chosen conflict resolution strategy (e.g., timestamps, logical clocks, full before/after states).
+    - [ ] Implement the core `resolveConflict(remoteOp, localOp)` function, encapsulating the chosen conflict resolution strategy.
 
 2.  **Implement Operation Logging & Storage:**
-    *   Create an SQLite schema for the operation log (e.g., `groceries.log.sqlite3`).
-    *   Intercept all mutating database actions to log operations to this SQLite log.
+    - [ ] Create an SQLite schema for the operation log (e.g., `groceries.log.sqlite3`).
+    - [ ] Intercept all mutating database actions to log operations to this SQLite log.
 
 3.  **Implement Migration Compatibility Checking:**
-    *   Create functions to query the current migration state from both client and server databases.
-    *   Implement migration compatibility verification before sync operations.
-    *   Provide clear error messages when migration states differ.
+    - [ ] Create functions to query the current migration state from both client and server databases.
+    - [ ] Implement migration compatibility verification before sync operations.
+    - [ ] Provide clear error messages when migration states differ.
 
 4.  **Implement Rollback & Re-application Engine:**
-    *   For each operation type, implement its corresponding inverse operation.
-    *   Create functions to:
-        *   Apply a list of operations to the database.
-        *   Roll back (apply inverse of) a list of operations.
+    - [ ] For each operation type, implement its corresponding inverse operation.
+    - [ ] Create functions to:
+        - [ ] Apply a list of operations to the database.
+        - [ ] Roll back (apply inverse of) a list of operations.
 
 5.  **Implement Client-Side Sync Orchestration:**
-    *   Implement the client-side logic for steps 0-5 of the "Detailed Sync Algorithm".
-    *   This includes migration compatibility checking, fetching `remoteOps`, unwinding `localOps`, building `rebasedLocalOps` using the `reduce` and `resolveConflict` logic, and applying `remoteOps` then `rebasedLocalOps` in a transaction.
-    *   Manage local markers for "last known server state/version".
+    - [ ] Implement the client-side logic for steps 0-5 of the "Detailed Sync Algorithm".
+    - [ ] This includes migration compatibility checking, fetching `remoteOps`, unwinding `localOps`, building `rebasedLocalOps` using the `reduce` and `resolveConflict` logic, and applying `remoteOps` then `rebasedLocalOps` in a transaction.
+    - [ ] Manage local markers for "last known server state/version".
 
 6.  **Implement Server-Side Sync Endpoint:**
-    *   Develop the server endpoint to handle step 6 of the "Detailed Sync Algorithm".
-    *   This includes migration compatibility checking, version checking, and atomic application of `rebasedLocalOps`.
-    *   (Initially, this will be simulated against the second local SQLite DB).
+    - [ ] Develop the server endpoint to handle step 6 of the "Detailed Sync Algorithm".
+    - [ ] This includes migration compatibility checking, version checking, and atomic application of `rebasedLocalOps`.
+    - (Initially, this will be simulated against the second local SQLite DB).
