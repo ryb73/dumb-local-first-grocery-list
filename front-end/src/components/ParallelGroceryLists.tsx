@@ -15,12 +15,14 @@ export const ParallelGroceryLists: Component = () => {
   const [databases, setDatabases] =
     createSignal<ParallelGroceryListsProps | null>(null);
 
-  onMount(async () => {
-    const { db1, db2 } = await initTestDatabases();
-    setDatabases({
-      db1: new Database(db1.kysely),
-      db2: new Database(db2.kysely),
-    });
+  onMount(() => {
+    void (async () => {
+      const { db1, db2 } = await initTestDatabases();
+      setDatabases({
+        db1: new Database(db1.kysely),
+        db2: new Database(db2.kysely),
+      });
+    })();
   });
 
   return (

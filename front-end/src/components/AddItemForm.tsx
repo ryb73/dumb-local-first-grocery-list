@@ -19,7 +19,7 @@ export const AddItemForm: Component<Props> = (props) => {
 
   const handleSubmit = (e: Event) => {
     e.preventDefault();
-    if (input().trim()) {
+    if (input().trim() !== ``) {
       props.onAdd(input().trim());
       setInput(``);
     }
@@ -39,10 +39,11 @@ export const AddItemForm: Component<Props> = (props) => {
         value={input()}
       />
 
-      {showSuggestions() && input() && (
+      {showSuggestions() && input().trim().length > 0 && (
         <div class={defined(styles[`suggestions`])}>
           <For each={filteredSuggestions()}>
             {(suggestion) => (
+              // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
               <div
                 class={defined(styles[`suggestion`])}
                 onClick={() => {

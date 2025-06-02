@@ -6,9 +6,7 @@ export function createMigrator(kysely: Kysely<DB>) {
   return new Migrator({
     db: kysely,
     provider: {
-      async getMigrations() {
-        return migrations;
-      },
+      getMigrations: () => Promise.resolve(migrations),
     },
   });
 }

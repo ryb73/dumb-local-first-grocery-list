@@ -5,33 +5,35 @@ import type { ItemUpdate } from "../types/schemas";
 export class Database {
   private readonly kysely: Kysely<DB>;
 
-  constructor(kysely: Kysely<DB>) {
+  public constructor(kysely: Kysely<DB>) {
     this.kysely = kysely;
   }
 
-  async addItem(name: string) {
+  public async addItem(name: string) {
     // First try to update an existing item to checked state
     const existingRow = await this.kysely
       .selectFrom(`items`)
       .selectAll()
       .where(`name`, `=`, name)
       .executeTakeFirst();
-    await (existingRow ? this.kysely
-        .updateTable(`items`)
-        .set({ checked: 1 })
-        .where(`id`, `=`, existingRow.id)
-        .execute() : this.kysely
-        .insertInto(`items`)
-        .values({
-          id: crypto.randomUUID(),
-          name,
-          created_at: Date.now(),
-          checked: 1,
-        })
-        .execute());
+    await (existingRow != null
+      ? this.kysely
+          .updateTable(`items`)
+          .set({ checked: 1 })
+          .where(`id`, `=`, existingRow.id)
+          .execute()
+      : this.kysely
+          .insertInto(`items`)
+          .values({
+            id: crypto.randomUUID(),
+            name,
+            created_at: Date.now(),
+            checked: 1,
+          })
+          .execute());
   }
 
-  async getItems() {
+  public async getItems() {
     const dayAgo = Date.now() - 3000;
     return await this.kysely
       .selectFrom(`items`)
@@ -42,7 +44,7 @@ export class Database {
       .execute();
   }
 
-  async getSuggestions() {
+  public async getSuggestions() {
     // Get unchecked items as suggestions
     const results = await this.kysely
       .selectFrom(`items`)
@@ -52,16 +54,19 @@ export class Database {
     return results.map((result) => result.name);
   }
 
-  async toggleItem(id: string, checked: boolean): Promise<void> {
+  public async toggleItem(id: string, checked: boolean): Promise<void> {
     const item = await this.getItem(id);
-    if (!item) return;
+    if (item == null) return;
 
     await this.updateItem(id, { checked: checked ? 1 : 0 });
   }
 
-  async updateItem(id: string, updates: Omit<ItemUpdate, "id">): Promise<void> {
+  public async updateItem(
+    id: string,
+    updates: Omit<ItemUpdate, "id">
+  ): Promise<void> {
     const item = await this.getItem(id);
-    if (!item) return;
+    if (item == null) return;
 
     const updatedItem = { ...item, ...updates };
     await this.kysely
@@ -71,7 +76,7 @@ export class Database {
       .execute();
   }
 
-  async getItem(id: string) {
+  public async getItem(id: string) {
     return await this.kysely
       .selectFrom(`items`)
       .selectAll()

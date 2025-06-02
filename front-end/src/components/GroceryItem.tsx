@@ -49,11 +49,9 @@ export const GroceryItem: Component<Props> = (props) => {
               if (e.key === `Escape`) handleEditCancel();
             }}
             ref={(el) => {
-              if (el) {
-                setTimeout(() => {
-                  el.focus();
-                }, 1);
-              }
+              setTimeout(() => {
+                el.focus();
+              }, 1);
             }}
             type="text"
             value={newName()}
@@ -61,24 +59,29 @@ export const GroceryItem: Component<Props> = (props) => {
           <button
             class={defined(styles[`editButton`])}
             onClick={handleEditSubmit}
+            type="button"
           >
             ✓
           </button>
           <button
             class={defined(styles[`editButton`])}
             onClick={handleEditCancel}
+            type="button"
           >
             ✕
           </button>
         </div>
       ) : (
         <div class={defined(styles[`itemContainer`])}>
-          <span class={props.item.checked ? `` : defined(styles[`unchecked`])}>
+          <span
+            class={props.item.checked !== 0 ? `` : defined(styles[`unchecked`])}
+          >
             {props.item.name}
           </span>
           <button
             class={defined(styles[`editButton`])}
             onClick={handleEditClick}
+            type="button"
           >
             ✎
           </button>

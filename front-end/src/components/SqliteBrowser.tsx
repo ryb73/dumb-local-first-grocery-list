@@ -23,16 +23,18 @@ export function SqliteBrowser() {
   const [selectedDatabase, setSelectedDatabase] = createSignal(0);
   const [databases, setDatabases] = createSignal<DatabaseInfo[]>([]);
 
-  onMount(async () => {
-    const { db1, db2 } = await initTestDatabases();
-    setDatabases([
-      { name: `Database 1`, kysely: db1.kysely },
-      { name: `Database 2`, kysely: db2.kysely },
-    ]);
+  onMount(() => {
+    void (async () => {
+      const { db1, db2 } = await initTestDatabases();
+      setDatabases([
+        { name: `Database 1`, kysely: db1.kysely },
+        { name: `Database 2`, kysely: db2.kysely },
+      ]);
+    })();
   });
 
   const executeQuery = async () => {
-    if (!query()) {
+    if (query() === ``) {
       setError(`Please enter a query`);
       return;
     }
@@ -42,12 +44,9 @@ export function SqliteBrowser() {
 
     try {
       const selectedDb = databases()[selectedDatabase()];
-      if (!selectedDb) {
+      if (selectedDb == null) {
         throw new Error(`No database selected`);
       }
-
-      // Simple query validation
-      const queryText = query().trim().toLowerCase();
 
       const result = await sql<unknown>`${sql.raw(query())}`.execute(
         selectedDb.kysely
@@ -66,12 +65,12 @@ export function SqliteBrowser() {
       }
 
       const additionalInfo: QueryResult = [];
-      if (result.numAffectedRows) {
+      if (result.numAffectedRows != null) {
         additionalInfo.push({
           result: `Query affected ${result.numAffectedRows} rows.`,
         });
       }
-      if (result.insertId) {
+      if (result.insertId != null) {
         additionalInfo.push({
           result: `Insert ID: ${result.insertId}`,
         });
@@ -109,6 +108,7 @@ export function SqliteBrowser() {
             <button
               class={defined(styles[`exampleButton`])}
               onClick={() => setQuery(q)}
+              type="button"
             >
               {q}
             </button>
@@ -136,12 +136,13 @@ export function SqliteBrowser() {
           <button
             class={defined(styles[`executeButton`])}
             disabled={loading()}
-            onClick={executeQuery}
+            onClick={() => void executeQuery()}
+            type="button"
           >
             {loading() ? `Executing...` : `Execute Query`}
           </button>
         </div>
-        {error() && (
+        {error() !== `` && (
           <div class={defined(styles[`error`])}>
             <p>Error: {error()}</p>
           </div>

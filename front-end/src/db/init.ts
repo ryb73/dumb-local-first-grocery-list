@@ -13,12 +13,13 @@ const initDatabase = async (dbName = `grocery-list.sqlite3`) => {
 
   const { error, results } = await migrator.migrateToLatest();
 
-  if (error) {
+  if (error != null) {
     console.error(`Migration failed:`, error);
+    // eslint-disable-next-line @typescript-eslint/no-throw-literal
     throw error;
   }
 
-  if (results?.length) {
+  if (results != null && results.length > 0) {
     console.log(`Migrations completed:`, results);
   } else {
     console.log(`No migrations were needed`);

@@ -23,7 +23,7 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
   const sortedItems = () =>
     Array.from(items()).sort((a, b) => {
       if (a.checked === b.checked) return 0;
-      return a.checked ? -1 : 1;
+      return a.checked !== 0 ? -1 : 1;
     });
 
   const refreshData = async () => {
@@ -46,10 +46,12 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
     await refreshData();
   };
 
-  onMount(async () => {
-    await refreshData();
-    const interval = setInterval(refreshData, 5000);
-    return () => clearInterval(interval);
+  onMount(() => {
+    void (async () => {
+      await refreshData();
+      const interval = setInterval(() => void refreshData(), 5000);
+      return () => clearInterval(interval);
+    })();
   });
 
   return (
@@ -59,14 +61,17 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
         .join(` `)}
     >
       <h1 class={defined(styles[`title`])}>{props.title}</h1>
-      <AddItemForm onAdd={handleAdd} suggestions={suggestions()} />
+      <AddItemForm
+        onAdd={(name) => void handleAdd(name)}
+        suggestions={suggestions()}
+      />
       <div class={defined(styles[`list`])}>
         <Index each={sortedItems()}>
           {(item) => (
             <GroceryItem
               item={item()}
-              onEdit={handleEdit}
-              onToggle={handleToggle}
+              onEdit={(id, newName) => void handleEdit(id, newName)}
+              onToggle={(id, checked) => void handleToggle(id, checked)}
             />
           )}
         </Index>

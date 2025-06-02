@@ -14,12 +14,12 @@ async function migrate() {
     const migrator = createMigrator(db);
     const { error, results } = await migrator.migrateToLatest();
 
-    if (error) {
+    if (error != null) {
       console.error(`Migration failed:`, error);
       process.exit(1);
     }
 
-    if (results) {
+    if (results != null) {
       console.log(`Migration results:`, results);
     }
 
@@ -30,4 +30,4 @@ async function migrate() {
   }
 }
 
-migrate();
+await migrate();

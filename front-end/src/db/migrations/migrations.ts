@@ -174,7 +174,7 @@ const migrations: Record<string, MigrationDefinition> = {
 
 const filteredMigrations = Object.fromEntries(
   Object.entries(migrations)
-    .filter(([_, migration]) => migration.productionReady)
+    .filter(([, migration]) => migration.productionReady)
     .map(([key, migration]) => [key, migration.migration])
 );
 export { filteredMigrations as migrations };
