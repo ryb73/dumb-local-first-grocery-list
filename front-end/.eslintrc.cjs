@@ -46,6 +46,7 @@ module.exports = {
     "react/no-unknown-property": `off`,
     "react-form-fields/no-only-value-prop": `off`,
     "sonar/function-return-type": `off`,
+    "sonarjs/no-nested-switch": `off`,
     "ssr-friendly/no-dom-globals-in-module-scope": `off`,
     "unicorn/catch-error-name": `off`,
   },

@@ -1,4 +1,5 @@
-import type { Item, ItemUpdate } from "../types/schemas";
+/* eslint-disable import/no-unused-modules */
+import type { Item } from "../types/schemas";
 
 /**
  * Represents the unique identifier for a migration.
@@ -24,11 +25,13 @@ type BaseOperation<T extends string, P> = {
 
 // --- Item Operations ---
 
+export type CreateItemPayload = {
+  item: Pick<Item, "created_at" | "id" | "name">;
+};
 /**
  * Operation for when a new item is definitively inserted.
  * This corresponds to the case in `Database.addItem` where `existingRow` is null.
  */
-export type CreateItemPayload = { item: Item };
 export type CreateItemOperation = BaseOperation<
   "createItem",
   CreateItemPayload
@@ -76,8 +79,22 @@ export type RenameItemOperation = BaseOperation<
   RenameItemPayload
 >;
 
+export type DeleteItemPayload = {
+  itemId: Item["id"];
+  deletedItem: Omit<Item, "id">;
+};
+/**
+ * Operation for when an item is deleted. This is only used when resolving conflicts; it is not used
+ * in the normal course of operation.
+ */
+export type DeleteItemOperation = BaseOperation<
+  "deleteItem",
+  DeleteItemPayload
+>;
+
 export type Operation =
   | CreateItemOperation
+  | DeleteItemOperation
+  | RenameItemOperation
   | SetItemCheckedOperation
-  | SetItemUncheckedOperation
-  | RenameItemOperation;
+  | SetItemUncheckedOperation;

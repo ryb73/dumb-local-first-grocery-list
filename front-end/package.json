@@ -11,6 +11,7 @@
     "migrate-for-codegen": "node ./src/db/migrate-for-codegen.ts",
     "serve": "vite preview",
     "start": "vite",
+    "test": "vitest",
     "typewatch": "tsc -w"
   },
   "license": "MIT",
@@ -18,10 +19,13 @@
     "@ryb73/eslint-config": "^14.0.0",
     "@types/better-sqlite3": "^7.6.12",
     "@typescript-eslint/utils": "^8.28.0",
+    "eslint": "^8.0.0",
+    "jsdom": "^26.1.0",
     "kysely-codegen": "^0.18.3",
     "typescript": "^5.7.2",
     "vite": "^6.0.0",
-    "vite-plugin-solid": "^2.11.0"
+    "vite-plugin-solid": "^2.11.0",
+    "vitest": "^3.1.4"
   },
   "dependencies": {
     "@ryb73/super-duper-parakeet": "^12.1.1",
