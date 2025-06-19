@@ -30,13 +30,13 @@ This is a local-first grocery list app. The UI, for development purposes, curren
       function rebase(localOps, remoteOps) {
         const initialState = {
             rebasedOps: [],
-            contextOps: [...remoteOps],
             rebaseContext: {}
         };
 
         const finalState = localOps.reduce((state, localOp) => {
-            // Transform this localOp against all current contextOps
-            const transformResult = state.contextOps.reduce(
+            // For each local operation, transform it against all remote operations
+            // and any local operations that have already been rebased.
+            const transformResult = remoteOps.concat(state.rebasedOps).reduce(
                 (acc, contextOp) => {
                     const nextOps = acc.opsToTransform.flatMap(op => {
                         const resolution = resolveConflict(contextOp, op, acc.context);
@@ -53,7 +53,6 @@ This is a local-first grocery list app. The UI, for development purposes, curren
 
             return {
                 rebasedOps: [...state.rebasedOps, ...transformResult.opsToTransform],
-                contextOps: [...state.contextOps, ...transformResult.opsToTransform],
                 rebaseContext: transformResult.context
             };
         }, initialState);
