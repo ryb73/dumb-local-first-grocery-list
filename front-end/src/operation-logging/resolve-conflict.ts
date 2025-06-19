@@ -56,38 +56,135 @@ export function resolveConflict(
             },
           ];
         }
-
-        case `setItemChecked`: {
-          throw new Error(`Not implemented yet: "setItemChecked" case`);
-        }
-
-        case `setItemUnchecked`: {
-          throw new Error(`Not implemented yet: "setItemUnchecked" case`);
-        }
-
+        case `setItemChecked`:
+        case `setItemUnchecked`:
         case `deleteItem`: {
-          throw new Error(`Not implemented yet: "deleteItem" case`);
+          // A remote item was created. A local operation modified a different item.
+          // These are independent operations on different items and cannot conflict.
+          return [localOp];
         }
       }
       throw new Error(
-        `Unhandled operation type: ${(localOp as Operation).type}`
+        `Unhandled local operation type: ${(localOp as Operation).type}`
       );
     }
 
     case `renameItem`: {
-      throw new Error(`Not implemented yet: "renameItem" case`);
+      switch (localOp.type) {
+        case `createItem`: {
+          return areNamesEqual(
+            localOp.payload.item.name,
+            remoteOp.payload.newName
+          )
+            ? []
+            : [localOp];
+        }
+
+        case `renameItem`: {
+          if (remoteOp.payload.itemId === localOp.payload.itemId) {
+            // Both ops rename the same item. Keep whichever is newer.
+            return remoteOp.clientCreatedAt > localOp.clientCreatedAt
+              ? [localOp]
+              : [];
+          }
+
+          if (
+            areNamesEqual(localOp.payload.newName, remoteOp.payload.newName)
+          ) {
+            // Both renaming to the same name. Keep the item renamed by the remote op,
+            // delete the item renamed by the local op.
+            throw new Error(`Not implemented yet`);
+          }
+          return [localOp];
+        }
+        case `deleteItem`:
+        case `setItemChecked`:
+        case `setItemUnchecked`: {
+          // Remote renamed an item, local op modified an item.
+          // If it's the same item, the local op is still valid as it's by ID.
+          // No conflict.
+          return [localOp];
+        }
+      }
+      throw new Error(
+        `Unhandled local operation type: ${
+          (localOp as Operation).type
+        } for remote operation type: ${remoteOp.type}`
+      );
     }
 
     case `setItemChecked`: {
-      throw new Error(`Not implemented yet: "setItemChecked" case`);
+      switch (localOp.type) {
+        case `setItemChecked`:
+          if (remoteOp.payload.itemId === localOp.payload.itemId) {
+            // Both checking the same item. The operation is idempotent,
+            // so the local operation is redundant.
+            return [];
+          }
+          return [localOp];
+
+        case `createItem`:
+        case `renameItem`:
+        case `setItemUnchecked`:
+        case `deleteItem`:
+          // These operations don't conflict with a remote setItemChecked
+          // or local "wins" in case of a direct conflict.
+          return [localOp];
+      }
+      throw new Error(
+        `Unhandled local operation type: ${
+          (localOp as Operation).type
+        } for remote operation type: ${remoteOp.type}`
+      );
     }
 
     case `setItemUnchecked`: {
-      throw new Error(`Not implemented yet: "setItemUnchecked" case`);
+      switch (localOp.type) {
+        case `setItemUnchecked`:
+          if (remoteOp.payload.itemId === localOp.payload.itemId) {
+            // Both unchecking the same item. Operation is idempotent.
+            return [];
+          }
+          return [localOp];
+
+        case `createItem`:
+        case `renameItem`:
+        case `setItemChecked`:
+        case `deleteItem`:
+          // These operations don't conflict with a remote setItemUnchecked
+          // or local "wins" in case of a direct conflict.
+          return [localOp];
+      }
+      throw new Error(
+        `Unhandled local operation type: ${
+          (localOp as Operation).type
+        } for remote operation type: ${remoteOp.type}`
+      );
     }
     case `deleteItem`: {
-      throw new Error(`Not implemented yet: "deleteItem" case`);
+      switch (localOp.type) {
+        case `createItem`:
+          // Cannot conflict.
+          return [localOp];
+        case `renameItem`:
+        case `setItemChecked`:
+        case `setItemUnchecked`:
+        case `deleteItem`:
+          if (remoteOp.payload.itemId === localOp.payload.itemId) {
+            // Remote deleted an item that was modified or deleted locally.
+            // The item is gone, so the local operation is invalid or redundant.
+            return [];
+          }
+          return [localOp];
+      }
+      throw new Error(
+        `Unhandled local operation type: ${
+          (localOp as Operation).type
+        } for remote operation type: ${remoteOp.type}`
+      );
     }
   }
-  throw new Error(`Unhandled operation type: ${(remoteOp as Operation).type}`);
+  throw new Error(
+    `Unhandled remote operation type: ${(remoteOp as Operation).type}`
+  );
 }

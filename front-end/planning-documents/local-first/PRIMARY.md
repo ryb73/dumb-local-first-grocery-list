@@ -27,12 +27,39 @@ This is a local-first grocery list app. The UI, for development purposes, curren
   2.  **Client Unwinds Local Changes:** The client unwinds (rolls back) any local, unsynced changes (`localOps`) that have been applied since the last known server state. This returns the client's database to the state it was in at the point of the last successful sync with the server.
   3.  **Build Rebased Local Operations List (`rebasedLocalOps`):** The client transforms its `localOps` based on the server's `remoteOps` to produce a new list of changes to be reapplied (`rebasedLocalOps`). This process ensures that local changes are adjusted as if they were made *after* the server's changes.
       ```javascript-pseudocode
-      rebasedLocalOps = remoteOps.reduce(
-          (currentRebasedLocalOps, remoteOp) => { // currentRebasedLocalOps is the accumulator
-              return currentRebasedLocalOps.flatMap(localOp => resolveConflict(remoteOp, localOp));
-          },
-          localOps // Initial accumulator is the original list of localOps
-      )
+      function rebase(localOps, remoteOps) {
+        const initialState = {
+            rebasedOps: [],
+            contextOps: [...remoteOps],
+            rebaseContext: {}
+        };
+
+        const finalState = localOps.reduce((state, localOp) => {
+            // Transform this localOp against all current contextOps
+            const transformResult = state.contextOps.reduce(
+                (acc, contextOp) => {
+                    const nextOps = acc.opsToTransform.flatMap(op => {
+                        const resolution = resolveConflict(contextOp, op, acc.context);
+                        acc.context = resolution.newContext; // Mutate context in-place for efficiency
+                        return resolution.ops;
+                    });
+                    return {
+                        opsToTransform: nextOps,
+                        context: acc.context
+                    };
+                },
+                { opsToTransform: [localOp], context: state.rebaseContext }
+            );
+
+            return {
+                rebasedOps: [...state.rebasedOps, ...transformResult.opsToTransform],
+                contextOps: [...state.contextOps, ...transformResult.opsToTransform],
+                rebaseContext: transformResult.context
+            };
+        }, initialState);
+
+        return finalState.rebasedOps;
+      }
       ```
   4.  **Client Applies Changes:** The client applies `remoteOps` to its local database first. Then, it applies the newly computed `rebasedLocalOps` list. These operations should be performed within a single transaction to ensure atomicity.
   5.  **Client Submits Rebased Changes:** The client submits `rebasedLocalOps` to the server, along with the server version identifier received in Step 1.
@@ -41,13 +68,16 @@ This is a local-first grocery list app. The UI, for development purposes, curren
       - If versions mismatch (another client synced in the interim): The server rejects the submission. The client must then restart the sync process from Step 1 to fetch the latest server changes.
 
 - **Conflict Resolution (`resolveConflict` function):**
-  - The `resolveConflict(remoteOp, localOp)` function is the core of the conflict resolution logic. It takes a single server operation (`remoteOp`) and a single (potentially already transformed) client operation (`localOp`).
-  - It returns a list containing zero, one, or more operations. This resulting list represents how the `localOp` should be transformed, or if it should be discarded, in light of the `remoteOp`.
-  - For example, the function might return:
-    - `[localOp']`: The `localOp` is modified to `localOp'`.
-    - `[localOp]`: The `localOp` is unaffected by `remoteOp` and should be kept as is.
-    - `[]`: The `remoteOp` makes `localOp` redundant, or the defined conflict resolution strategy dictates that `localOp` should be discarded in favor of `remoteOp`.
-  - The specific strategy for resolving conflicts (e.g., last-write-wins, operational transformation, CRDT-like merging for specific types) is an implementation detail encapsulated within this function. The plan is agnostic to the specific strategy, allowing it to evolve.
+  - The `resolveConflict(contextOp, localOp, rebaseContext)` function is the core of the conflict resolution logic. It takes a single context operation, a single local operation, and a generic `rebaseContext` object.
+  - It returns an object containing:
+    - `ops`: A list of zero, one, or more operations representing the transformed `localOp`.
+      - For example, the function might return:
+        - `[localOp']`: The `localOp` is modified to `localOp'`.
+        - `[localOp]`: The `localOp` is unaffected by `remoteOp` and should be kept as is.
+        - `[]`: The `remoteOp` makes `localOp` redundant, or the defined conflict resolution strategy dictates that `localOp` should be discarded in favor of `remoteOp`.
+    - `newContext`: An updated context object. This allows `resolveConflict` to track state between calls, such as mapping the IDs of newly created items that are merged during a conflict.
+  - For example, if a local and remote `createItem` operation are determined to be duplicates, `resolveConflict` might return `{ ops: [], newContext: { ... idMap: { 'local-id': 'remote-id' } } }`. Subsequent operations in the rebase that refer to `'local-id'` can then be correctly retargeted.
+  - The specific strategy for resolving conflicts (e.g., last-write-wins, CRDT-like merging) is an implementation detail encapsulated within this function. The plan is agnostic to the specific strategy, allowing it to evolve.
 
 - **Key Considerations for Sync Algorithm:**
     - **Atomicity:** Client-side application of `remoteOps` and `rebasedLocalOps`, and server-side application of `rebasedLocalOps` must be atomic (all-or-nothing transactions).
