@@ -68,6 +68,7 @@ This is a local-first grocery list app. The UI, for development purposes, curren
 
 - **Conflict Resolution (`resolveConflict` function):**
   - The `resolveConflict(contextOp, localOp, rebaseContext)` function is the core of the conflict resolution logic. It takes a single context operation, a single local operation, and a generic `rebaseContext` object.
+  - The function **MUST** produce transformed operations that are valid to apply given the state of the database *after* `contextOp` has been applied. It does not have visibility into subsequent operations in the queue.
   - It returns an object containing:
     - `ops`: A list of zero, one, or more operations representing the transformed `localOp`.
       - For example, the function might return:

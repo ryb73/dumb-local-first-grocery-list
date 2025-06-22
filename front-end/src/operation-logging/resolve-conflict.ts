@@ -16,6 +16,7 @@ function areNamesEqual(a: string, b: string) {
  *   - `[localOp]`: The localOp is unaffected and should be kept as is
  *   - `[]`: The localOp should be discarded (redundant or conflicts with remoteOp)
  */
+// eslint-disable-next-line import/no-unused-modules
 export function resolveConflict(
   remoteOp: Operation,
   localOp: Operation
@@ -56,8 +57,7 @@ export function resolveConflict(
             },
           ];
         }
-        case `setItemChecked`:
-        case `setItemUnchecked`:
+        case `setCheckedState`:
         case `deleteItem`: {
           // A remote item was created. A local operation modified a different item.
           // These are independent operations on different items and cannot conflict.
@@ -98,8 +98,7 @@ export function resolveConflict(
           return [localOp];
         }
         case `deleteItem`:
-        case `setItemChecked`:
-        case `setItemUnchecked`: {
+        case `setCheckedState`: {
           // Remote renamed an item, local op modified an item.
           // If it's the same item, the local op is still valid as it's by ID.
           // No conflict.
@@ -113,47 +112,50 @@ export function resolveConflict(
       );
     }
 
-    case `setItemChecked`: {
+    case `setCheckedState`: {
       switch (localOp.type) {
-        case `setItemChecked`:
-          if (remoteOp.payload.itemId === localOp.payload.itemId) {
-            // Both checking the same item. The operation is idempotent,
-            // so the local operation is redundant.
-            return [];
-          }
-          return [localOp];
-
+        // Create, Rename, and Delete operations are orthogonal or take precedence.
         case `createItem`:
         case `renameItem`:
-        case `setItemUnchecked`:
         case `deleteItem`:
-          // These operations don't conflict with a remote setItemChecked
-          // or local "wins" in case of a direct conflict.
           return [localOp];
-      }
-      throw new Error(
-        `Unhandled local operation type: ${
-          (localOp as Operation).type
-        } for remote operation type: ${remoteOp.type}`
-      );
-    }
 
-    case `setItemUnchecked`: {
-      switch (localOp.type) {
-        case `setItemUnchecked`:
-          if (remoteOp.payload.itemId === localOp.payload.itemId) {
-            // Both unchecking the same item. Operation is idempotent.
+        case `setCheckedState`: {
+          // If the operations are on different items, they don't conflict.
+          if (remoteOp.payload.itemId !== localOp.payload.itemId) {
+            return [localOp];
+          }
+
+          // Both operations are on the same item. Use Last-Writer-Wins (LWW)
+          // based on the client's creation timestamp.
+          if (localOp.clientCreatedAt <= remoteOp.clientCreatedAt) {
+            // Remote operation is newer or simultaneous, local operation is discarded.
             return [];
           }
-          return [localOp];
 
-        case `createItem`:
-        case `renameItem`:
-        case `setItemChecked`:
-        case `deleteItem`:
-          // These operations don't conflict with a remote setItemUnchecked
-          // or local "wins" in case of a direct conflict.
-          return [localOp];
+          // Local operation is newer, it "wins". However, we must transform it
+          // so its "original" state reflects the state *after* the remote
+          // operation has been applied. This ensures the operation is valid
+          // in the new context.
+          const transformedPayload = {
+            ...localOp.payload,
+            // The new "original" checked state for the local op is whatever
+            // the remote op set it to.
+            originalChecked: remoteOp.payload.checked,
+          };
+
+          // If both operations are setting `checked: false`, then the local
+          // operation is effectively a no-op. We need to update the
+          // last unchecked fields so that they match the remote op.
+          if (!transformedPayload.checked && !remoteOp.payload.checked) {
+            transformedPayload.originalLastUncheckedAt =
+              remoteOp.payload.originalLastUncheckedAt;
+            transformedPayload.newLastUncheckedAt =
+              remoteOp.payload.newLastUncheckedAt;
+          }
+
+          return [{ ...localOp, payload: transformedPayload }];
+        }
       }
       throw new Error(
         `Unhandled local operation type: ${
@@ -167,8 +169,7 @@ export function resolveConflict(
           // Cannot conflict.
           return [localOp];
         case `renameItem`:
-        case `setItemChecked`:
-        case `setItemUnchecked`:
+        case `setCheckedState`:
         case `deleteItem`:
           if (remoteOp.payload.itemId === localOp.payload.itemId) {
             // Remote deleted an item that was modified or deleted locally.

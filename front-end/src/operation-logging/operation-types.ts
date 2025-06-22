@@ -38,32 +38,32 @@ export type CreateItemOperation = BaseOperation<
 >;
 
 /**
- * Payload for when an item is marked as checked.
- * Assumes the item was previously unchecked (checked: 0).
+ * Payload for when an item's checked state is set.
  */
-export type SetItemCheckedPayload = {
+export type SetCheckedStatePayload = {
   itemId: Item["id"];
-};
-export type SetItemCheckedOperation = BaseOperation<
-  "setItemChecked",
-  SetItemCheckedPayload
->;
-
-/**
- * Payload for when an item is marked as unchecked.
- * Assumes the item was previously checked (checked: 1).
- * Includes the timestamp for when the item was unchecked.
- */
-export type SetItemUncheckedPayload = {
-  itemId: Item["id"];
-  /** The new timestamp (UTC ms since epoch) when the item was marked as unchecked. */
-  newLastUncheckedAt: number;
-  /** The original value of last_unchecked_at. Necessary for rollbacks. */
-  originalLastUncheckedAt: Item["last_unchecked_at"];
-};
-export type SetItemUncheckedOperation = BaseOperation<
-  "setItemUnchecked",
-  SetItemUncheckedPayload
+  /** The original checked state. Necessary for rollbacks. */
+  originalChecked: boolean;
+} & (
+  | {
+      /** The new checked state. */
+      checked: false;
+      /**
+       * The new timestamp (UTC ms since epoch) for when the item was marked as unchecked.
+       * This is only populated when `checked` is `false`.
+       */
+      newLastUncheckedAt: number;
+      /** The original value of last_unchecked_at. Necessary for rollbacks. */
+      originalLastUncheckedAt: Item["last_unchecked_at"];
+    }
+  | {
+      /** The new checked state. */
+      checked: true;
+    }
+);
+export type SetCheckedStateOperation = BaseOperation<
+  "setCheckedState",
+  SetCheckedStatePayload
 >;
 
 /**
@@ -96,5 +96,4 @@ export type Operation =
   | CreateItemOperation
   | DeleteItemOperation
   | RenameItemOperation
-  | SetItemCheckedOperation
-  | SetItemUncheckedOperation;
+  | SetCheckedStateOperation;
