@@ -203,3 +203,17 @@ This case explores a direct conflict where two different items are renamed to th
 *   **Expected Final State**:
     *   Item B: `{ id: 'B', name: 'Sparkling Water' }`
     *   Item A is deleted.
+
+---
+
+### Case 13: Redundant Deletion
+
+This tests that the rebase logic correctly handles cases where both sides delete the same item. The local deletion should be discarded as redundant.
+
+*   **Initial State**:
+    *   Item A: `{ id: 'A', name: 'Cookies' }`
+*   **Local Operations**: `[{ type: 'deleteItem', payload: { itemId: 'A' }, clientCreatedAt: T2 }]`
+*   **Remote Operations**: `[{ type: 'deleteItem', payload: { itemId: 'A' }, clientCreatedAt: T1 }]`
+*   **Conflict Resolution Logic**: `resolveConflict(remote: deleteItem, local: deleteItem)` should return `[]` because the local operation is made redundant by the remote operation.
+*   **Expected `rebasedLocalOps`**: `[]`
+*   **Expected Final State**: Item A is deleted.
