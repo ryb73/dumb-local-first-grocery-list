@@ -74,7 +74,7 @@ export const GroceryItem: Component<Props> = (props) => {
       ) : (
         <div class={defined(styles[`itemContainer`])}>
           <span
-            class={props.item.checked !== 0 ? `` : defined(styles[`unchecked`])}
+            class={props.item.checked === 1 ? defined(styles[`checked`]) : ``}
           >
             {props.item.name}
           </span>

@@ -13,7 +13,7 @@ export interface Items {
   checked: Generated<number>;
   created_at: number | null;
   id: string;
-  last_unchecked_at: number | null;
+  last_checked_at: number | null;
   name: string;
 }
 

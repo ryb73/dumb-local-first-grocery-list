@@ -23,7 +23,7 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
   const sortedItems = () =>
     Array.from(items()).sort((a, b) => {
       if (a.checked === b.checked) return 0;
-      return a.checked !== 0 ? -1 : 1;
+      return a.checked === 0 ? -1 : 1;
     });
 
   const refreshData = async () => {

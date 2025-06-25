@@ -170,6 +170,60 @@ const migrations: Record<string, MigrationDefinition> = {
       },
     },
   },
+  "2025-05-31": {
+    productionReady: true,
+    description: `Invert the meaning of "checked" and rename "last_unchecked_at" to "last_checked_at"`,
+    migration: {
+      up: async (db: Kysely<any>) => {
+        // Rename `last_unchecked_at` to `last_checked_at`
+        await db.schema
+          .alterTable(`items`)
+          .renameColumn(`last_unchecked_at`, `last_checked_at`)
+          .execute();
+
+        // Create a temporary column to hold the inverted `checked` value, defaulting to 0.
+        await db.schema
+          .alterTable(`items`)
+          .addColumn(`checked_temp`, `integer`, (col) =>
+            col.notNull().defaultTo(0)
+          )
+          .execute();
+        await db
+          .updateTable(`items`)
+          .set({ checked_temp: sql`CASE WHEN checked = 1 THEN 0 ELSE 1 END` })
+          .execute();
+        await db.schema.alterTable(`items`).dropColumn(`checked`).execute();
+        await db.schema
+          .alterTable(`items`)
+          .renameColumn(`checked_temp`, `checked`)
+          .execute();
+      },
+      down: async (db: Kysely<any>) => {
+        // Rename `last_checked_at` back to `last_unchecked_at`
+        await db.schema
+          .alterTable(`items`)
+          .renameColumn(`last_checked_at`, `last_unchecked_at`)
+          .execute();
+
+        // Invert `checked` values and default back
+        await db.schema
+          .alterTable(`items`)
+          .addColumn(`checked_temp`, `integer`, (col) =>
+            col.notNull().defaultTo(1)
+          )
+          .execute();
+        await db
+          .updateTable(`items`)
+          .set({ checked_temp: sql`CASE WHEN checked = 1 THEN 0 ELSE 1 END` })
+          .execute();
+        await db.schema.alterTable(`items`).dropColumn(`checked`).execute();
+        await db.schema
+          .alterTable(`items`)
+          .renameColumn(`checked_temp`, `checked`)
+          .execute();
+      },
+    },
+  },
 };
 
 const filteredMigrations = Object.fromEntries(

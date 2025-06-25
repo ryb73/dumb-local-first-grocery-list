@@ -48,17 +48,17 @@ export type SetCheckedStatePayload = {
   | {
       /** The new checked state. */
       checked: false;
-      /**
-       * The new timestamp (UTC ms since epoch) for when the item was marked as unchecked.
-       * This is only populated when `checked` is `false`.
-       */
-      newLastUncheckedAt: number;
-      /** The original value of last_unchecked_at. Necessary for rollbacks. */
-      originalLastUncheckedAt: Item["last_unchecked_at"];
     }
   | {
       /** The new checked state. */
       checked: true;
+      /**
+       * The new timestamp (UTC ms since epoch) for when the item was marked as checked.
+       * This is only populated when `checked` is `true`.
+       */
+      newLastCheckedAt: number;
+      /** The original value of last_checked_at. Necessary for rollbacks. */
+      originalLastCheckedAt: Item["last_checked_at"];
     }
 );
 export type SetCheckedStateOperation = BaseOperation<

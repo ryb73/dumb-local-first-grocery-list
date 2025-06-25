@@ -47,7 +47,7 @@ export function resolveConflict(
                 deletedItem: {
                   checked: 0,
                   created_at: remoteOp.payload.item.created_at,
-                  last_unchecked_at: null,
+                  last_checked_at: null,
                   name: remoteOp.payload.item.name,
                 },
                 itemId: remoteOp.payload.item.id,
@@ -144,14 +144,14 @@ export function resolveConflict(
             originalChecked: remoteOp.payload.checked,
           };
 
-          // If both operations are setting `checked: false`, then the local
+          // If both operations are setting `checked: true`, then the local
           // operation is effectively a no-op. We need to update the
-          // last unchecked fields so that they match the remote op.
-          if (!transformedPayload.checked && !remoteOp.payload.checked) {
-            transformedPayload.originalLastUncheckedAt =
-              remoteOp.payload.originalLastUncheckedAt;
-            transformedPayload.newLastUncheckedAt =
-              remoteOp.payload.newLastUncheckedAt;
+          // last checked fields so that they match the remote op.
+          if (transformedPayload.checked && remoteOp.payload.checked) {
+            transformedPayload.originalLastCheckedAt =
+              remoteOp.payload.originalLastCheckedAt;
+            transformedPayload.newLastCheckedAt =
+              remoteOp.payload.newLastCheckedAt;
           }
 
           return [{ ...localOp, payload: transformedPayload }];

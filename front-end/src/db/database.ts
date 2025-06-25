@@ -10,7 +10,7 @@ export class Database {
   }
 
   public async addItem(name: string) {
-    // First try to update an existing item to checked state
+    // First try to update an existing item to an unchecked state
     const existingRow = await this.kysely
       .selectFrom(`items`)
       .selectAll()
@@ -19,7 +19,7 @@ export class Database {
     await (existingRow != null
       ? this.kysely
           .updateTable(`items`)
-          .set({ checked: 1 })
+          .set({ checked: 0 })
           .where(`id`, `=`, existingRow.id)
           .execute()
       : this.kysely
@@ -28,7 +28,7 @@ export class Database {
             id: crypto.randomUUID(),
             name,
             created_at: Date.now(),
-            checked: 1,
+            checked: 0,
           })
           .execute());
   }
@@ -39,17 +39,17 @@ export class Database {
       .selectFrom(`items`)
       .selectAll()
       .where((eb) =>
-        eb(`items.checked`, `=`, 1).or(`items.last_unchecked_at`, `>`, dayAgo)
+        eb(`items.checked`, `=`, 0).or(`items.last_checked_at`, `>`, dayAgo)
       )
       .execute();
   }
 
   public async getSuggestions() {
-    // Get unchecked items as suggestions
+    // Get checked items as suggestions
     const results = await this.kysely
       .selectFrom(`items`)
       .select([`name`])
-      .where(`checked`, `=`, 0)
+      .where(`checked`, `=`, 1)
       .execute();
     return results.map((result) => result.name);
   }
@@ -58,7 +58,10 @@ export class Database {
     const item = await this.getItem(id);
     if (item == null) return;
 
-    await this.updateItem(id, { checked: checked ? 1 : 0 });
+    await this.updateItem(id, {
+      checked: checked ? 1 : 0,
+      last_checked_at: checked ? Date.now() : item.last_checked_at,
+    });
   }
 
   public async updateItem(

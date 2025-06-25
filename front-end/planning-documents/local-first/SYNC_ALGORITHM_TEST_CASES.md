@@ -104,10 +104,10 @@ Both client and server create an item with the same unique name. The conflict re
 
 Client checks and then unchecks an item. Server renames it. The final state should reflect both the rename and the final toggle state.
 
-*   **Initial State**: Item A: `{ id: 'A', name: 'Apples', checked: false }`
+*   **Initial State**: Item A: `{ id: 'A', name: 'Apples', checked: false, last_checked_at: null }`
 *   **Local Operations**:
-    1.  `{ type: 'setCheckedState', payload: { itemId: 'A', checked: true }, clientCreatedAt: T1 }`
-    2.  `{ type: 'setCheckedState', payload: { itemId: 'A', checked: false, newLastUncheckedAt: T3 }, clientCreatedAt: T3 }`
+    1.  `{ type: 'setCheckedState', payload: { itemId: 'A', checked: true, newLastCheckedAt: T1 }, clientCreatedAt: T1 }`
+    2.  `{ type: 'setCheckedState', payload: { itemId: 'A', checked: false }, clientCreatedAt: T3 }`
 *   **Remote Operations**: `[{ type: 'renameItem', payload: { itemId: 'A', newName: 'Green Apples' }, clientCreatedAt: T2 }]`
 *   **Conflict Resolution Logic**: `renameItem` and `setCheckedState` are not in conflict. `resolveConflict` returns the local ops unchanged.
 *   **Expected `rebasedLocalOps`**: The two local operations, unchanged.
@@ -153,15 +153,15 @@ This tests that a local operation is correctly discarded when a sequence of remo
 
 This case confirms that because `setCheckedState` is idempotent, a local operation with the latest timestamp is correctly preserved and applied. The problem of intermediate states invalidating an operation's preconditions is eliminated.
 
-*   **Initial State**: Item A: `{ id: 'A', name: 'Almonds', checked: false, lastUncheckedAt: null }`
-*   **Local Operations**: `[{ type: 'setCheckedState', payload: { itemId: 'A', checked: true, originalChecked: false }, clientCreatedAt: T3 }]`
+*   **Initial State**: Item A: `{ id: 'A', name: 'Almonds', checked: false, last_checked_at: null }`
+*   **Local Operations**: `[{ type: 'setCheckedState', payload: { itemId: 'A', checked: true, newLastCheckedAt: T3, originalChecked: false }, clientCreatedAt: T3 }]`
 *   **Remote Operations**:
-    1.  `{ type: 'setCheckedState', payload: { itemId: 'A', checked: true, originalChecked: false }, clientCreatedAt: T1 }`
-    2.  `{ type: 'setCheckedState', payload: { itemId: 'A', checked: false, newLastUncheckedAt: T2, originalChecked: true, originalLastUncheckedAt: null }, clientCreatedAt: T2 }`
+    1.  `{ type: 'setCheckedState', payload: { itemId: 'A', checked: true, newLastCheckedAt: T1, originalChecked: false }, clientCreatedAt: T1 }`
+    2.  `{ type: 'setCheckedState', payload: { itemId: 'A', checked: false, originalChecked: true }, clientCreatedAt: T2 }`
 *   **Rebase Trace**:
-    1.  The local op `L1: setCheckedState(true)` is transformed against `R1: setCheckedState(true)`. Per LWW (`T3 > T1`), the intent of `L1` is preserved. `resolveConflict` produces a new operation `L1'` whose `originalChecked` payload is updated to reflect the state after `R1` is applied (which is `true`).
-    2.  The resulting op `L1'` is then transformed against `R2: setCheckedState(false)`. Per LWW (`T3 > T2`), the intent is again preserved. `resolveConflict` produces the final operation `L1''` whose `originalChecked` is updated to reflect the state after `R2` is applied (which is `false`).
-*   **Expected `rebasedLocalOps`**: `[{ type: 'setCheckedState', payload: { itemId: 'A', checked: true, originalChecked: false }, clientCreatedAt: T3 }]`. Note that `originalChecked` matches the state after all remote ops have been applied.
+    1.  The local op `L1: setCheckedState(true)` is transformed against `R1: setCheckedState(true)`. Per LWW (`T3 > T1`), the intent of `L1` is preserved. `resolveConflict` produces a new operation `L1'` whose payload is updated to reflect the state after `R1` is applied. `L1'` will have `originalChecked: true` and `originalLastCheckedAt: T1`.
+    2.  The resulting op `L1'` is then transformed against `R2: setCheckedState(false)`. Per LWW (`T3 > T2`), the intent is again preserved. `resolveConflict` produces the final operation `L1''` whose payload is updated to reflect the state after `R2` is applied. `L1''` will have `originalChecked: false` and `originalLastCheckedAt: T1`.
+*   **Expected `rebasedLocalOps`**: `[{ type: 'setCheckedState', payload: { itemId: 'A', checked: true, newLastCheckedAt: T3, originalChecked: false, originalLastCheckedAt: T1 }, clientCreatedAt: T3 }]`. Note that `originalChecked` matches the state after all remote ops have been applied.
 *   **Expected Final State**: Item A is `checked: true`.
 
 ---

@@ -39,7 +39,7 @@
   background-color: #f5f5f5;
 }
 
-.unchecked {
+.checked {
   text-decoration: line-through;
   color: #888;
 }
