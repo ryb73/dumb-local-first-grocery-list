@@ -87,10 +87,25 @@ export function resolveConflict(
 
         case `renameItem`: {
           if (remoteOp.payload.itemId === localOp.payload.itemId) {
-            // Both ops rename the same item. Keep whichever is newer.
-            return remoteOp.clientCreatedAt > localOp.clientCreatedAt
-              ? { transformedOps: [localOp], newContext: context }
-              : { transformedOps: [], newContext: context };
+            // Both ops rename the same item. Use Last-Writer-Wins (LWW).
+            if (localOp.clientCreatedAt <= remoteOp.clientCreatedAt) {
+              // Remote is newer or same, so local is discarded.
+              return { transformedOps: [], newContext: context };
+            }
+
+            // Local is newer, it "wins", but must be transformed.
+            return {
+              transformedOps: [
+                {
+                  ...localOp,
+                  payload: {
+                    ...localOp.payload,
+                    originalName: remoteOp.payload.newName,
+                  },
+                },
+              ],
+              newContext: context,
+            };
           }
 
           if (

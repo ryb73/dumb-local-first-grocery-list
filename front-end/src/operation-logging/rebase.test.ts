@@ -124,4 +124,87 @@ describe(`rebase`, () => {
       ]
     `);
   });
+
+  it(`Case 2: Direct Conflict (LWW on Rename)`, async () => {
+    const T1 = 1;
+    const T2 = T1 + 1000;
+
+    await db!
+      .insertInto(`items`)
+      .values([{ id: `A`, name: `Milk`, checked: 0, created_at: T1 - 100 }])
+      .execute();
+
+    const localOps: Operation[] = [
+      {
+        clientCreatedAt: T2,
+        id: `local-op-1`,
+        payload: {
+          itemId: `A`,
+          newName: `Almond Milk`,
+          originalName: `Milk`,
+        },
+        serverCommittedAt: null,
+        type: `renameItem`,
+      },
+    ];
+    const remoteOps: Operation[] = [
+      {
+        clientCreatedAt: T1,
+        id: `remote-op-1`,
+        payload: {
+          itemId: `A`,
+          newName: `Oat Milk`,
+          originalName: `Milk`,
+        },
+        serverCommittedAt: null,
+        type: `renameItem`,
+      },
+    ];
+    const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
+      idMap: {},
+    });
+
+    expect(rebasedOps).toMatchInlineSnapshot(`
+      [
+        {
+          "clientCreatedAt": 1001,
+          "id": "local-op-1",
+          "payload": {
+            "itemId": "A",
+            "newName": "Almond Milk",
+            "originalName": "Oat Milk",
+          },
+          "serverCommittedAt": null,
+          "type": "renameItem",
+        },
+      ]
+    `);
+
+    for (const op of remoteOps) {
+      // eslint-disable-next-line no-await-in-loop
+      await applyOperation(db!, op);
+    }
+    for (const op of rebasedOps) {
+      // eslint-disable-next-line no-await-in-loop
+      await applyOperation(db!, op);
+    }
+
+    const finalState = await db!
+      .selectFrom(`items`)
+      .selectAll()
+      .orderBy(`id`, `asc`)
+      .execute();
+
+    expect(finalState).toMatchInlineSnapshot(`
+      [
+        {
+          "checked": 0,
+          "created_at": -99,
+          "id": "A",
+          "last_checked_at": null,
+          "name": "Almond Milk",
+        },
+      ]
+    `);
+  });
 });

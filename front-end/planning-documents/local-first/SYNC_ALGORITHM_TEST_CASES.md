@@ -28,12 +28,12 @@ Both sides rename the same item. The conflict is resolved using Last-Write-Wins,
 
 *   **Initial State**:
     *   Item A: `{ id: 'A', name: 'Milk', checked: false }`
-*   **Local Operations**: `[{ type: 'renameItem', payload: { itemId: 'A', newName: 'Almond Milk' }, clientCreatedAt: T2 }]`
-*   **Remote Operations**: `[{ type: 'renameItem', payload: { itemId: 'A', newName: 'Oat Milk' }, clientCreatedAt: T1 }]`
-*   **Conflict Resolution Logic**: For `renameItem` vs `renameItem`, compare `clientCreatedAt`. Since `T2 > T1`, the local operation wins. `resolveConflict` returns `[local]`.
-*   **Expected `rebasedLocalOps`**: `[{ type: 'renameItem', payload: { itemId: 'A', newName: 'Almond Milk' } }]`
+*   **Local Operations**: `[{ type: 'renameItem', payload: { itemId: 'A', newName: 'Almond Milk', originalName: 'Milk' }, clientCreatedAt: T2 }]`
+*   **Remote Operations**: `[{ type: 'renameItem', payload: { itemId: 'A', newName: 'Oat Milk', originalName: 'Milk' }, clientCreatedAt: T1 }]`
+*   **Conflict Resolution Logic**: For `renameItem` vs `renameItem` on the same item, a Last-Write-Wins (LWW) strategy is used based on `clientCreatedAt`. Since `T2 > T1`, the local operation "wins". To ensure idempotency, the winning operation is transformed so its `originalName` reflects the state after the remote operation is applied. `resolveConflict` returns a modified local op.
+*   **Expected `rebasedLocalOps`**: `[{ type: 'renameItem', payload: { itemId: 'A', newName: 'Almond Milk', originalName: 'Oat Milk' } }]`
 *   **Expected Final State**:
-    *   Item A: `{ id: 'A', name: 'Almond Milk', checked: false }` (The remote 'Oat Milk' is applied, then overwritten).
+    *   Item A: `{ id: 'A', name: 'Almond Milk', checked: false }` (The remote 'Oat Milk' is applied, then overwritten by the rebased local operation).
 
 ---
 
