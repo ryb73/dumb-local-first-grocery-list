@@ -33,8 +33,12 @@ export async function applyOperation(
     case `createItem`:
       // Not yet implemented
       break;
-    case `deleteItem`:
-      // Not yet implemented
+    case `deleteItem`: {
+      await db
+        .deleteFrom(`items`)
+        .where(`id`, `=`, operation.payload.itemId)
+        .execute();
       break;
+    }
   }
 }

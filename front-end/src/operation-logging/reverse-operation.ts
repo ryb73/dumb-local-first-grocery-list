@@ -3,6 +3,12 @@ import type { DB } from "../../db";
 import type { Operation } from "./operation-types.ts";
 
 /**
+ * NOTE: This file explicitly writes out object keys instead of using spread operators
+ * to avoid the possibility of unwanted values being set in database operations.
+ * Future editors should maintain this pattern for safety and explicitness.
+ */
+
+/**
  * Reverses an operation that has already been applied to the database.
  * This function directly mutates the database to undo the effect of the original operation.
  *
@@ -35,9 +41,29 @@ export async function reverseOperation(
       break;
     }
 
-    case `createItem`:
-    case `deleteItem`:
-      throw new Error(`Not yet implemented: ${operation.type}`);
+    case `createItem`: {
+      // To reverse createItem, we delete the created item
+      await db
+        .deleteFrom(`items`)
+        .where(`id`, `=`, operation.payload.item.id)
+        .execute();
+      break;
+    }
+
+    case `deleteItem`: {
+      // To reverse deleteItem, we recreate the deleted item
+      const deletedItem = operation.payload.deletedItem;
+      await db
+        .insertInto(`items`)
+        .values({
+          id: operation.payload.itemId,
+          name: deletedItem.name,
+          checked: deletedItem.checked,
+          last_checked_at: deletedItem.last_checked_at,
+        })
+        .execute();
+      break;
+    }
 
     default: {
       throw new Error(

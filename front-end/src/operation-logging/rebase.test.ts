@@ -250,4 +250,108 @@ describe(`rebase`, () => {
 
     expect(revertedState).toEqual(initialState);
   });
+
+  it(`Case 3: Local Deletion vs. Remote Update`, async () => {
+    const T1 = 1;
+    const T2 = T1 + 1000;
+
+    await db!
+      .insertInto(`items`)
+      .values([{ id: `X`, name: `Coffee`, checked: 0, created_at: T1 - 100 }])
+      .execute();
+
+    const initialState = await db!
+      .selectFrom(`items`)
+      .selectAll()
+      .orderBy(`id`, `asc`)
+      .execute();
+
+    const localOps: Operation[] = [
+      {
+        clientCreatedAt: T1,
+        id: `local-op-1`,
+        payload: {
+          itemId: `X`,
+          deletedItem: {
+            checked: 0,
+            created_at: T1 - 100,
+            last_checked_at: null,
+            name: `Coffee`,
+          },
+        },
+        serverCommittedAt: null,
+        type: `deleteItem`,
+      },
+    ];
+    const remoteOps: Operation[] = [
+      {
+        clientCreatedAt: T2,
+        id: `remote-op-1`,
+        payload: {
+          checked: true,
+          itemId: `X`,
+          newLastCheckedAt: T2,
+          originalChecked: false,
+          originalLastCheckedAt: null,
+        },
+        serverCommittedAt: null,
+        type: `setCheckedState`,
+      },
+    ];
+    const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
+      idMap: {},
+    });
+
+    expect(rebasedOps).toMatchInlineSnapshot(`
+      [
+        {
+          "clientCreatedAt": 1,
+          "id": "local-op-1",
+          "payload": {
+            "deletedItem": {
+              "checked": 0,
+              "created_at": -99,
+              "last_checked_at": null,
+              "name": "Coffee",
+            },
+            "itemId": "X",
+          },
+          "serverCommittedAt": null,
+          "type": "deleteItem",
+        },
+      ]
+    `);
+
+    for (const op of remoteOps) {
+      // eslint-disable-next-line no-await-in-loop
+      await applyOperation(db!, op);
+    }
+    for (const op of rebasedOps) {
+      // eslint-disable-next-line no-await-in-loop
+      await applyOperation(db!, op);
+    }
+
+    const finalState = await db!
+      .selectFrom(`items`)
+      .selectAll()
+      .orderBy(`id`, `asc`)
+      .execute();
+
+    expect(finalState).toMatchInlineSnapshot(`[]`);
+
+    const allAppliedOps = [...remoteOps, ...rebasedOps];
+
+    for (const op of allAppliedOps.slice().reverse()) {
+      // eslint-disable-next-line no-await-in-loop
+      await reverseOperation(db!, op);
+    }
+
+    const revertedState = await db!
+      .selectFrom(`items`)
+      .selectAll()
+      .orderBy(`id`, `asc`)
+      .execute();
+
+    expect(revertedState).toEqual(initialState);
+  });
 });
