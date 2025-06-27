@@ -97,11 +97,9 @@ describe(`rebase`, () => {
       ]
     `);
 
-    for (const op of remoteOps) {
-      // eslint-disable-next-line no-await-in-loop
-      await applyOperation(db!, op);
-    }
-    for (const op of rebasedOps) {
+    const allAppliedOps = [...remoteOps, ...rebasedOps];
+
+    for (const op of allAppliedOps) {
       // eslint-disable-next-line no-await-in-loop
       await applyOperation(db!, op);
     }
@@ -130,8 +128,6 @@ describe(`rebase`, () => {
         },
       ]
     `);
-
-    const allAppliedOps = [...remoteOps, ...rebasedOps];
 
     for (const op of allAppliedOps.slice().reverse()) {
       // eslint-disable-next-line no-await-in-loop
@@ -208,11 +204,9 @@ describe(`rebase`, () => {
       ]
     `);
 
-    for (const op of remoteOps) {
-      // eslint-disable-next-line no-await-in-loop
-      await applyOperation(db!, op);
-    }
-    for (const op of rebasedOps) {
+    const allAppliedOps = [...remoteOps, ...rebasedOps];
+
+    for (const op of allAppliedOps) {
       // eslint-disable-next-line no-await-in-loop
       await applyOperation(db!, op);
     }
@@ -234,8 +228,6 @@ describe(`rebase`, () => {
         },
       ]
     `);
-
-    const allAppliedOps = [...remoteOps, ...rebasedOps];
 
     for (const op of allAppliedOps.slice().reverse()) {
       // eslint-disable-next-line no-await-in-loop
@@ -322,11 +314,9 @@ describe(`rebase`, () => {
       ]
     `);
 
-    for (const op of remoteOps) {
-      // eslint-disable-next-line no-await-in-loop
-      await applyOperation(db!, op);
-    }
-    for (const op of rebasedOps) {
+    const allAppliedOps = [...remoteOps, ...rebasedOps];
+
+    for (const op of allAppliedOps) {
       // eslint-disable-next-line no-await-in-loop
       await applyOperation(db!, op);
     }
@@ -338,8 +328,6 @@ describe(`rebase`, () => {
       .execute();
 
     expect(finalState).toMatchInlineSnapshot(`[]`);
-
-    const allAppliedOps = [...remoteOps, ...rebasedOps];
 
     for (const op of allAppliedOps.slice().reverse()) {
       // eslint-disable-next-line no-await-in-loop
