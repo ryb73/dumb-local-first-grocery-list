@@ -8,6 +8,7 @@ import { applyOperation } from "./apply-operation.ts";
 import type { Operation } from "./operation-types.ts";
 import { rebase } from "./rebase.ts";
 import { resolveConflict } from "./resolve-conflict.ts";
+import { reverseOperation } from "./reverse-operation.ts";
 
 describe(`rebase`, () => {
   let db: Kysely<DB> | null = null;
@@ -38,6 +39,12 @@ describe(`rebase`, () => {
         { id: `A`, name: `Apples`, checked: 0, created_at: T1 - 100 },
         { id: `B`, name: `Bread`, checked: 0, created_at: T1 - 100 },
       ])
+      .execute();
+
+    const initialState = await db!
+      .selectFrom(`items`)
+      .selectAll()
+      .orderBy(`id`, `asc`)
       .execute();
 
     const localOps: Operation[] = [
@@ -123,6 +130,21 @@ describe(`rebase`, () => {
         },
       ]
     `);
+
+    const allAppliedOps = [...remoteOps, ...rebasedOps];
+
+    for (const op of allAppliedOps.slice().reverse()) {
+      // eslint-disable-next-line no-await-in-loop
+      await reverseOperation(db!, op);
+    }
+
+    const revertedState = await db!
+      .selectFrom(`items`)
+      .selectAll()
+      .orderBy(`id`, `asc`)
+      .execute();
+
+    expect(revertedState).toEqual(initialState);
   });
 
   it(`Case 2: Direct Conflict (LWW on Rename)`, async () => {
@@ -132,6 +154,12 @@ describe(`rebase`, () => {
     await db!
       .insertInto(`items`)
       .values([{ id: `A`, name: `Milk`, checked: 0, created_at: T1 - 100 }])
+      .execute();
+
+    const initialState = await db!
+      .selectFrom(`items`)
+      .selectAll()
+      .orderBy(`id`, `asc`)
       .execute();
 
     const localOps: Operation[] = [
@@ -206,5 +234,20 @@ describe(`rebase`, () => {
         },
       ]
     `);
+
+    const allAppliedOps = [...remoteOps, ...rebasedOps];
+
+    for (const op of allAppliedOps.slice().reverse()) {
+      // eslint-disable-next-line no-await-in-loop
+      await reverseOperation(db!, op);
+    }
+
+    const revertedState = await db!
+      .selectFrom(`items`)
+      .selectAll()
+      .orderBy(`id`, `asc`)
+      .execute();
+
+    expect(revertedState).toEqual(initialState);
   });
 });

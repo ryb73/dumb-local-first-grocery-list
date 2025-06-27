@@ -24,9 +24,7 @@ export async function applyOperation(
                 checked: 1,
                 last_checked_at: operation.payload.newLastCheckedAt,
               }
-            : {
-                checked: 0,
-              }
+            : { checked: 0 }
         )
         .where(`id`, `=`, operation.payload.itemId)
         .execute();

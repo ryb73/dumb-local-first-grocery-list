@@ -44,6 +44,8 @@ export type SetCheckedStatePayload = {
   itemId: Item["id"];
   /** The original checked state. Necessary for rollbacks. */
   originalChecked: boolean;
+  /** The original value of last_checked_at. Necessary for rollbacks. */
+  originalLastCheckedAt: Item["last_checked_at"];
 } & (
   | {
       /** The new checked state. */
@@ -57,8 +59,6 @@ export type SetCheckedStatePayload = {
        * This is only populated when `checked` is `true`.
        */
       newLastCheckedAt: number;
-      /** The original value of last_checked_at. Necessary for rollbacks. */
-      originalLastCheckedAt: Item["last_checked_at"];
     }
 );
 export type SetCheckedStateOperation = BaseOperation<
