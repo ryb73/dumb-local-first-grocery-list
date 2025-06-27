@@ -10,6 +10,14 @@ import { rebase } from "./rebase.ts";
 import { resolveConflict } from "./resolve-conflict.ts";
 import { reverseOperation } from "./reverse-operation.ts";
 
+async function dumpDb(db: Kysely<DB>) {
+  return await db
+    .selectFrom(`items`)
+    .selectAll()
+    .orderBy(`id`, `asc`)
+    .execute();
+}
+
 describe(`rebase`, () => {
   let db: Kysely<DB> | null = null;
 
@@ -41,11 +49,7 @@ describe(`rebase`, () => {
       ])
       .execute();
 
-    const initialState = await db!
-      .selectFrom(`items`)
-      .selectAll()
-      .orderBy(`id`, `asc`)
-      .execute();
+    const initialState = await dumpDb(db!);
 
     const localOps: Operation[] = [
       {
@@ -104,11 +108,28 @@ describe(`rebase`, () => {
       await applyOperation(db!, op);
     }
 
-    const finalState = await db!
-      .selectFrom(`items`)
-      .selectAll()
-      .orderBy(`id`, `asc`)
-      .execute();
+    const stateAfterAllOps = await dumpDb(db!);
+
+    expect(stateAfterAllOps).toMatchInlineSnapshot(`
+      [
+        {
+          "checked": 1,
+          "created_at": -99,
+          "id": "A",
+          "last_checked_at": 1,
+          "name": "Apples",
+        },
+        {
+          "checked": 0,
+          "created_at": -99,
+          "id": "B",
+          "last_checked_at": null,
+          "name": "Whole Wheat Bread",
+        },
+      ]
+    `);
+
+    const finalState = await dumpDb(db!);
 
     expect(finalState).toMatchInlineSnapshot(`
       [
@@ -134,11 +155,7 @@ describe(`rebase`, () => {
       await reverseOperation(db!, op);
     }
 
-    const revertedState = await db!
-      .selectFrom(`items`)
-      .selectAll()
-      .orderBy(`id`, `asc`)
-      .execute();
+    const revertedState = await dumpDb(db!);
 
     expect(revertedState).toEqual(initialState);
   });
@@ -152,11 +169,7 @@ describe(`rebase`, () => {
       .values([{ id: `A`, name: `Milk`, checked: 0, created_at: T1 - 100 }])
       .execute();
 
-    const initialState = await db!
-      .selectFrom(`items`)
-      .selectAll()
-      .orderBy(`id`, `asc`)
-      .execute();
+    const initialState = await dumpDb(db!);
 
     const localOps: Operation[] = [
       {
@@ -211,11 +224,21 @@ describe(`rebase`, () => {
       await applyOperation(db!, op);
     }
 
-    const finalState = await db!
-      .selectFrom(`items`)
-      .selectAll()
-      .orderBy(`id`, `asc`)
-      .execute();
+    const stateAfterAllOps = await dumpDb(db!);
+
+    expect(stateAfterAllOps).toMatchInlineSnapshot(`
+      [
+        {
+          "checked": 0,
+          "created_at": -99,
+          "id": "A",
+          "last_checked_at": null,
+          "name": "Almond Milk",
+        },
+      ]
+    `);
+
+    const finalState = await dumpDb(db!);
 
     expect(finalState).toMatchInlineSnapshot(`
       [
@@ -234,11 +257,7 @@ describe(`rebase`, () => {
       await reverseOperation(db!, op);
     }
 
-    const revertedState = await db!
-      .selectFrom(`items`)
-      .selectAll()
-      .orderBy(`id`, `asc`)
-      .execute();
+    const revertedState = await dumpDb(db!);
 
     expect(revertedState).toEqual(initialState);
   });
@@ -252,11 +271,7 @@ describe(`rebase`, () => {
       .values([{ id: `X`, name: `Coffee`, checked: 0, created_at: T1 - 100 }])
       .execute();
 
-    const initialState = await db!
-      .selectFrom(`items`)
-      .selectAll()
-      .orderBy(`id`, `asc`)
-      .execute();
+    const initialState = await dumpDb(db!);
 
     const localOps: Operation[] = [
       {
@@ -321,11 +336,11 @@ describe(`rebase`, () => {
       await applyOperation(db!, op);
     }
 
-    const finalState = await db!
-      .selectFrom(`items`)
-      .selectAll()
-      .orderBy(`id`, `asc`)
-      .execute();
+    const stateAfterAllOps = await dumpDb(db!);
+
+    expect(stateAfterAllOps).toMatchInlineSnapshot(`[]`);
+
+    const finalState = await dumpDb(db!);
 
     expect(finalState).toMatchInlineSnapshot(`[]`);
 
@@ -334,11 +349,7 @@ describe(`rebase`, () => {
       await reverseOperation(db!, op);
     }
 
-    const revertedState = await db!
-      .selectFrom(`items`)
-      .selectAll()
-      .orderBy(`id`, `asc`)
-      .execute();
+    const revertedState = await dumpDb(db!);
 
     expect(revertedState).toEqual(initialState);
   });
