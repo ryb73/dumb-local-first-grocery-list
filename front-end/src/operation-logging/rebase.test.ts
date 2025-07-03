@@ -174,30 +174,9 @@ describe(`rebase`, () => {
       await applyOperation(db!, op);
     }
 
-    const stateAfterAllOps = await dumpDb(db!);
+    const stateAfterAllApplied = await dumpDb(db!);
 
-    expect(stateAfterAllOps).toMatchInlineSnapshot(`
-      [
-        {
-          "checked": 1,
-          "created_at": 1,
-          "id": "A",
-          "last_checked_at": 3,
-          "name": "Apples",
-        },
-        {
-          "checked": 0,
-          "created_at": 2,
-          "id": "B",
-          "last_checked_at": null,
-          "name": "Whole Wheat Bread",
-        },
-      ]
-    `);
-
-    const finalState = await dumpDb(db!);
-
-    expect(finalState).toMatchInlineSnapshot(`
+    expect(stateAfterAllApplied).toMatchInlineSnapshot(`
       [
         {
           "checked": 1,
@@ -269,23 +248,9 @@ describe(`rebase`, () => {
       await applyOperation(db!, op);
     }
 
-    const stateAfterAllOps = await dumpDb(db!);
+    const stateAfterAllApplied = await dumpDb(db!);
 
-    expect(stateAfterAllOps).toMatchInlineSnapshot(`
-      [
-        {
-          "checked": 0,
-          "created_at": 1,
-          "id": "A",
-          "last_checked_at": null,
-          "name": "Almond Milk",
-        },
-      ]
-    `);
-
-    const finalState = await dumpDb(db!);
-
-    expect(finalState).toMatchInlineSnapshot(`
+    expect(stateAfterAllApplied).toMatchInlineSnapshot(`
       [
         {
           "checked": 0,
@@ -360,13 +325,9 @@ describe(`rebase`, () => {
       await applyOperation(db!, op);
     }
 
-    const stateAfterAllOps = await dumpDb(db!);
+    const stateAfterAllApplied = await dumpDb(db!);
 
-    expect(stateAfterAllOps).toMatchInlineSnapshot(`[]`);
-
-    const finalState = await dumpDb(db!);
-
-    expect(finalState).toMatchInlineSnapshot(`[]`);
+    expect(stateAfterAllApplied).toMatchInlineSnapshot(`[]`);
 
     for (const op of allAppliedOps.slice().reverse()) {
       // eslint-disable-next-line no-await-in-loop
