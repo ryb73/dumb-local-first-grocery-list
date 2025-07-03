@@ -1,0 +1,26 @@
+{
+  "name": "concurrent-transaction-test",
+  "version": "1.0.0",
+  "description": "Test for concurrent SQLite transactions with step-through debugging in the browser using sqlocal and Kysely.",
+  "main": "src/index.tsx",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "packageManager": "pnpm@10.10.0+sha512.d615db246fe70f25dcfea6d8d73dee782ce23e2245e3c4f6f888249fb568149318637dca73c2c5c8ef2a4ca0d5657fb9567188bfab47f566d1ee6ce987815c39",
+  "dependencies": {
+    "kysely": "^0.28.2",
+    "solid-js": "^1.9.7",
+    "sqlocal": "^0.14.1",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.23",
+    "vite-plugin-solid": "^2.11.6"
+  }
+}

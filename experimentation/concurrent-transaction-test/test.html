@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concurrent SQLite Transaction Test</title>
+    <style>
+        body { font-family: monospace; margin: 20px; }
+        #log { background: #f0f0f0; padding: 10px; border: 1px solid #ccc; height: 600px; overflow-y: auto; }
+        .timestamp { color: #666; }
+        .tx-a { color: #0066cc; }
+        .tx-b { color: #cc6600; }
+        .main { color: #333; }
+        .error { color: #cc0000; font-weight: bold; }
+        .success { color: #009900; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Concurrent SQLite Transaction Test</h1>
+    <button onclick="runTest()">Run Test</button>
+    <button onclick="clearLog()">Clear Log</button>
+    <div id="log"></div>
+
+    <script type="module" src="/src/concurrent-test.js"></script>
+</body>
+</html>

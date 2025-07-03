@@ -1,0 +1,229 @@
+.container {
+  font-family: sans-serif;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.status {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.statusBadge {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+.statusBadge.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.statusBadge.inactive {
+  background-color: #f44336;
+  color: white;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.section {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #fafafa;
+}
+
+.section h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 8px;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.controls button {
+  padding: 10px 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #f0f0f0;
+  transition: background-color 0.2s;
+  font-size: 0.9em;
+}
+
+.controls button:hover {
+  background-color: #e0e0e0;
+}
+
+.controls button:disabled {
+  background-color: #f8f8f8;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.sqlInput {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sqlInput select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.sqlInput textarea {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.9em;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.sqlInput button {
+  align-self: flex-start;
+  background-color: #2196F3;
+  color: white;
+  border: 1px solid #1976D2;
+}
+
+.sqlInput button:hover {
+  background-color: #1976D2;
+}
+
+.quickExamples {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #f0f8ff;
+}
+
+.quickExamples h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.exampleButtons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.exampleButtons button {
+  padding: 8px 12px;
+  border: 1px solid #007acc;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #e6f3ff;
+  color: #007acc;
+  font-size: 0.85em;
+  transition: background-color 0.2s;
+}
+
+.exampleButtons button:hover {
+  background-color: #cce7ff;
+}
+
+.exampleButtons button:disabled {
+  background-color: #f8f8f8;
+  color: #aaa;
+  cursor: not-allowed;
+  border-color: #ccc;
+}
+
+.logs {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.logs h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 8px;
+}
+
+.logEntry {
+  padding: 8px 0;
+  border-bottom: 1px dotted #ddd;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.logEntry:last-child {
+  border-bottom: none;
+}
+
+.timestamp {
+  font-size: 0.75em;
+  color: #666;
+  font-family: monospace;
+}
+
+.message {
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+.logData {
+  background-color: #f0f0f0;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  margin-top: 4px;
+  overflow-x: auto;
+}
+
+.logEntry.error .message {
+  color: #d32f2f;
+  font-weight: bold;
+}
+
+.logEntry.success .message {
+  color: #388e3c;
+  font-weight: bold;
+}
+
+.logEntry.warn .message {
+  color: #f57c00;
+  font-weight: bold;
+}
+
+.logEntry.step .message {
+  color: #1976d2;
+  font-weight: bold;
+}
+
+.logEntry.info .message {
+  color: #333;
+}
