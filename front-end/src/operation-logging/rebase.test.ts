@@ -338,4 +338,53 @@ describe(`rebase`, () => {
 
     expect(revertedState).toEqual(initialState);
   });
+
+  it(`Case 4: Remote Deletion vs. Local Update`, async () => {
+    const clientCreatedAt = nextTimestamp();
+    await db!
+      .insertInto(`items`)
+      .values([
+        { id: `Y`, name: `Yogurt`, checked: 0, created_at: clientCreatedAt },
+      ])
+      .execute();
+
+    const initialState = await dumpDb(db!);
+
+    const remoteOps: Operation[] = [
+      createDeleteOperation(`Y`, {
+        checked: 0,
+        created_at: clientCreatedAt,
+        last_checked_at: null,
+        name: `Yogurt`,
+      }),
+    ];
+    const localOps: Operation[] = [
+      createRenameOperation(`Y`, `Greek Yogurt`, `Yogurt`),
+    ];
+    const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
+      idMap: {},
+    });
+
+    expect(rebasedOps).toMatchInlineSnapshot(`[]`);
+
+    const allAppliedOps = [...remoteOps, ...rebasedOps];
+
+    for (const op of allAppliedOps) {
+      // eslint-disable-next-line no-await-in-loop
+      await applyOperation(db!, op);
+    }
+
+    const stateAfterAllApplied = await dumpDb(db!);
+
+    expect(stateAfterAllApplied).toMatchInlineSnapshot(`[]`);
+
+    for (const op of allAppliedOps.slice().reverse()) {
+      // eslint-disable-next-line no-await-in-loop
+      await reverseOperation(db!, op);
+    }
+
+    const revertedState = await dumpDb(db!);
+
+    expect(revertedState).toEqual(initialState);
+  });
 });
