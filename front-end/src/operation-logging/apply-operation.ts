@@ -2,6 +2,12 @@ import type { Kysely } from "kysely";
 import type { DB } from "../../db";
 import type { Operation } from "./operation-types.ts";
 
+/**
+ * NOTE: This file explicitly writes out object keys instead of using spread operators
+ * to avoid the possibility of unwanted values being set in database operations.
+ * Future editors should maintain this pattern for safety and explicitness.
+ */
+
 export async function applyOperation(
   db: Kysely<DB>,
   operation: Operation
@@ -30,9 +36,19 @@ export async function applyOperation(
         .execute();
       break;
     }
-    case `createItem`:
-      // Not yet implemented
+    case `createItem`: {
+      await db
+        .insertInto(`items`)
+        .values({
+          checked: 0,
+          created_at: operation.payload.item.created_at,
+          id: operation.payload.item.id,
+          last_checked_at: null,
+          name: operation.payload.item.name,
+        })
+        .execute();
       break;
+    }
     case `deleteItem`: {
       await db
         .deleteFrom(`items`)

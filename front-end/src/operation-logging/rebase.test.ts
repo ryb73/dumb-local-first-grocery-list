@@ -115,6 +115,23 @@ function createDeleteOperation(
   };
 }
 
+function createCreateItemOperation(id: string, name: string): Operation {
+  const clientCreatedAt = nextTimestamp();
+  return {
+    clientCreatedAt,
+    id: nextId(),
+    payload: {
+      item: {
+        created_at: clientCreatedAt,
+        id,
+        name,
+      },
+    },
+    serverCommittedAt: null,
+    type: `createItem`,
+  };
+}
+
 async function dumpDb(db: Kysely<DB>) {
   return await db
     .selectFrom(`items`)
@@ -620,6 +637,49 @@ describe(`rebase`, () => {
           "id": "Y",
           "last_checked_at": null,
           "name": "Apples",
+        },
+      ]
+    `);
+
+    for (const op of allAppliedOps.slice().reverse()) {
+      // eslint-disable-next-line no-await-in-loop
+      await reverseOperation(db!, op);
+    }
+
+    const revertedState = await dumpDb(db!);
+
+    expect(revertedState).toEqual(initialState);
+  });
+
+  it(`Case 6: Simple Creation Conflict`, async () => {
+    const initialState = await dumpDb(db!);
+
+    const localOps = [createCreateItemOperation(`uuid-local`, `Cheese`)];
+    const remoteOps = [createCreateItemOperation(`uuid-remote`, `Cheese`)];
+
+    const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
+      idMap: {},
+    });
+
+    expect(rebasedOps).toMatchInlineSnapshot(`[]`);
+
+    const allAppliedOps = [...remoteOps, ...rebasedOps];
+
+    for (const op of allAppliedOps) {
+      // eslint-disable-next-line no-await-in-loop
+      await applyOperation(db!, op);
+    }
+
+    const stateAfterAllApplied = await dumpDb(db!);
+
+    expect(stateAfterAllApplied).toMatchInlineSnapshot(`
+      [
+        {
+          "checked": 0,
+          "created_at": 2,
+          "id": "uuid-remote",
+          "last_checked_at": null,
+          "name": "Cheese",
         },
       ]
     `);
