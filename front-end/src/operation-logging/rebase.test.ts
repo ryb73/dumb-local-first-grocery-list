@@ -15,7 +15,12 @@ import {
 import type { DB } from "../../db";
 import { createMigrator } from "../db/migrations/createMigrator.ts";
 import { applyOperation } from "./apply-operation.ts";
-import type { Operation } from "./operation-types.ts";
+import type {
+  CreateItemOperation,
+  DeleteItemOperation,
+  RenameItemOperation,
+  SetCheckedStateOperation,
+} from "./operation-types.ts";
 import { rebase } from "./rebase.ts";
 import { resolveConflict } from "./resolve-conflict.ts";
 import { reverseOperation } from "./reverse-operation.ts";
@@ -47,7 +52,7 @@ function createSetCheckedOperation(
     originalLastCheckedAt?: number | null;
     newLastCheckedAt?: number;
   } = {}
-): Operation {
+): SetCheckedStateOperation {
   const clientCreatedAt = nextTimestamp();
 
   assert(!checked || options.originalLastCheckedAt !== undefined);
@@ -80,7 +85,7 @@ function createRenameOperation(
     last_checked_at: number | null;
     name: string;
   }
-): Operation {
+): RenameItemOperation {
   return {
     clientCreatedAt: nextTimestamp(),
     id: nextId(),
@@ -102,7 +107,7 @@ function createDeleteOperation(
     last_checked_at: number | null;
     name: string;
   }
-): Operation {
+): DeleteItemOperation {
   return {
     clientCreatedAt: nextTimestamp(),
     id: nextId(),
@@ -115,7 +120,10 @@ function createDeleteOperation(
   };
 }
 
-function createCreateItemOperation(id: string, name: string): Operation {
+function createCreateItemOperation(
+  id: string,
+  name: string
+): CreateItemOperation {
   const clientCreatedAt = nextTimestamp();
   return {
     clientCreatedAt,
@@ -680,6 +688,106 @@ describe(`rebase`, () => {
           "id": "uuid-remote",
           "last_checked_at": null,
           "name": "Cheese",
+        },
+      ]
+    `);
+
+    for (const op of allAppliedOps.slice().reverse()) {
+      // eslint-disable-next-line no-await-in-loop
+      await reverseOperation(db!, op);
+    }
+
+    const revertedState = await dumpDb(db!);
+
+    expect(revertedState).toEqual(initialState);
+  });
+
+  it(`Case 7: Sequential Local Toggles vs. Remote Rename`, async () => {
+    const itemCreatedAt = nextTimestamp();
+    await db!
+      .insertInto(`items`)
+      .values([
+        {
+          checked: 0,
+          created_at: itemCreatedAt,
+          id: `A`,
+          last_checked_at: null,
+          name: `Apples`,
+        },
+      ])
+      .execute();
+
+    const initialState = await dumpDb(db!);
+
+    const localOp1 = createSetCheckedOperation(`A`, true, {
+      originalLastCheckedAt: null,
+    });
+
+    const remoteOp = createRenameOperation(`A`, `Green Apples`, {
+      checked: 0,
+      created_at: itemCreatedAt,
+      last_checked_at: null,
+      name: `Apples`,
+    });
+
+    const localOp2 = createSetCheckedOperation(`A`, false, {
+      originalLastCheckedAt: localOp1.clientCreatedAt,
+    });
+
+    const localOps = [localOp1, localOp2];
+    const remoteOps = [remoteOp];
+
+    const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
+      idMap: {},
+    });
+
+    expect(rebasedOps).toMatchInlineSnapshot(`
+      [
+        {
+          "clientCreatedAt": 2,
+          "id": "op-1",
+          "payload": {
+            "checked": true,
+            "itemId": "A",
+            "newLastCheckedAt": 2,
+            "originalChecked": false,
+            "originalLastCheckedAt": null,
+          },
+          "serverCommittedAt": null,
+          "type": "setCheckedState",
+        },
+        {
+          "clientCreatedAt": 4,
+          "id": "op-3",
+          "payload": {
+            "checked": false,
+            "itemId": "A",
+            "originalChecked": true,
+            "originalLastCheckedAt": 2,
+          },
+          "serverCommittedAt": null,
+          "type": "setCheckedState",
+        },
+      ]
+    `);
+
+    const allAppliedOps = [...remoteOps, ...rebasedOps];
+
+    for (const op of allAppliedOps) {
+      // eslint-disable-next-line no-await-in-loop
+      await applyOperation(db!, op);
+    }
+
+    const stateAfterAllApplied = await dumpDb(db!);
+
+    expect(stateAfterAllApplied).toMatchInlineSnapshot(`
+      [
+        {
+          "checked": 0,
+          "created_at": 1,
+          "id": "A",
+          "last_checked_at": 2,
+          "name": "Green Apples",
         },
       ]
     `);
