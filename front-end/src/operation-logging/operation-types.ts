@@ -72,7 +72,8 @@ export type SetCheckedStateOperation = BaseOperation<
 export type RenameItemPayload = {
   itemId: Item["id"];
   newName: Item["name"];
-  originalName: Item["name"];
+  /** The original item before renaming. Necessary for conflict resolution and rollbacks. */
+  originalItem: Omit<Item, "id">;
 };
 export type RenameItemOperation = BaseOperation<
   "renameItem",

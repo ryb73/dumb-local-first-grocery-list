@@ -23,7 +23,7 @@ export async function reverseOperation(
     case `renameItem`: {
       await db
         .updateTable(`items`)
-        .set({ name: operation.payload.originalName })
+        .set({ name: operation.payload.originalItem.name })
         .where(`id`, `=`, operation.payload.itemId)
         .execute();
       break;

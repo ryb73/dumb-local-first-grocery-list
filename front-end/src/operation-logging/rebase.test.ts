@@ -1,8 +1,17 @@
 import assert from "node:assert";
 import Database from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
-// eslint-disable-next-line @typescript-eslint/no-shadow
-import { beforeEach, describe, expect, it } from "vitest";
+import {
+  /* eslint-disable @typescript-eslint/no-shadow */
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+  /* eslint-enable @typescript-eslint/no-shadow */
+} from "vitest";
 import type { DB } from "../../db";
 import { createMigrator } from "../db/migrations/createMigrator.ts";
 import { applyOperation } from "./apply-operation.ts";
@@ -14,10 +23,12 @@ import { reverseOperation } from "./reverse-operation.ts";
 // Helper functions for creating mock operations
 let operationCounter = 0;
 let timestampCounter = 1;
+let uuidCounter = 0;
 
 function resetCounters() {
   operationCounter = 0;
   timestampCounter = 1;
+  uuidCounter = 0;
 }
 
 function nextId() {
@@ -63,7 +74,12 @@ function createSetCheckedOperation(
 function createRenameOperation(
   itemId: string,
   newName: string,
-  originalName: string
+  originalItem: {
+    checked: number;
+    created_at: number;
+    last_checked_at: number | null;
+    name: string;
+  }
 ): Operation {
   return {
     clientCreatedAt: nextTimestamp(),
@@ -71,7 +87,7 @@ function createRenameOperation(
     payload: {
       itemId,
       newName,
-      originalName,
+      originalItem,
     },
     serverCommittedAt: null,
     type: `renameItem`,
@@ -107,6 +123,16 @@ async function dumpDb(db: Kysely<DB>) {
     .execute();
 }
 
+beforeAll(() => {
+  vi.stubGlobal(`crypto`, {
+    randomUUID: vi.fn(() => `uuid-${++uuidCounter}`),
+  });
+});
+
+afterAll(() => {
+  vi.unstubAllGlobals();
+});
+
 describe(`rebase`, () => {
   let db: Kysely<DB> | null = null;
 
@@ -129,21 +155,27 @@ describe(`rebase`, () => {
   });
 
   it(`Case 1: Independent Operations (Conflict-Free)`, async () => {
+    const createdAt = [nextTimestamp(), nextTimestamp()];
     await db!
       .insertInto(`items`)
       .values([
-        { id: `A`, name: `Apples`, checked: 0, created_at: nextTimestamp() },
-        { id: `B`, name: `Bread`, checked: 0, created_at: nextTimestamp() },
+        { id: `A`, name: `Apples`, checked: 0, created_at: createdAt[0] },
+        { id: `B`, name: `Bread`, checked: 0, created_at: createdAt[1] },
       ])
       .execute();
 
     const initialState = await dumpDb(db!);
 
-    const localOps: Operation[] = [
+    const localOps = [
       createSetCheckedOperation(`A`, true, { originalLastCheckedAt: null }),
     ];
-    const remoteOps: Operation[] = [
-      createRenameOperation(`B`, `Whole Wheat Bread`, `Bread`),
+    const remoteOps = [
+      createRenameOperation(`B`, `Whole Wheat Bread`, {
+        checked: 0,
+        created_at: createdAt[1]!,
+        last_checked_at: null,
+        name: `Bread`,
+      }),
     ];
     const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
       idMap: {},
@@ -206,20 +238,32 @@ describe(`rebase`, () => {
   });
 
   it(`Case 2: Direct Conflict (LWW on Rename)`, async () => {
+    const itemCreatedAt = nextTimestamp();
+
     await db!
       .insertInto(`items`)
       .values([
-        { id: `A`, name: `Milk`, checked: 0, created_at: nextTimestamp() },
+        { id: `A`, name: `Milk`, checked: 0, created_at: itemCreatedAt },
       ])
       .execute();
 
     const initialState = await dumpDb(db!);
 
-    const remoteOps: Operation[] = [
-      createRenameOperation(`A`, `Oat Milk`, `Milk`),
+    const remoteOps = [
+      createRenameOperation(`A`, `Oat Milk`, {
+        checked: 0,
+        created_at: itemCreatedAt,
+        last_checked_at: null,
+        name: `Milk`,
+      }),
     ];
-    const localOps: Operation[] = [
-      createRenameOperation(`A`, `Almond Milk`, `Milk`),
+    const localOps = [
+      createRenameOperation(`A`, `Almond Milk`, {
+        checked: 0,
+        created_at: itemCreatedAt,
+        last_checked_at: null,
+        name: `Milk`,
+      }),
     ];
     const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
       idMap: {},
@@ -233,7 +277,12 @@ describe(`rebase`, () => {
           "payload": {
             "itemId": "A",
             "newName": "Almond Milk",
-            "originalName": "Oat Milk",
+            "originalItem": {
+              "checked": 0,
+              "created_at": 1,
+              "last_checked_at": null,
+              "name": "Oat Milk",
+            },
           },
           "serverCommittedAt": null,
           "type": "renameItem",
@@ -283,7 +332,7 @@ describe(`rebase`, () => {
 
     const initialState = await dumpDb(db!);
 
-    const localOps: Operation[] = [
+    const localOps = [
       createDeleteOperation(`X`, {
         checked: 0,
         created_at: clientCreatedAt,
@@ -291,7 +340,7 @@ describe(`rebase`, () => {
         name: `Coffee`,
       }),
     ];
-    const remoteOps: Operation[] = [
+    const remoteOps = [
       createSetCheckedOperation(`X`, true, { originalLastCheckedAt: null }),
     ];
     const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
@@ -340,26 +389,32 @@ describe(`rebase`, () => {
   });
 
   it(`Case 4: Remote Deletion vs. Local Update`, async () => {
-    const clientCreatedAt = nextTimestamp();
+    const itemCreatedAt = nextTimestamp();
+
     await db!
       .insertInto(`items`)
       .values([
-        { id: `Y`, name: `Yogurt`, checked: 0, created_at: clientCreatedAt },
+        { id: `Y`, name: `Yogurt`, checked: 0, created_at: itemCreatedAt },
       ])
       .execute();
 
     const initialState = await dumpDb(db!);
 
-    const remoteOps: Operation[] = [
+    const remoteOps = [
       createDeleteOperation(`Y`, {
         checked: 0,
-        created_at: clientCreatedAt,
+        created_at: itemCreatedAt,
         last_checked_at: null,
         name: `Yogurt`,
       }),
     ];
-    const localOps: Operation[] = [
-      createRenameOperation(`Y`, `Greek Yogurt`, `Yogurt`),
+    const localOps = [
+      createRenameOperation(`Y`, `Greek Yogurt`, {
+        checked: 0,
+        created_at: itemCreatedAt,
+        last_checked_at: null,
+        name: `Yogurt`,
+      }),
     ];
     const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
       idMap: {},
@@ -377,6 +432,197 @@ describe(`rebase`, () => {
     const stateAfterAllApplied = await dumpDb(db!);
 
     expect(stateAfterAllApplied).toMatchInlineSnapshot(`[]`);
+
+    for (const op of allAppliedOps.slice().reverse()) {
+      // eslint-disable-next-line no-await-in-loop
+      await reverseOperation(db!, op);
+    }
+
+    const revertedState = await dumpDb(db!);
+
+    expect(revertedState).toEqual(initialState);
+  });
+
+  it(`Case 5: Renaming to same name, violating uniqueness`, async () => {
+    const itemsCreatedAt = [nextTimestamp(), nextTimestamp()];
+
+    await db!
+      .insertInto(`items`)
+      .values([
+        { id: `X`, name: `Oranges`, checked: 0, created_at: itemsCreatedAt[0] },
+        { id: `Y`, name: `Pears`, checked: 0, created_at: itemsCreatedAt[1] },
+      ])
+      .execute();
+
+    const initialState = await dumpDb(db!);
+
+    // T1 - will conflict with remote op (T2)
+    const localOp1 = createRenameOperation(`X`, `Apples`, {
+      checked: 0,
+      created_at: itemsCreatedAt[0]!,
+      last_checked_at: null,
+      name: `Oranges`,
+    });
+    // T2 - conflicts with first local op
+    const remoteOp = createRenameOperation(`Y`, `Apples`, {
+      checked: 0,
+      created_at: itemsCreatedAt[1]!,
+      last_checked_at: null,
+      name: `Pears`,
+    });
+    // T3 - will be invalid after X is deleted
+    const localOp2 = createRenameOperation(`X`, `Bananas`, {
+      checked: 0,
+      created_at: itemsCreatedAt[0]!,
+      last_checked_at: null,
+      name: `Apples`,
+    });
+
+    const localOps = [localOp1, localOp2];
+    const remoteOps = [remoteOp];
+    const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
+      idMap: {},
+    });
+
+    expect(rebasedOps).toMatchInlineSnapshot(`
+      [
+        {
+          "clientCreatedAt": 3,
+          "id": "uuid-1",
+          "payload": {
+            "deletedItem": {
+              "checked": 0,
+              "created_at": 1,
+              "last_checked_at": null,
+              "name": "Oranges",
+            },
+            "itemId": "X",
+          },
+          "serverCommittedAt": null,
+          "type": "deleteItem",
+        },
+      ]
+    `);
+
+    const allAppliedOps = [...remoteOps, ...rebasedOps];
+
+    for (const op of allAppliedOps) {
+      // eslint-disable-next-line no-await-in-loop
+      await applyOperation(db!, op);
+    }
+
+    const stateAfterAllApplied = await dumpDb(db!);
+
+    expect(stateAfterAllApplied).toMatchInlineSnapshot(`
+      [
+        {
+          "checked": 0,
+          "created_at": 2,
+          "id": "Y",
+          "last_checked_at": null,
+          "name": "Apples",
+        },
+      ]
+    `);
+
+    for (const op of allAppliedOps.slice().reverse()) {
+      // eslint-disable-next-line no-await-in-loop
+      await reverseOperation(db!, op);
+    }
+
+    const revertedState = await dumpDb(db!);
+
+    expect(revertedState).toEqual(initialState);
+  });
+
+  it(`Case 5.5: renaming to same name, violating uniqueness, but with a different item`, async () => {
+    const itemsCreatedAt = [nextTimestamp(), nextTimestamp()];
+    const lastCheckedAt = nextTimestamp();
+
+    await db!
+      .insertInto(`items`)
+      .values([
+        {
+          checked: 1,
+          created_at: itemsCreatedAt[0],
+          id: `X`,
+          last_checked_at: lastCheckedAt,
+          name: `Oranges`,
+        },
+        { id: `Y`, name: `Pears`, checked: 0, created_at: itemsCreatedAt[1] },
+      ])
+      .execute();
+
+    const initialState = await dumpDb(db!);
+
+    // T1 - will conflict with remote op (T2)
+    const localOp1 = createRenameOperation(`X`, `Apples`, {
+      checked: 1,
+      created_at: itemsCreatedAt[0]!,
+      last_checked_at: lastCheckedAt,
+      name: `Oranges`,
+    });
+    // T2 - conflicts with first local op
+    const remoteOp = createRenameOperation(`Y`, `Apples`, {
+      checked: 0,
+      created_at: itemsCreatedAt[1]!,
+      last_checked_at: null,
+      name: `Pears`,
+    });
+    // T3 - will be invalid after X is deleted
+    const localOp2 = createRenameOperation(`X`, `Bananas`, {
+      checked: 0,
+      created_at: itemsCreatedAt[0]!,
+      last_checked_at: null,
+      name: `Apples`,
+    });
+
+    const localOps = [localOp1, localOp2];
+    const remoteOps = [remoteOp];
+    const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
+      idMap: {},
+    });
+
+    expect(rebasedOps).toMatchInlineSnapshot(`
+      [
+        {
+          "clientCreatedAt": 4,
+          "id": "uuid-1",
+          "payload": {
+            "deletedItem": {
+              "checked": 1,
+              "created_at": 1,
+              "last_checked_at": 3,
+              "name": "Oranges",
+            },
+            "itemId": "X",
+          },
+          "serverCommittedAt": null,
+          "type": "deleteItem",
+        },
+      ]
+    `);
+
+    const allAppliedOps = [...remoteOps, ...rebasedOps];
+
+    for (const op of allAppliedOps) {
+      // eslint-disable-next-line no-await-in-loop
+      await applyOperation(db!, op);
+    }
+
+    const stateAfterAllApplied = await dumpDb(db!);
+
+    expect(stateAfterAllApplied).toMatchInlineSnapshot(`
+      [
+        {
+          "checked": 0,
+          "created_at": 2,
+          "id": "Y",
+          "last_checked_at": null,
+          "name": "Apples",
+        },
+      ]
+    `);
 
     for (const op of allAppliedOps.slice().reverse()) {
       // eslint-disable-next-line no-await-in-loop

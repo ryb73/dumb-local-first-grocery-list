@@ -1,4 +1,3 @@
-import { randomUUID } from "crypto";
 import type { Operation } from "./operation-types";
 
 function areNamesEqual(a: string, b: string) {
@@ -45,7 +44,7 @@ export function resolveConflict(
             transformedOps: [
               {
                 clientCreatedAt: localOp.clientCreatedAt,
-                id: randomUUID(),
+                id: crypto.randomUUID(),
                 payload: {
                   deletedItem: {
                     checked: 0,
@@ -100,7 +99,10 @@ export function resolveConflict(
                   ...localOp,
                   payload: {
                     ...localOp.payload,
-                    originalName: remoteOp.payload.newName,
+                    originalItem: {
+                      ...localOp.payload.originalItem,
+                      name: remoteOp.payload.newName,
+                    },
                   },
                 },
               ],
@@ -113,7 +115,29 @@ export function resolveConflict(
           ) {
             // Both renaming to the same name. Keep the item renamed by the remote op,
             // delete the item renamed by the local op.
-            throw new Error(`Not implemented yet`);
+
+            const { originalItem } = localOp.payload;
+
+            return {
+              transformedOps: [
+                {
+                  clientCreatedAt: localOp.clientCreatedAt,
+                  id: crypto.randomUUID(),
+                  payload: {
+                    deletedItem: {
+                      checked: originalItem.checked,
+                      created_at: originalItem.created_at,
+                      last_checked_at: originalItem.last_checked_at,
+                      name: originalItem.name,
+                    },
+                    itemId: localOp.payload.itemId,
+                  },
+                  serverCommittedAt: null,
+                  type: `deleteItem`,
+                },
+              ],
+              newContext: context,
+            };
           }
           return { transformedOps: [localOp], newContext: context };
         }
