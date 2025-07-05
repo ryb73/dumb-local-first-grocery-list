@@ -203,7 +203,7 @@ describe(`rebase`, () => {
       }),
     ];
     const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
-      idMap: {},
+      newEffectiveIdsByOldId: new Map(),
     });
 
     expect(rebasedOps).toMatchInlineSnapshot(`
@@ -291,7 +291,7 @@ describe(`rebase`, () => {
       }),
     ];
     const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
-      idMap: {},
+      newEffectiveIdsByOldId: new Map(),
     });
 
     expect(rebasedOps).toMatchInlineSnapshot(`
@@ -369,7 +369,7 @@ describe(`rebase`, () => {
       createSetCheckedOperation(`X`, true, { originalLastCheckedAt: null }),
     ];
     const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
-      idMap: {},
+      newEffectiveIdsByOldId: new Map(),
     });
 
     expect(rebasedOps).toMatchInlineSnapshot(`
@@ -442,7 +442,7 @@ describe(`rebase`, () => {
       }),
     ];
     const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
-      idMap: {},
+      newEffectiveIdsByOldId: new Map(),
     });
 
     expect(rebasedOps).toMatchInlineSnapshot(`[]`);
@@ -506,7 +506,7 @@ describe(`rebase`, () => {
     const localOps = [localOp1, localOp2];
     const remoteOps = [remoteOp];
     const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
-      idMap: {},
+      newEffectiveIdsByOldId: new Map(),
     });
 
     expect(rebasedOps).toMatchInlineSnapshot(`
@@ -605,7 +605,7 @@ describe(`rebase`, () => {
     const localOps = [localOp1, localOp2];
     const remoteOps = [remoteOp];
     const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
-      idMap: {},
+      newEffectiveIdsByOldId: new Map(),
     });
 
     expect(rebasedOps).toMatchInlineSnapshot(`
@@ -666,7 +666,7 @@ describe(`rebase`, () => {
     const remoteOps = [createCreateItemOperation(`uuid-remote`, `Cheese`)];
 
     const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
-      idMap: {},
+      newEffectiveIdsByOldId: new Map(),
     });
 
     expect(rebasedOps).toMatchInlineSnapshot(`[]`);
@@ -738,7 +738,7 @@ describe(`rebase`, () => {
     const remoteOps = [remoteOp];
 
     const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
-      idMap: {},
+      newEffectiveIdsByOldId: new Map(),
     });
 
     expect(rebasedOps).toMatchInlineSnapshot(`
@@ -788,6 +788,77 @@ describe(`rebase`, () => {
           "id": "A",
           "last_checked_at": 2,
           "name": "Green Apples",
+        },
+      ]
+    `);
+
+    for (const op of allAppliedOps.slice().reverse()) {
+      // eslint-disable-next-line no-await-in-loop
+      await reverseOperation(db!, op);
+    }
+
+    const revertedState = await dumpDb(db!);
+
+    expect(revertedState).toEqual(initialState);
+  });
+
+  it(`Case 8: Advanced Creation Conflict with ID Merging`, async () => {
+    const initialState = await dumpDb(db!);
+
+    const localOp1 = createCreateItemOperation(`uuid-local`, `Cheese`);
+    const remoteOps = [createCreateItemOperation(`uuid-remote`, `Cheese`)];
+
+    const localOp2 = createRenameOperation(`uuid-local`, `Cheddar`, {
+      created_at: localOp1.payload.item.created_at!,
+      name: `Cheese`,
+      checked: 0,
+      last_checked_at: null,
+    });
+
+    const localOps = [localOp1, localOp2];
+
+    const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
+      newEffectiveIdsByOldId: new Map(),
+    });
+
+    expect(rebasedOps).toMatchInlineSnapshot(`
+      [
+        {
+          "clientCreatedAt": 3,
+          "id": "op-3",
+          "payload": {
+            "itemId": "uuid-remote",
+            "newName": "Cheddar",
+            "originalItem": {
+              "checked": 0,
+              "created_at": 2,
+              "last_checked_at": null,
+              "name": "Cheese",
+            },
+          },
+          "serverCommittedAt": null,
+          "type": "renameItem",
+        },
+      ]
+    `);
+
+    const allAppliedOps = [...remoteOps, ...rebasedOps];
+
+    for (const op of allAppliedOps) {
+      // eslint-disable-next-line no-await-in-loop
+      await applyOperation(db!, op);
+    }
+
+    const stateAfterAllApplied = await dumpDb(db!);
+
+    expect(stateAfterAllApplied).toMatchInlineSnapshot(`
+      [
+        {
+          "checked": 0,
+          "created_at": 2,
+          "id": "uuid-remote",
+          "last_checked_at": null,
+          "name": "Cheddar",
         },
       ]
     `);

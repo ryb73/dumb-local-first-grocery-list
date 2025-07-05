@@ -1,10 +1,80 @@
+import { defined } from "@ryb73/super-duper-parakeet/lib/src/type-checks";
 import type { Operation } from "./operation-types";
 
 function areNamesEqual(a: string, b: string) {
   return a.trim().toLocaleLowerCase() === b.trim().toLocaleLowerCase();
 }
 
-type Context = { idMap: Record<string, string> };
+type Context = { newEffectiveIdsByOldId: Map<string, string> };
+
+/**
+ * Transforms the itemId in the local operation to the new effective itemId
+ * based on the context.
+ * @param localOp - The local operation to transform
+ * @param context - The context containing the new effective ids by old id
+ * @returns The transformed local operation or null if the itemId is not in the context
+ */
+function transformOldIdsToNew(
+  localOp: Operation,
+  context: Context
+): Operation | null {
+  switch (localOp.type) {
+    case `createItem`: {
+      return null;
+    }
+    case `deleteItem`: {
+      if (!context.newEffectiveIdsByOldId.has(localOp.payload.itemId)) {
+        return null;
+      }
+
+      return {
+        ...localOp,
+        payload: {
+          ...localOp.payload,
+          itemId: defined(
+            context.newEffectiveIdsByOldId.get(localOp.payload.itemId)
+          ),
+        },
+      };
+    }
+    // eslint-disable-next-line sonarjs/no-duplicated-branches
+    case `renameItem`: {
+      if (!context.newEffectiveIdsByOldId.has(localOp.payload.itemId)) {
+        return null;
+      }
+
+      return {
+        ...localOp,
+        payload: {
+          ...localOp.payload,
+          itemId: defined(
+            context.newEffectiveIdsByOldId.get(localOp.payload.itemId)
+          ),
+        },
+      };
+    }
+    // eslint-disable-next-line sonarjs/no-duplicated-branches
+    case `setCheckedState`: {
+      if (!context.newEffectiveIdsByOldId.has(localOp.payload.itemId)) {
+        return null;
+      }
+
+      return {
+        ...localOp,
+        payload: {
+          ...localOp.payload,
+          itemId: defined(
+            context.newEffectiveIdsByOldId.get(localOp.payload.itemId)
+          ),
+        },
+      };
+    }
+  }
+
+  throw new Error(
+    `Unhandled local operation type: ${(localOp as Operation).type}`
+  );
+}
 
 /**
  * Core conflict resolution function that determines how a local operation should be transformed
@@ -22,6 +92,10 @@ export function resolveConflict(
   localOp: Operation,
   context: Context
 ): { transformedOps: Operation[]; newContext: Context } {
+  const localOpWithTransformedId = transformOldIdsToNew(localOp, context);
+  if (localOpWithTransformedId != null)
+    return resolveConflict(remoteOp, localOpWithTransformedId, context);
+
   switch (remoteOp.type) {
     case `createItem`: {
       switch (localOp.type) {
@@ -29,16 +103,63 @@ export function resolveConflict(
           if (
             areNamesEqual(localOp.payload.item.name, remoteOp.payload.item.name)
           ) {
-            return { transformedOps: [], newContext: context };
+            const newContext = {
+              ...context,
+              newEffectiveIdsByOldId: new Map(context.newEffectiveIdsByOldId),
+            };
+            newContext.newEffectiveIdsByOldId.set(
+              localOp.payload.item.id,
+              remoteOp.payload.item.id
+            );
+            return { transformedOps: [], newContext };
           }
-          return { transformedOps: [localOp], newContext: context };
+          return {
+            transformedOps: [localOp],
+            newContext: context,
+          };
         }
         case `renameItem`: {
+          // If the ID is the same, then we need to make sure that `originalItem` matches because
+          // the ID may have come from the newEffectiveIdsByOldId map – in other words, it may be a
+          // merged/redirected item.
+          if (localOp.payload.itemId === remoteOp.payload.item.id) {
+            return {
+              transformedOps: [
+                {
+                  ...localOp,
+                  payload: {
+                    ...localOp.payload,
+                    itemId: remoteOp.payload.item.id,
+                    originalItem: {
+                      checked: 0,
+                      created_at: remoteOp.payload.item.created_at,
+                      last_checked_at: null,
+                      name: remoteOp.payload.item.name,
+                    },
+                  },
+                },
+              ],
+              newContext: context,
+            };
+          }
+
           if (
             !areNamesEqual(localOp.payload.newName, remoteOp.payload.item.name)
           ) {
-            return { transformedOps: [localOp], newContext: context };
+            return {
+              transformedOps: [localOp],
+              newContext: context,
+            };
           }
+
+          const newContext = {
+            ...context,
+            newEffectiveIdsByOldId: new Map(context.newEffectiveIdsByOldId),
+          };
+          newContext.newEffectiveIdsByOldId.set(
+            localOp.payload.itemId,
+            remoteOp.payload.item.id
+          );
 
           return {
             transformedOps: [
@@ -58,14 +179,17 @@ export function resolveConflict(
                 type: `deleteItem`,
               },
             ],
-            newContext: context,
+            newContext,
           };
         }
         case `setCheckedState`:
         case `deleteItem`: {
           // A remote item was created. A local operation modified a different item.
           // These are independent operations on different items and cannot conflict.
-          return { transformedOps: [localOp], newContext: context };
+          return {
+            transformedOps: [localOp],
+            newContext: context,
+          };
         }
       }
       throw new Error(
@@ -76,12 +200,22 @@ export function resolveConflict(
     case `renameItem`: {
       switch (localOp.type) {
         case `createItem`: {
-          return areNamesEqual(
-            localOp.payload.item.name,
-            remoteOp.payload.newName
-          )
-            ? { transformedOps: [], newContext: context }
-            : { transformedOps: [localOp], newContext: context };
+          if (
+            !areNamesEqual(localOp.payload.item.name, remoteOp.payload.newName)
+          ) {
+            return { transformedOps: [localOp], newContext: context };
+          }
+
+          const newContext = {
+            ...context,
+            newEffectiveIdsByOldId: new Map(context.newEffectiveIdsByOldId),
+          };
+          newContext.newEffectiveIdsByOldId.set(
+            localOp.payload.item.id,
+            remoteOp.payload.itemId
+          );
+
+          return { transformedOps: [], newContext };
         }
 
         case `renameItem`: {
