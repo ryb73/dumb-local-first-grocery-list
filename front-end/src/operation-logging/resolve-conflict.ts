@@ -294,9 +294,32 @@ export function resolveConflict(
       switch (localOp.type) {
         // Create, Rename, and Delete operations are orthogonal or take precedence.
         case `createItem`:
-        case `renameItem`:
         case `deleteItem`:
           return { transformedOps: [localOp], newContext: context };
+
+        case `renameItem`: {
+          if (remoteOp.payload.itemId !== localOp.payload.itemId)
+            return { transformedOps: [localOp], newContext: context };
+
+          return {
+            transformedOps: [
+              {
+                ...localOp,
+                payload: {
+                  ...localOp.payload,
+                  originalItem: {
+                    ...localOp.payload.originalItem,
+                    checked: remoteOp.payload.checked ? 1 : 0,
+                    last_checked_at: remoteOp.payload.checked
+                      ? remoteOp.payload.newLastCheckedAt
+                      : null,
+                  },
+                },
+              },
+            ],
+            newContext: context,
+          };
+        }
 
         case `setCheckedState`: {
           // If the operations are on different items, they don't conflict.

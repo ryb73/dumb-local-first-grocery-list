@@ -952,4 +952,88 @@ describe(`rebase`, () => {
 
     expect(revertedState).toEqual(initialState);
   });
+
+  it(`Case 8.6: Updating state of rename operation originalItem with mapped ID`, async () => {
+    const initialState = await dumpDb(db!);
+
+    const localOp1 = createCreateItemOperation(`uuid-local`, `Milk`);
+
+    const remoteOp1 = createCreateItemOperation(`uuid-remote`, `Milk`);
+
+    const remoteOp2 = createRenameOperation(`uuid-remote`, `Skim Milk`, {
+      created_at: remoteOp1.payload.item.created_at!,
+      name: `Milk`,
+      checked: 0,
+      last_checked_at: null,
+    });
+
+    const remoteOp3 = createSetCheckedOperation(`uuid-remote`, true, {
+      originalLastCheckedAt: null,
+    });
+
+    const localOp2 = createRenameOperation(`uuid-local`, `Whole Milk`, {
+      created_at: localOp1.payload.item.created_at!,
+      name: `Milk`,
+      checked: 0,
+      last_checked_at: null,
+    });
+
+    const localOps = [localOp1, localOp2];
+    const remoteOps = [remoteOp1, remoteOp2, remoteOp3];
+
+    const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
+      newEffectiveIdsByOldId: new Map(),
+    });
+
+    expect(rebasedOps).toMatchInlineSnapshot(`
+      [
+        {
+          "clientCreatedAt": 5,
+          "id": "op-5",
+          "payload": {
+            "itemId": "uuid-remote",
+            "newName": "Whole Milk",
+            "originalItem": {
+              "checked": 1,
+              "created_at": 2,
+              "last_checked_at": 4,
+              "name": "Skim Milk",
+            },
+          },
+          "serverCommittedAt": null,
+          "type": "renameItem",
+        },
+      ]
+    `);
+
+    const allAppliedOps = [...remoteOps, ...rebasedOps];
+
+    for (const op of allAppliedOps) {
+      // eslint-disable-next-line no-await-in-loop
+      await applyOperation(db!, op);
+    }
+
+    const stateAfterAllApplied = await dumpDb(db!);
+
+    expect(stateAfterAllApplied).toMatchInlineSnapshot(`
+      [
+        {
+          "checked": 1,
+          "created_at": 2,
+          "id": "uuid-remote",
+          "last_checked_at": 4,
+          "name": "Whole Milk",
+        },
+      ]
+    `);
+
+    for (const op of allAppliedOps.slice().reverse()) {
+      // eslint-disable-next-line no-await-in-loop
+      await reverseOperation(db!, op);
+    }
+
+    const revertedState = await dumpDb(db!);
+
+    expect(revertedState).toEqual(initialState);
+  });
 });
