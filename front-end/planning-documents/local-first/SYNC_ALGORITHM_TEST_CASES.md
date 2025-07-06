@@ -126,11 +126,33 @@ This tests the `idMap` logic. Both sides create a similar item, then modify it. 
 *   **Remote Operations**:
     1.  `{ type: 'createItem', payload: { item: { id: 'uuid-remote', name: 'Cheese' } }, clientCreatedAt: T2 }`
 *   **Rebase Trace**:
-    1.  **Process local op 1 (`createItem`)**: It conflicts with the remote `createItem`. `resolveConflict` returns `{ ops: [], mappings: { 'uuid-local': 'uuid-remote' } }`. The `idMap` is now `{ 'uuid-local': 'uuid-remote' }`.
+    1.  **Process local op 1 (`createItem`)**: It conflicts with the remote `createItem`. `resolveConflict` returns `{ ops: [], mappings: { 'uuid-local': 'uuid-remote' } }`. The `idMap` is now `{ 'uuid-local': 'uuid-remote' }`. The local op is discarded.
     2.  **Process local op 2 (`renameItem`)**: The rebase function first checks `idMap` and sees that the target `itemId` ('uuid-local') should be remapped to 'uuid-remote'.
     3.  The modified local op becomes `{ type: 'renameItem', payload: { itemId: 'uuid-remote', newName: 'Cheddar' } }`. This op is transformed against the context (no conflict) and added to the final list.
 *   **Expected `rebasedLocalOps`**: `[{ type: 'renameItem', payload: { itemId: 'uuid-remote', newName: 'Cheddar' } }]`
 *   **Expected Final State**: One item exists: `{ id: 'uuid-remote', name: 'Cheddar' }`.
+
+---
+
+### Case 8.5: Complex ID Merging and Conflicting Renames (LWW)
+
+This case extends Case 8 by introducing subsequent conflicting renames from both the local and remote clients after an initial creation conflict has been resolved by merging IDs. It tests that the `idMap` is correctly applied and that the LWW strategy for `renameItem` is robust.
+
+*   **Initial State**: Empty list.
+*   **Local Operations**:
+    1.  `{ type: 'createItem', payload: { item: { id: 'uuid-local', name: 'Milk' } }, clientCreatedAt: T1 }`
+    2.  `{ type: 'renameItem', payload: { itemId: 'uuid-local', newName: 'Whole Milk', originalName: 'Milk' }, clientCreatedAt: T4 }`
+*   **Remote Operations**:
+    1.  `{ type: 'createItem', payload: { item: { id: 'uuid-remote', name: 'Milk' } }, clientCreatedAt: T2 }`
+    2.  `{ type: 'renameItem', payload: { itemId: 'uuid-remote', newName: 'Skim Milk', originalName: 'Milk' }, clientCreatedAt: T3 }`
+*   **Rebase Trace**:
+    1.  **Process local op 1 (`createItem`)**: It conflicts with the remote `createItem` (R1). `resolveConflict` merges them, returning `{ ops: [], mappings: { 'uuid-local': 'uuid-remote' } }`. The `idMap` is now `{ 'uuid-local': 'uuid-remote' }`. The local op is discarded.
+    2.  **Process local op 2 (`renameItem`)**: The rebase function first checks `idMap` and remaps `itemId` from `'uuid-local'` to `'uuid-remote'`.
+    3.  The remapped local op `L2'` is now `{ type: 'renameItem', payload: { itemId: 'uuid-remote', newName: 'Whole Milk', originalName: 'Milk' } }`.
+    4.  This `L2'` is transformed against the remote context, which includes the remote rename (R2). `resolveConflict` is triggered for `renameItem` vs `renameItem`.
+    5.  Based on LWW, the local rename wins because `T4 > T3`. The conflict resolver must transform `L2'` to `L2''` so it can apply cleanly after R2. The `originalName` is updated to 'Skim Milk'.
+*   **Expected `rebasedLocalOps`**: `[{ type: 'renameItem', payload: { itemId: 'uuid-remote', newName: 'Whole Milk', originalName: 'Skim Milk' } }]`
+*   **Expected Final State**: One item exists: `{ id: 'uuid-remote', name: 'Whole Milk' }`.
 
 ---
 
