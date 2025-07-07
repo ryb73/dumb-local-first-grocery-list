@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 import assert from "node:assert";
 import Database from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
@@ -59,7 +60,7 @@ function createSetCheckedOperation(
 
   return {
     clientCreatedAt,
-    id: nextId(),
+    id: `setCheckedState-${nextId()}`,
     payload: {
       itemId,
       originalChecked: options.originalChecked ?? !checked,
@@ -88,7 +89,7 @@ function createRenameOperation(
 ): RenameItemOperation {
   return {
     clientCreatedAt: nextTimestamp(),
-    id: nextId(),
+    id: `renameItem-${nextId()}`,
     payload: {
       itemId,
       newName,
@@ -110,7 +111,7 @@ function createDeleteOperation(
 ): DeleteItemOperation {
   return {
     clientCreatedAt: nextTimestamp(),
-    id: nextId(),
+    id: `deleteItem-${nextId()}`,
     payload: {
       deletedItem,
       itemId,
@@ -127,7 +128,7 @@ function createCreateItemOperation(
   const clientCreatedAt = nextTimestamp();
   return {
     clientCreatedAt,
-    id: nextId(),
+    id: `createItem-${nextId()}`,
     payload: {
       item: {
         created_at: clientCreatedAt,
@@ -189,8 +190,6 @@ describe(`rebase`, () => {
       ])
       .execute();
 
-    const initialState = await dumpDb(db!);
-
     const localOps = [
       createSetCheckedOperation(`A`, true, { originalLastCheckedAt: null }),
     ];
@@ -210,7 +209,7 @@ describe(`rebase`, () => {
       [
         {
           "clientCreatedAt": 3,
-          "id": "op-1",
+          "id": "setCheckedState-op-1",
           "payload": {
             "checked": true,
             "itemId": "A",
@@ -225,13 +224,14 @@ describe(`rebase`, () => {
     `);
 
     const allAppliedOps = [...remoteOps, ...rebasedOps];
+    const states = [await dumpDb(db!)];
 
     for (const op of allAppliedOps) {
-      // eslint-disable-next-line no-await-in-loop
       await applyOperation(db!, op);
+      states.push(await dumpDb(db!));
     }
 
-    const stateAfterAllApplied = await dumpDb(db!);
+    const stateAfterAllApplied = states.pop();
 
     expect(stateAfterAllApplied).toMatchInlineSnapshot(`
       [
@@ -253,13 +253,14 @@ describe(`rebase`, () => {
     `);
 
     for (const op of allAppliedOps.slice().reverse()) {
-      // eslint-disable-next-line no-await-in-loop
       await reverseOperation(db!, op);
+
+      const expectedIntermediateState = states.pop();
+      expect(
+        await dumpDb(db!),
+        `error reverting op: ${JSON.stringify(op)}`
+      ).toEqual(expectedIntermediateState);
     }
-
-    const revertedState = await dumpDb(db!);
-
-    expect(revertedState).toEqual(initialState);
   });
 
   it(`Case 2: Direct Conflict (LWW on Rename)`, async () => {
@@ -271,8 +272,6 @@ describe(`rebase`, () => {
         { id: `A`, name: `Milk`, checked: 0, created_at: itemCreatedAt },
       ])
       .execute();
-
-    const initialState = await dumpDb(db!);
 
     const remoteOps = [
       createRenameOperation(`A`, `Oat Milk`, {
@@ -298,7 +297,7 @@ describe(`rebase`, () => {
       [
         {
           "clientCreatedAt": 3,
-          "id": "op-2",
+          "id": "renameItem-op-2",
           "payload": {
             "itemId": "A",
             "newName": "Almond Milk",
@@ -316,13 +315,14 @@ describe(`rebase`, () => {
     `);
 
     const allAppliedOps = [...remoteOps, ...rebasedOps];
+    const states = [await dumpDb(db!)];
 
     for (const op of allAppliedOps) {
-      // eslint-disable-next-line no-await-in-loop
       await applyOperation(db!, op);
+      states.push(await dumpDb(db!));
     }
 
-    const stateAfterAllApplied = await dumpDb(db!);
+    const stateAfterAllApplied = states.pop();
 
     expect(stateAfterAllApplied).toMatchInlineSnapshot(`
       [
@@ -337,13 +337,14 @@ describe(`rebase`, () => {
     `);
 
     for (const op of allAppliedOps.slice().reverse()) {
-      // eslint-disable-next-line no-await-in-loop
       await reverseOperation(db!, op);
+
+      const expectedIntermediateState = states.pop();
+      expect(
+        await dumpDb(db!),
+        `error reverting op: ${JSON.stringify(op)}`
+      ).toEqual(expectedIntermediateState);
     }
-
-    const revertedState = await dumpDb(db!);
-
-    expect(revertedState).toEqual(initialState);
   });
 
   it(`Case 3: Local Deletion vs. Remote Update`, async () => {
@@ -354,8 +355,6 @@ describe(`rebase`, () => {
         { id: `X`, name: `Coffee`, checked: 0, created_at: clientCreatedAt },
       ])
       .execute();
-
-    const initialState = await dumpDb(db!);
 
     const localOps = [
       createDeleteOperation(`X`, {
@@ -376,7 +375,7 @@ describe(`rebase`, () => {
       [
         {
           "clientCreatedAt": 2,
-          "id": "op-1",
+          "id": "deleteItem-op-1",
           "payload": {
             "deletedItem": {
               "checked": 0,
@@ -393,24 +392,26 @@ describe(`rebase`, () => {
     `);
 
     const allAppliedOps = [...remoteOps, ...rebasedOps];
+    const states = [await dumpDb(db!)];
 
     for (const op of allAppliedOps) {
-      // eslint-disable-next-line no-await-in-loop
       await applyOperation(db!, op);
+      states.push(await dumpDb(db!));
     }
 
-    const stateAfterAllApplied = await dumpDb(db!);
+    const stateAfterAllApplied = states.pop();
 
     expect(stateAfterAllApplied).toMatchInlineSnapshot(`[]`);
 
     for (const op of allAppliedOps.slice().reverse()) {
-      // eslint-disable-next-line no-await-in-loop
       await reverseOperation(db!, op);
+
+      const expectedIntermediateState = states.pop();
+      expect(
+        await dumpDb(db!),
+        `error reverting op: ${JSON.stringify(op)}`
+      ).toEqual(expectedIntermediateState);
     }
-
-    const revertedState = await dumpDb(db!);
-
-    expect(revertedState).toEqual(initialState);
   });
 
   it(`Case 4: Remote Deletion vs. Local Update`, async () => {
@@ -422,8 +423,6 @@ describe(`rebase`, () => {
         { id: `Y`, name: `Yogurt`, checked: 0, created_at: itemCreatedAt },
       ])
       .execute();
-
-    const initialState = await dumpDb(db!);
 
     const remoteOps = [
       createDeleteOperation(`Y`, {
@@ -448,24 +447,26 @@ describe(`rebase`, () => {
     expect(rebasedOps).toMatchInlineSnapshot(`[]`);
 
     const allAppliedOps = [...remoteOps, ...rebasedOps];
+    const states = [await dumpDb(db!)];
 
     for (const op of allAppliedOps) {
-      // eslint-disable-next-line no-await-in-loop
       await applyOperation(db!, op);
+      states.push(await dumpDb(db!));
     }
 
-    const stateAfterAllApplied = await dumpDb(db!);
+    const stateAfterAllApplied = states.pop();
 
     expect(stateAfterAllApplied).toMatchInlineSnapshot(`[]`);
 
     for (const op of allAppliedOps.slice().reverse()) {
-      // eslint-disable-next-line no-await-in-loop
       await reverseOperation(db!, op);
+
+      const expectedIntermediateState = states.pop();
+      expect(
+        await dumpDb(db!),
+        `error reverting op: ${JSON.stringify(op)}`
+      ).toEqual(expectedIntermediateState);
     }
-
-    const revertedState = await dumpDb(db!);
-
-    expect(revertedState).toEqual(initialState);
   });
 
   it(`Case 5: Renaming to same name, violating uniqueness`, async () => {
@@ -478,8 +479,6 @@ describe(`rebase`, () => {
         { id: `Y`, name: `Pears`, checked: 0, created_at: itemsCreatedAt[1] },
       ])
       .execute();
-
-    const initialState = await dumpDb(db!);
 
     // T1 - will conflict with remote op (T2)
     const localOp1 = createRenameOperation(`X`, `Apples`, {
@@ -530,13 +529,14 @@ describe(`rebase`, () => {
     `);
 
     const allAppliedOps = [...remoteOps, ...rebasedOps];
+    const states = [await dumpDb(db!)];
 
     for (const op of allAppliedOps) {
-      // eslint-disable-next-line no-await-in-loop
       await applyOperation(db!, op);
+      states.push(await dumpDb(db!));
     }
 
-    const stateAfterAllApplied = await dumpDb(db!);
+    const stateAfterAllApplied = states.pop();
 
     expect(stateAfterAllApplied).toMatchInlineSnapshot(`
       [
@@ -551,13 +551,14 @@ describe(`rebase`, () => {
     `);
 
     for (const op of allAppliedOps.slice().reverse()) {
-      // eslint-disable-next-line no-await-in-loop
       await reverseOperation(db!, op);
+
+      const expectedIntermediateState = states.pop();
+      expect(
+        await dumpDb(db!),
+        `error reverting op: ${JSON.stringify(op)}`
+      ).toEqual(expectedIntermediateState);
     }
-
-    const revertedState = await dumpDb(db!);
-
-    expect(revertedState).toEqual(initialState);
   });
 
   it(`Case 5.5: renaming to same name, violating uniqueness, but with a different item`, async () => {
@@ -577,8 +578,6 @@ describe(`rebase`, () => {
         { id: `Y`, name: `Pears`, checked: 0, created_at: itemsCreatedAt[1] },
       ])
       .execute();
-
-    const initialState = await dumpDb(db!);
 
     // T1 - will conflict with remote op (T2)
     const localOp1 = createRenameOperation(`X`, `Apples`, {
@@ -629,13 +628,14 @@ describe(`rebase`, () => {
     `);
 
     const allAppliedOps = [...remoteOps, ...rebasedOps];
+    const states = [await dumpDb(db!)];
 
     for (const op of allAppliedOps) {
-      // eslint-disable-next-line no-await-in-loop
       await applyOperation(db!, op);
+      states.push(await dumpDb(db!));
     }
 
-    const stateAfterAllApplied = await dumpDb(db!);
+    const stateAfterAllApplied = states.pop();
 
     expect(stateAfterAllApplied).toMatchInlineSnapshot(`
       [
@@ -650,18 +650,17 @@ describe(`rebase`, () => {
     `);
 
     for (const op of allAppliedOps.slice().reverse()) {
-      // eslint-disable-next-line no-await-in-loop
       await reverseOperation(db!, op);
+
+      const expectedIntermediateState = states.pop();
+      expect(
+        await dumpDb(db!),
+        `error reverting op: ${JSON.stringify(op)}`
+      ).toEqual(expectedIntermediateState);
     }
-
-    const revertedState = await dumpDb(db!);
-
-    expect(revertedState).toEqual(initialState);
   });
 
   it(`Case 6: Simple Creation Conflict`, async () => {
-    const initialState = await dumpDb(db!);
-
     const localOps = [createCreateItemOperation(`uuid-local`, `Cheese`)];
     const remoteOps = [createCreateItemOperation(`uuid-remote`, `Cheese`)];
 
@@ -672,13 +671,14 @@ describe(`rebase`, () => {
     expect(rebasedOps).toMatchInlineSnapshot(`[]`);
 
     const allAppliedOps = [...remoteOps, ...rebasedOps];
+    const states = [await dumpDb(db!)];
 
     for (const op of allAppliedOps) {
-      // eslint-disable-next-line no-await-in-loop
       await applyOperation(db!, op);
+      states.push(await dumpDb(db!));
     }
 
-    const stateAfterAllApplied = await dumpDb(db!);
+    const stateAfterAllApplied = states.pop();
 
     expect(stateAfterAllApplied).toMatchInlineSnapshot(`
       [
@@ -693,13 +693,14 @@ describe(`rebase`, () => {
     `);
 
     for (const op of allAppliedOps.slice().reverse()) {
-      // eslint-disable-next-line no-await-in-loop
       await reverseOperation(db!, op);
+
+      const expectedIntermediateState = states.pop();
+      expect(
+        await dumpDb(db!),
+        `error reverting op: ${JSON.stringify(op)}`
+      ).toEqual(expectedIntermediateState);
     }
-
-    const revertedState = await dumpDb(db!);
-
-    expect(revertedState).toEqual(initialState);
   });
 
   it(`Case 7: Sequential Local Toggles vs. Remote Rename`, async () => {
@@ -716,8 +717,6 @@ describe(`rebase`, () => {
         },
       ])
       .execute();
-
-    const initialState = await dumpDb(db!);
 
     const localOp1 = createSetCheckedOperation(`A`, true, {
       originalLastCheckedAt: null,
@@ -745,7 +744,7 @@ describe(`rebase`, () => {
       [
         {
           "clientCreatedAt": 2,
-          "id": "op-1",
+          "id": "setCheckedState-op-1",
           "payload": {
             "checked": true,
             "itemId": "A",
@@ -758,7 +757,7 @@ describe(`rebase`, () => {
         },
         {
           "clientCreatedAt": 4,
-          "id": "op-3",
+          "id": "setCheckedState-op-3",
           "payload": {
             "checked": false,
             "itemId": "A",
@@ -772,13 +771,14 @@ describe(`rebase`, () => {
     `);
 
     const allAppliedOps = [...remoteOps, ...rebasedOps];
+    const states = [await dumpDb(db!)];
 
     for (const op of allAppliedOps) {
-      // eslint-disable-next-line no-await-in-loop
       await applyOperation(db!, op);
+      states.push(await dumpDb(db!));
     }
 
-    const stateAfterAllApplied = await dumpDb(db!);
+    const stateAfterAllApplied = states.pop();
 
     expect(stateAfterAllApplied).toMatchInlineSnapshot(`
       [
@@ -793,18 +793,17 @@ describe(`rebase`, () => {
     `);
 
     for (const op of allAppliedOps.slice().reverse()) {
-      // eslint-disable-next-line no-await-in-loop
       await reverseOperation(db!, op);
+
+      const expectedIntermediateState = states.pop();
+      expect(
+        await dumpDb(db!),
+        `error reverting op: ${JSON.stringify(op)}`
+      ).toEqual(expectedIntermediateState);
     }
-
-    const revertedState = await dumpDb(db!);
-
-    expect(revertedState).toEqual(initialState);
   });
 
   it(`Case 8: Advanced Creation Conflict with ID Merging`, async () => {
-    const initialState = await dumpDb(db!);
-
     const localOp1 = createCreateItemOperation(`uuid-local`, `Cheese`);
     const remoteOps = [createCreateItemOperation(`uuid-remote`, `Cheese`)];
 
@@ -825,7 +824,7 @@ describe(`rebase`, () => {
       [
         {
           "clientCreatedAt": 3,
-          "id": "op-3",
+          "id": "renameItem-op-3",
           "payload": {
             "itemId": "uuid-remote",
             "newName": "Cheddar",
@@ -843,13 +842,14 @@ describe(`rebase`, () => {
     `);
 
     const allAppliedOps = [...remoteOps, ...rebasedOps];
+    const states = [await dumpDb(db!)];
 
     for (const op of allAppliedOps) {
-      // eslint-disable-next-line no-await-in-loop
       await applyOperation(db!, op);
+      states.push(await dumpDb(db!));
     }
 
-    const stateAfterAllApplied = await dumpDb(db!);
+    const stateAfterAllApplied = states.pop();
 
     expect(stateAfterAllApplied).toMatchInlineSnapshot(`
       [
@@ -864,18 +864,17 @@ describe(`rebase`, () => {
     `);
 
     for (const op of allAppliedOps.slice().reverse()) {
-      // eslint-disable-next-line no-await-in-loop
       await reverseOperation(db!, op);
+
+      const expectedIntermediateState = states.pop();
+      expect(
+        await dumpDb(db!),
+        `error reverting op: ${JSON.stringify(op)}`
+      ).toEqual(expectedIntermediateState);
     }
-
-    const revertedState = await dumpDb(db!);
-
-    expect(revertedState).toEqual(initialState);
   });
 
   it(`Case 8.5: Complex ID Merging and Conflicting Renames (LWW)`, async () => {
-    const initialState = await dumpDb(db!);
-
     const localOp1 = createCreateItemOperation(`uuid-local`, `Milk`);
 
     const remoteOp1 = createCreateItemOperation(`uuid-remote`, `Milk`);
@@ -905,7 +904,7 @@ describe(`rebase`, () => {
       [
         {
           "clientCreatedAt": 4,
-          "id": "op-4",
+          "id": "renameItem-op-4",
           "payload": {
             "itemId": "uuid-remote",
             "newName": "Whole Milk",
@@ -923,13 +922,14 @@ describe(`rebase`, () => {
     `);
 
     const allAppliedOps = [...remoteOps, ...rebasedOps];
+    const states = [await dumpDb(db!)];
 
     for (const op of allAppliedOps) {
-      // eslint-disable-next-line no-await-in-loop
       await applyOperation(db!, op);
+      states.push(await dumpDb(db!));
     }
 
-    const stateAfterAllApplied = await dumpDb(db!);
+    const stateAfterAllApplied = states.pop();
 
     expect(stateAfterAllApplied).toMatchInlineSnapshot(`
       [
@@ -944,18 +944,17 @@ describe(`rebase`, () => {
     `);
 
     for (const op of allAppliedOps.slice().reverse()) {
-      // eslint-disable-next-line no-await-in-loop
       await reverseOperation(db!, op);
+
+      const expectedIntermediateState = states.pop();
+      expect(
+        await dumpDb(db!),
+        `error reverting op: ${JSON.stringify(op)}`
+      ).toEqual(expectedIntermediateState);
     }
-
-    const revertedState = await dumpDb(db!);
-
-    expect(revertedState).toEqual(initialState);
   });
 
   it(`Case 8.6: Updating state of rename operation originalItem with mapped ID`, async () => {
-    const initialState = await dumpDb(db!);
-
     const localOp1 = createCreateItemOperation(`uuid-local`, `Milk`);
 
     const remoteOp1 = createCreateItemOperation(`uuid-remote`, `Milk`);
@@ -989,7 +988,7 @@ describe(`rebase`, () => {
       [
         {
           "clientCreatedAt": 5,
-          "id": "op-5",
+          "id": "renameItem-op-5",
           "payload": {
             "itemId": "uuid-remote",
             "newName": "Whole Milk",
@@ -1007,13 +1006,14 @@ describe(`rebase`, () => {
     `);
 
     const allAppliedOps = [...remoteOps, ...rebasedOps];
+    const states = [await dumpDb(db!)];
 
     for (const op of allAppliedOps) {
-      // eslint-disable-next-line no-await-in-loop
       await applyOperation(db!, op);
+      states.push(await dumpDb(db!));
     }
 
-    const stateAfterAllApplied = await dumpDb(db!);
+    const stateAfterAllApplied = states.pop();
 
     expect(stateAfterAllApplied).toMatchInlineSnapshot(`
       [
@@ -1028,12 +1028,13 @@ describe(`rebase`, () => {
     `);
 
     for (const op of allAppliedOps.slice().reverse()) {
-      // eslint-disable-next-line no-await-in-loop
       await reverseOperation(db!, op);
+
+      const expectedIntermediateState = states.pop();
+      expect(
+        await dumpDb(db!),
+        `error reverting op: ${JSON.stringify(op)}`
+      ).toEqual(expectedIntermediateState);
     }
-
-    const revertedState = await dumpDb(db!);
-
-    expect(revertedState).toEqual(initialState);
   });
 });
