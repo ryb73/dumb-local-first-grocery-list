@@ -4,6 +4,15 @@ import { sql } from "kysely";
 type MigrationDefinition = {
   description: string;
   migration: Migration;
+  /**
+   * Whether the migration is ready to be run in production.
+   *
+   * If false, the migration will not be run in the browser app.
+   * If true, the migration will be run in the browser app.
+   *
+   * When working on a new migration, ALWAYS set this to false! DO NOT
+   * SET THIS TO TRUE UNLESS YOU KNOW WHAT YOU ARE DOING!
+   */
   productionReady: boolean;
 };
 
@@ -67,9 +76,6 @@ const migrations: Record<string, MigrationDefinition> = {
     description: `Add STRICT mode to items table`,
     migration: {
       up: async (db: Kysely<any>) => {
-        // TODO: remove this
-        await db.schema.dropTable(`items_temp`).ifExists().execute();
-
         // First, create a temporary table with strict mode enabled
         await db.schema
           .createTable(`items_temp`)
@@ -224,6 +230,73 @@ const migrations: Record<string, MigrationDefinition> = {
       },
     },
   },
+  "2025-07-07": {
+    productionReady: true,
+    description: `Make items.created_at non-nullable, and update existing NULLs to 0.`,
+    migration: {
+      up: async (db: Kysely<any>) => {
+        // SQLite does not allow adding a column with a non-constant default
+        // value (like CURRENT_TIMESTAMP) to an existing table. The recommended
+        // workaround is to create a new table with the desired schema, copy
+        // the data from the old table, and then replace the old table with
+        // the new one.
+        await db.schema
+          .createTable(`items_temp`)
+          .addColumn(`id`, `text`, (col) => col.primaryKey())
+          .addColumn(`name`, `text`, (col) => col.notNull().unique())
+          .addColumn(`checked`, `integer`, (col) => col.notNull().defaultTo(0))
+          .addColumn(`created_at`, `integer`, (col) =>
+            col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`)
+          )
+          .addColumn(`last_checked_at`, `integer`)
+          .modifyEnd(sql`STRICT`)
+          .execute();
+
+        // Copy data from the old table to the new one, providing a default
+        // for any existing NULL created_at values.
+        await db
+          .insertInto(`items_temp`)
+          .columns([`id`, `name`, `checked`, `last_checked_at`, `created_at`])
+          .expression((eb) =>
+            eb
+              .selectFrom(`items`)
+              .select([
+                `id`,
+                `name`,
+                `checked`,
+                `last_checked_at`,
+                sql`COALESCE(created_at, 0)`.as(`created_at`),
+              ])
+          )
+          .execute();
+
+        await db.schema.dropTable(`items`).execute();
+
+        await db.schema.alterTable(`items_temp`).renameTo(`items`).execute();
+      },
+      down: async (db: Kysely<any>) => {
+        // Revert the changes by creating a table with a nullable created_at column.
+        await db.schema
+          .createTable(`items_temp`)
+          .addColumn(`id`, `text`, (col) => col.primaryKey())
+          .addColumn(`name`, `text`, (col) => col.notNull().unique())
+          .addColumn(`checked`, `integer`, (col) => col.notNull().defaultTo(0))
+          .addColumn(`created_at`, `integer`)
+          .addColumn(`last_checked_at`, `integer`)
+          .modifyEnd(sql`STRICT`)
+          .execute();
+
+        await db
+          .insertInto(`items_temp`)
+          .expression((eb) => eb.selectFrom(`items`).selectAll())
+          .execute();
+
+        await db.schema.dropTable(`items`).execute();
+
+        await db.schema.alterTable(`items_temp`).renameTo(`items`).execute();
+      },
+    },
+  },
 };
 
 const filteredMigrations = Object.fromEntries(
@@ -231,4 +304,10 @@ const filteredMigrations = Object.fromEntries(
     .filter(([, migration]) => migration.productionReady)
     .map(([key, migration]) => [key, migration.migration])
 );
-export { filteredMigrations as migrations };
+const devMigrations = Object.fromEntries(
+  Object.entries(migrations).map(([key, migration]) => [
+    key,
+    migration.migration,
+  ])
+);
+export { filteredMigrations as migrations, devMigrations };

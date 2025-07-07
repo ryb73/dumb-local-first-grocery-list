@@ -1,12 +1,12 @@
 import { type Kysely, Migrator } from "kysely";
 import type { DB } from "../../../db";
-import { migrations } from "./migrations.ts";
+import { devMigrations, migrations } from "./migrations.ts";
 
-export function createMigrator(kysely: Kysely<DB>) {
+export function createMigrator(kysely: Kysely<DB>, dev = false) {
   return new Migrator({
     db: kysely,
     provider: {
-      getMigrations: () => Promise.resolve(migrations),
+      getMigrations: () => Promise.resolve(dev ? devMigrations : migrations),
     },
   });
 }

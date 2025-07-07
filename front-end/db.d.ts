@@ -11,7 +11,7 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
 
 export interface Items {
   checked: Generated<number>;
-  created_at: number | null;
+  created_at: Generated<number>;
   id: string;
   last_checked_at: number | null;
   name: string;

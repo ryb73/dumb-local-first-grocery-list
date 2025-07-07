@@ -11,7 +11,7 @@ async function migrate() {
       }),
     });
 
-    const migrator = createMigrator(db);
+    const migrator = createMigrator(db, true);
     const { error, results } = await migrator.migrateToLatest();
 
     if (error != null) {
