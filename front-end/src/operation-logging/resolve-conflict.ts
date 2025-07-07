@@ -386,17 +386,11 @@ export function resolveConflict(
             // The new "original" checked state for the local op is whatever
             // the remote op set it to.
             originalChecked: remoteOp.payload.checked,
+            originalLastCheckedAt: remoteOp.payload.checked
+              ? remoteOp.payload.newLastCheckedAt
+              : // If remote op unchecked, last_checked_at is preserved from *its* original state.
+                remoteOp.payload.originalLastCheckedAt,
           };
-
-          // If both operations are setting `checked: true`, then the local
-          // operation is effectively a no-op. We need to update the
-          // last checked fields so that they match the remote op.
-          if (transformedPayload.checked && remoteOp.payload.checked) {
-            transformedPayload.originalLastCheckedAt =
-              remoteOp.payload.originalLastCheckedAt;
-            transformedPayload.newLastCheckedAt =
-              remoteOp.payload.newLastCheckedAt;
-          }
 
           return {
             transformedOps: [{ ...localOp, payload: transformedPayload }],

@@ -1109,4 +1109,91 @@ describe(`rebase`, () => {
       ).toEqual(expectedIntermediateState);
     }
   });
+
+  it(`Case 10: Local Operation Supersedes Remote Sequence (LWW)`, async () => {
+    const itemCreatedAt = nextTimestamp();
+    await db!
+      .insertInto(`items`)
+      .values([
+        {
+          checked: 0,
+          created_at: itemCreatedAt,
+          id: `A`,
+          last_checked_at: null,
+          name: `Almonds`,
+        },
+      ])
+      .execute();
+
+    const remoteOp1 = createSetCheckedOperation(`A`, true, {
+      originalLastCheckedAt: null,
+    });
+    assert(remoteOp1.payload.checked);
+
+    const remoteOp2 = createSetCheckedOperation(`A`, false, {
+      originalChecked: true,
+      originalLastCheckedAt: remoteOp1.payload.newLastCheckedAt,
+    });
+
+    const localOp = createSetCheckedOperation(`A`, true, {
+      originalLastCheckedAt: null,
+    });
+
+    const localOps = [localOp];
+    const remoteOps = [remoteOp1, remoteOp2];
+
+    const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
+      newEffectiveIdsByOldId: new Map(),
+    });
+
+    expect(rebasedOps).toMatchInlineSnapshot(`
+      [
+        {
+          "clientCreatedAt": 4,
+          "id": "setCheckedState-op-3",
+          "payload": {
+            "checked": true,
+            "itemId": "A",
+            "newLastCheckedAt": 4,
+            "originalChecked": false,
+            "originalLastCheckedAt": 2,
+          },
+          "serverCommittedAt": null,
+          "type": "setCheckedState",
+        },
+      ]
+    `);
+
+    const allAppliedOps = [...remoteOps, ...rebasedOps];
+    const states = [await dumpDb(db!)];
+
+    for (const op of allAppliedOps) {
+      await applyOperation(db!, op);
+      states.push(await dumpDb(db!));
+    }
+
+    const stateAfterAllApplied = states.pop();
+
+    expect(stateAfterAllApplied).toMatchInlineSnapshot(`
+      [
+        {
+          "checked": 1,
+          "created_at": 1,
+          "id": "A",
+          "last_checked_at": 4,
+          "name": "Almonds",
+        },
+      ]
+    `);
+
+    for (const op of allAppliedOps.slice().reverse()) {
+      await reverseOperation(db!, op);
+
+      const expectedIntermediateState = states.pop();
+      expect(
+        await dumpDb(db!),
+        `error reverting op: ${JSON.stringify(op)}`
+      ).toEqual(expectedIntermediateState);
+    }
+  });
 });
