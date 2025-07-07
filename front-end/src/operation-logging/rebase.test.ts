@@ -378,9 +378,9 @@ describe(`rebase`, () => {
           "id": "deleteItem-op-1",
           "payload": {
             "deletedItem": {
-              "checked": 0,
+              "checked": 1,
               "created_at": 1,
-              "last_checked_at": null,
+              "last_checked_at": 3,
               "name": "Coffee",
             },
             "itemId": "X",

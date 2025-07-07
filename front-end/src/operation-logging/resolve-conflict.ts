@@ -275,7 +275,27 @@ export function resolveConflict(
           }
           return { transformedOps: [localOp], newContext: context };
         }
-        case `deleteItem`:
+        case `deleteItem`: {
+          if (remoteOp.payload.itemId !== localOp.payload.itemId) {
+            return { transformedOps: [localOp], newContext: context };
+          }
+
+          return {
+            transformedOps: [
+              {
+                ...localOp,
+                payload: {
+                  ...localOp.payload,
+                  deletedItem: {
+                    ...localOp.payload.deletedItem,
+                    name: remoteOp.payload.newName,
+                  },
+                },
+              },
+            ],
+            newContext: context,
+          };
+        }
         case `setCheckedState`: {
           // Remote renamed an item, local op modified an item.
           // If it's the same item, the local op is still valid as it's by ID.
@@ -294,8 +314,31 @@ export function resolveConflict(
       switch (localOp.type) {
         // Create, Rename, and Delete operations are orthogonal or take precedence.
         case `createItem`:
-        case `deleteItem`:
           return { transformedOps: [localOp], newContext: context };
+        case `deleteItem`: {
+          if (remoteOp.payload.itemId !== localOp.payload.itemId) {
+            return { transformedOps: [localOp], newContext: context };
+          }
+
+          const newDeletedItem = { ...localOp.payload.deletedItem };
+          newDeletedItem.checked = remoteOp.payload.checked ? 1 : 0;
+          if (remoteOp.payload.checked) {
+            newDeletedItem.last_checked_at = remoteOp.payload.newLastCheckedAt;
+          }
+
+          return {
+            transformedOps: [
+              {
+                ...localOp,
+                payload: {
+                  ...localOp.payload,
+                  deletedItem: newDeletedItem,
+                },
+              },
+            ],
+            newContext: context,
+          };
+        }
 
         case `renameItem`: {
           if (remoteOp.payload.itemId !== localOp.payload.itemId)
