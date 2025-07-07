@@ -1037,4 +1037,76 @@ describe(`rebase`, () => {
       ).toEqual(expectedIntermediateState);
     }
   });
+
+  it(`Case 9: Stale Local Operation Made Obsolete by Remote Sequence`, async () => {
+    const itemCreatedAt = nextTimestamp();
+    await db!
+      .insertInto(`items`)
+      .values([
+        {
+          checked: 0,
+          created_at: itemCreatedAt,
+          id: `A`,
+          last_checked_at: null,
+          name: `Almonds`,
+        },
+      ])
+      .execute();
+
+    const localOp = createSetCheckedOperation(`A`, true, {
+      originalLastCheckedAt: null,
+    });
+
+    const remoteOp1 = createSetCheckedOperation(`A`, true, {
+      originalLastCheckedAt: null,
+    });
+
+    const remoteOp2 = createSetCheckedOperation(`A`, false, {
+      originalChecked: true,
+      originalLastCheckedAt: remoteOp1.payload.checked
+        ? remoteOp1.payload.newLastCheckedAt
+        : null,
+    });
+
+    const localOps = [localOp];
+    const remoteOps = [remoteOp1, remoteOp2];
+
+    const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
+      newEffectiveIdsByOldId: new Map(),
+    });
+
+    expect(rebasedOps).toMatchInlineSnapshot(`[]`);
+
+    const allAppliedOps = [...remoteOps, ...rebasedOps];
+    const states = [await dumpDb(db!)];
+
+    for (const op of allAppliedOps) {
+      await applyOperation(db!, op);
+      states.push(await dumpDb(db!));
+    }
+
+    const stateAfterAllApplied = states.pop();
+
+    expect(stateAfterAllApplied).toMatchInlineSnapshot(`
+      [
+        {
+          "checked": 0,
+          "created_at": 1,
+          "id": "A",
+          "last_checked_at": 3,
+          "name": "Almonds",
+        },
+      ]
+    `);
+
+    for (const op of allAppliedOps.slice().reverse()) {
+      await reverseOperation(db!, op);
+
+      const expectedIntermediateState = states.pop();
+      expect(
+        await dumpDb(db!),
+        `error reverting op: ${JSON.stringify(op)}`
+      ).toEqual(expectedIntermediateState);
+    }
+  });
 });
