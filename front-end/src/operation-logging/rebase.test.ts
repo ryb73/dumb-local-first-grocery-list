@@ -1275,4 +1275,89 @@ describe(`rebase`, () => {
       ).toEqual(expectedIntermediateState);
     }
   });
+
+  it(`Case 12: Conflicting Renames to the Same New Name (Remote Wins)`, async () => {
+    const itemsCreatedAt = [nextTimestamp(), nextTimestamp()];
+
+    await db!
+      .insertInto(`items`)
+      .values([
+        { id: `A`, name: `Tea`, checked: 0, created_at: itemsCreatedAt[0] },
+        { id: `B`, name: `Water`, checked: 0, created_at: itemsCreatedAt[1] },
+      ])
+      .execute();
+
+    const localOp = createRenameOperation(`A`, `Sparkling Water`, {
+      checked: 0,
+      created_at: itemsCreatedAt[0]!,
+      last_checked_at: null,
+      name: `Tea`,
+    });
+
+    const remoteOp = createRenameOperation(`B`, `Sparkling Water`, {
+      checked: 0,
+      created_at: itemsCreatedAt[1]!,
+      last_checked_at: null,
+      name: `Water`,
+    });
+
+    const localOps = [localOp];
+    const remoteOps = [remoteOp];
+
+    const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
+      newEffectiveIdsByOldId: new Map(),
+    });
+
+    expect(rebasedOps).toMatchInlineSnapshot(`
+      [
+        {
+          "clientCreatedAt": 3,
+          "id": "uuid-1",
+          "payload": {
+            "deletedItem": {
+              "checked": 0,
+              "created_at": 1,
+              "last_checked_at": null,
+              "name": "Tea",
+            },
+            "itemId": "A",
+          },
+          "serverCommittedAt": null,
+          "type": "deleteItem",
+        },
+      ]
+    `);
+
+    const allAppliedOps = [...remoteOps, ...rebasedOps];
+    const states = [await dumpDb(db!)];
+
+    for (const op of allAppliedOps) {
+      await applyOperation(db!, op);
+      states.push(await dumpDb(db!));
+    }
+
+    const stateAfterAllApplied = states.pop();
+
+    expect(stateAfterAllApplied).toMatchInlineSnapshot(`
+      [
+        {
+          "checked": 0,
+          "created_at": 2,
+          "id": "B",
+          "last_checked_at": null,
+          "name": "Sparkling Water",
+        },
+      ]
+    `);
+
+    for (const op of allAppliedOps.slice().reverse()) {
+      await reverseOperation(db!, op);
+
+      const expectedIntermediateState = states.pop();
+      expect(
+        await dumpDb(db!),
+        `error reverting op: ${JSON.stringify(op)}`
+      ).toEqual(expectedIntermediateState);
+    }
+  });
 });
