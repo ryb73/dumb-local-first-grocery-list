@@ -1360,4 +1360,61 @@ describe(`rebase`, () => {
       ).toEqual(expectedIntermediateState);
     }
   });
+
+  it(`Case 13: Redundant Deletion`, async () => {
+    const itemCreatedAt = nextTimestamp();
+
+    await db!
+      .insertInto(`items`)
+      .values([
+        { id: `A`, name: `Cookies`, checked: 0, created_at: itemCreatedAt },
+      ])
+      .execute();
+
+    const localOps = [
+      createDeleteOperation(`A`, {
+        checked: 0,
+        created_at: itemCreatedAt,
+        last_checked_at: null,
+        name: `Cookies`,
+      }),
+    ];
+
+    const remoteOps = [
+      createDeleteOperation(`A`, {
+        checked: 0,
+        created_at: itemCreatedAt,
+        last_checked_at: null,
+        name: `Cookies`,
+      }),
+    ];
+
+    const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
+      newEffectiveIdsByOldId: new Map(),
+    });
+
+    expect(rebasedOps).toMatchInlineSnapshot(`[]`);
+
+    const allAppliedOps = [...remoteOps, ...rebasedOps];
+    const states = [await dumpDb(db!)];
+
+    for (const op of allAppliedOps) {
+      await applyOperation(db!, op);
+      states.push(await dumpDb(db!));
+    }
+
+    const stateAfterAllApplied = states.pop();
+
+    expect(stateAfterAllApplied).toMatchInlineSnapshot(`[]`);
+
+    for (const op of allAppliedOps.slice().reverse()) {
+      await reverseOperation(db!, op);
+
+      const expectedIntermediateState = states.pop();
+      expect(
+        await dumpDb(db!),
+        `error reverting op: ${JSON.stringify(op)}`
+      ).toEqual(expectedIntermediateState);
+    }
+  });
 });
