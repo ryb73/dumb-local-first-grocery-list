@@ -1196,4 +1196,83 @@ describe(`rebase`, () => {
       ).toEqual(expectedIntermediateState);
     }
   });
+
+  it(`Case 11: Complex Creation and Modification Collision`, async () => {
+    // Initial state is empty
+
+    const localOp1 = createCreateItemOperation(`uuid-local`, `Coffee`);
+
+    const remoteOp1 = createCreateItemOperation(`uuid-remote`, `Coffee`);
+
+    const localOp2 = createRenameOperation(`uuid-local`, `Espresso`, {
+      created_at: localOp1.payload.item.created_at,
+      name: `Coffee`,
+      checked: 0,
+      last_checked_at: null,
+    });
+
+    const remoteOp2 = createSetCheckedOperation(`uuid-remote`, true, {
+      originalLastCheckedAt: null,
+    });
+
+    const localOps = [localOp1, localOp2];
+    const remoteOps = [remoteOp1, remoteOp2];
+
+    const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
+      newEffectiveIdsByOldId: new Map(),
+    });
+
+    expect(rebasedOps).toMatchInlineSnapshot(`
+      [
+        {
+          "clientCreatedAt": 3,
+          "id": "renameItem-op-3",
+          "payload": {
+            "itemId": "uuid-remote",
+            "newName": "Espresso",
+            "originalItem": {
+              "checked": 1,
+              "created_at": 2,
+              "last_checked_at": 4,
+              "name": "Coffee",
+            },
+          },
+          "serverCommittedAt": null,
+          "type": "renameItem",
+        },
+      ]
+    `);
+
+    const allAppliedOps = [...remoteOps, ...rebasedOps];
+    const states = [await dumpDb(db!)];
+
+    for (const op of allAppliedOps) {
+      await applyOperation(db!, op);
+      states.push(await dumpDb(db!));
+    }
+
+    const stateAfterAllApplied = states.pop();
+
+    expect(stateAfterAllApplied).toMatchInlineSnapshot(`
+      [
+        {
+          "checked": 1,
+          "created_at": 2,
+          "id": "uuid-remote",
+          "last_checked_at": 4,
+          "name": "Espresso",
+        },
+      ]
+    `);
+
+    for (const op of allAppliedOps.slice().reverse()) {
+      await reverseOperation(db!, op);
+
+      const expectedIntermediateState = states.pop();
+      expect(
+        await dumpDb(db!),
+        `error reverting op: ${JSON.stringify(op)}`
+      ).toEqual(expectedIntermediateState);
+    }
+  });
 });
