@@ -1,19 +1,22 @@
 import { defined } from "@ryb73/super-duper-parakeet/lib/src/type-checks";
-import type { Kysely } from "kysely";
 import { sql } from "kysely";
-import { createSignal, onMount } from "solid-js";
+import { createSignal } from "solid-js";
+import { SQLocalKysely } from "sqlocal/kysely";
 import { z } from "zod";
-import type { DB } from "../../db";
 import { initTestDatabases } from "../db/init";
 import styles from "./SqliteBrowser.module.css";
 
 const QueryResultSchema = z.array(z.record(z.unknown()));
 type QueryResult = z.infer<typeof QueryResultSchema>;
 
-type DatabaseInfo = {
-  kysely: Kysely<DB>;
-  name: string;
-};
+const { db1: kysely1, db2: kysely2 } = await initTestDatabases(
+  new SQLocalKysely(`grocery-list.sqlite3`).dialect,
+  new SQLocalKysely(`grocery-list-2.sqlite3`).dialect
+);
+const databases = [
+  { name: `Database 1`, kysely: kysely1 },
+  { name: `Database 2`, kysely: kysely2 },
+];
 
 export function SqliteBrowser() {
   const [query, setQuery] = createSignal(``);
@@ -21,17 +24,6 @@ export function SqliteBrowser() {
   const [error, setError] = createSignal(``);
   const [loading, setLoading] = createSignal(false);
   const [selectedDatabase, setSelectedDatabase] = createSignal(0);
-  const [databases, setDatabases] = createSignal<DatabaseInfo[]>([]);
-
-  onMount(() => {
-    void (async () => {
-      const { db1, db2 } = await initTestDatabases();
-      setDatabases([
-        { name: `Database 1`, kysely: db1.kysely },
-        { name: `Database 2`, kysely: db2.kysely },
-      ]);
-    })();
-  });
 
   const executeQuery = async () => {
     if (query() === ``) {
@@ -43,7 +35,7 @@ export function SqliteBrowser() {
     setLoading(true);
 
     try {
-      const selectedDb = databases()[selectedDatabase()];
+      const selectedDb = databases[selectedDatabase()];
       if (selectedDb == null) {
         throw new Error(`No database selected`);
       }
@@ -119,7 +111,7 @@ export function SqliteBrowser() {
             onChange={(e) => setSelectedDatabase(Number(e.currentTarget.value))}
             value={selectedDatabase()}
           >
-            {databases().map((db, index) => (
+            {databases.map((db, index) => (
               <option value={index}>{db.name}</option>
             ))}
           </select>

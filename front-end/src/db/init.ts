@@ -1,17 +1,18 @@
-import { Kysely } from "kysely";
-import { SQLocalKysely } from "sqlocal/kysely";
+import { Kysely, sql } from "kysely";
+import type { Dialect } from "kysely";
 import type { DB } from "../../db";
+import type { DB as OperationLogDB } from "../../operation-log-db";
+import type { MergedDB } from "./merged-db";
 import { createMigrator } from "./migrations/createMigrator";
+import { createOperationLogMigrator } from "./operation-log/migrations/createOperationLogMigrator";
 
 // Initialize a specific database with migrations
-const initDatabase = async (dbName = `grocery-list.sqlite3`) => {
-  const { dialect } = new SQLocalKysely(dbName);
-
+const initDatabase = async (dialect: Dialect) => {
   const kysely = new Kysely<DB>({ dialect });
 
   const migrator = createMigrator(kysely);
 
-  const { error, results } = await migrator.migrateToLatest();
+  const { error } = await migrator.migrateToLatest();
 
   if (error != null) {
     console.error(`Migration failed:`, error);
@@ -19,18 +20,52 @@ const initDatabase = async (dbName = `grocery-list.sqlite3`) => {
     throw error;
   }
 
-  if (results != null && results.length > 0) {
-    console.log(`Migrations completed:`, results);
-  } else {
-    console.log(`No migrations were needed`);
+  return kysely;
+};
+
+// Initialize operation log database with migrations
+const initOperationLogDatabase = async (dialect: Dialect) => {
+  const kysely = new Kysely<OperationLogDB>({ dialect });
+
+  const migrator = createOperationLogMigrator(kysely);
+
+  const { error } = await migrator.migrateToLatest();
+
+  if (error != null) {
+    console.error(`Operation log migration failed:`, error);
+    // eslint-disable-next-line @typescript-eslint/no-throw-literal
+    throw error;
   }
 
-  return { kysely, migrator };
+  return kysely;
+};
+
+// Initialize merged database with both main and operation log databases attached
+export const initMergedDatabase = async (
+  operationLogDbName: string,
+  mainDialect: Dialect,
+  operationLogDialect: Dialect
+) => {
+  // Initialize both databases separately first to run migrations
+  const mainDb = await initDatabase(mainDialect);
+  const operationLogDb = await initOperationLogDatabase(operationLogDialect);
+
+  // Close the separate operation log connection since we'll attach it to main
+  await operationLogDb.destroy();
+
+  // Attach the operation log database to the main database
+  await sql`ATTACH DATABASE ${operationLogDbName} AS op_log`.execute(mainDb);
+
+  // Return the main kysely instance typed as MergedDB
+  return mainDb as unknown as Kysely<MergedDB>;
 };
 
 // Initialize both databases for testing
-export const initTestDatabases = async () => {
-  const db1 = await initDatabase(`grocery-list.sqlite3`);
-  const db2 = await initDatabase(`grocery-list-2.sqlite3`);
+export const initTestDatabases = async (
+  dialect1: Dialect,
+  dialect2: Dialect
+) => {
+  const db1 = await initDatabase(dialect1);
+  const db2 = await initDatabase(dialect2);
   return { db1, db2 };
 };
