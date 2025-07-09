@@ -100,10 +100,10 @@ This is a local-first grocery list app. The UI, for development purposes, curren
     - [x] Specify all abstract operations (e.g., `addItem`, `deleteItem`, `updateItem`, `toggleItem`).
     - **NOTE**: the operations mentioned in this document are hypothetical. The actual set of operation that will be needed is an indeterminate implementation detail.
     - [x] Ensure each operation's payload contains all data needed for reversal and for the chosen conflict resolution strategy (e.g., timestamps, logical clocks, full before/after states).
-    - [ ] Implement the core `resolveConflict(remoteOp, localOp)` function, encapsulating the chosen conflict resolution strategy.
+    - [x] Implement the core `resolveConflict(remoteOp, localOp)` function, encapsulating the chosen conflict resolution strategy.
 
 2.  **Implement Operation Logging & Storage:**
-    - [ ] Create an SQLite schema for the operation log (e.g., `groceries.log.sqlite3`).
+    - [x] Create an SQLite schema for the operation log (e.g., `groceries.log.sqlite3`).
     - [ ] Intercept all mutating database actions to log operations to this SQLite log.
 
 3.  **Implement Migration Compatibility Checking:**

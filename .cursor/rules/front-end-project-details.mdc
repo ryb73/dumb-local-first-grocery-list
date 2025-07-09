@@ -12,7 +12,7 @@ alwaysApply: true
 - Use CSS modules for styles
 
 # Development Guidelines
-- Prefer functional style over classes when possible
+- Prefer a functional style. Classes are almost never necessary – avoid them when possible, and NEVER use inheritance.
 
 # Database Access
 - SQLite database is stored in OPFS
