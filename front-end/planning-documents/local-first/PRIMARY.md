@@ -104,25 +104,25 @@ This is a local-first grocery list app. The UI, for development purposes, curren
 
 2.  **Implement Operation Logging & Storage:**
     - [x] Create an SQLite schema for the operation log (e.g., `groceries.log.sqlite3`).
-    - [ ] Intercept all mutating database actions to log operations to this SQLite log.
+    - [x] Intercept all mutating database actions to log operations to this SQLite log.
 
-3.  **Implement Migration Compatibility Checking:**
-    - [ ] Create functions to query the current migration state from both client and server databases.
-    - [ ] Implement migration compatibility verification before sync operations.
-    - [ ] Provide clear error messages when migration states differ.
-
-4.  **Implement Rollback & Re-application Engine:**
+3.  **Implement Rollback & Re-application Engine:**
     - [ ] For each operation type, implement its corresponding inverse operation.
     - [ ] Create functions to:
         - [ ] Apply a list of operations to the database.
         - [ ] Roll back (apply inverse of) a list of operations.
 
-5.  **Implement Client-Side Sync Orchestration:**
+4.  **Implement Client-Side Sync Orchestration:**
     - [ ] Implement the client-side logic for steps 0-5 of the "Detailed Sync Algorithm".
     - [ ] This includes migration compatibility checking, fetching `remoteOps`, unwinding `localOps`, building `rebasedLocalOps` using the `reduce` and `resolveConflict` logic, and applying `remoteOps` then `rebasedLocalOps` in a transaction.
     - [ ] Manage local markers for "last known server state/version".
 
-6.  **Implement Server-Side Sync Endpoint:**
+5.  **Implement Server-Side Sync Endpoint:**
     - [ ] Develop the server endpoint to handle step 6 of the "Detailed Sync Algorithm".
     - [ ] This includes migration compatibility checking, version checking, and atomic application of `rebasedLocalOps`.
     - (Initially, this will be simulated against the second local SQLite DB).
+
+6.  **Implement Migration Compatibility Checking:**
+    - [ ] Create functions to query the current migration state from both client and server databases.
+    - [ ] Implement migration compatibility verification before sync operations.
+    - [ ] Provide clear error messages when migration states differ.
