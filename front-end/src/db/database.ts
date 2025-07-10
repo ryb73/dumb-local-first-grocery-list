@@ -1,36 +1,107 @@
-import type { Kysely } from "kysely";
-import type { DB } from "../../db";
+import type { Kysely, Transaction } from "kysely";
+import type {
+  CreateItemOperation,
+  Operation,
+  RenameItemOperation,
+  SetCheckedStateOperation,
+} from "../operation-logging/operation-types.ts";
 import type { ItemUpdate } from "../types/schemas";
+import type { MergedDB } from "./merged-db";
 
 export class Database {
-  private readonly kysely: Kysely<DB>;
+  private readonly kysely: Kysely<MergedDB>;
+  private readonly isServer: boolean;
 
-  public constructor(kysely: Kysely<DB>) {
+  public constructor(kysely: Kysely<MergedDB>, isServer: boolean) {
     this.kysely = kysely;
+    this.isServer = isServer;
+  }
+
+  /**
+   * Logs an operation to the operation log database.
+   * This should be called within the same transaction as the main database update.
+   */
+  private async logOperation(
+    trx: Transaction<MergedDB>,
+    operation: Omit<Operation, "serverCommittedAt">
+  ): Promise<void> {
+    await trx
+      .insertInto(`op_log.operations`)
+      .values({
+        client_created_at: operation.clientCreatedAt,
+        id: operation.id,
+        payload: JSON.stringify(operation.payload),
+        server_committed_at: this.isServer ? Date.now() : null,
+        type: operation.type,
+      })
+      .execute();
   }
 
   public async addItem(name: string) {
-    // First try to update an existing item to an unchecked state
-    const existingRow = await this.kysely
-      .selectFrom(`items`)
-      .selectAll()
-      .where(`name`, `=`, name)
-      .executeTakeFirst();
-    await (existingRow != null
-      ? this.kysely
+    // Use a transaction to ensure atomicity between main DB and operation log
+    await this.kysely.transaction().execute(async (trx) => {
+      // First try to update an existing item to an unchecked state
+      const existingRow = await trx
+        .selectFrom(`items`)
+        .selectAll()
+        .where(`name`, `=`, name)
+        .executeTakeFirst();
+
+      if (existingRow != null) {
+        // Log SetCheckedStateOperation for unchecking existing item
+        const setCheckedOperation: SetCheckedStateOperation = {
+          clientCreatedAt: Date.now(),
+          id: crypto.randomUUID(),
+          payload: {
+            itemId: existingRow.id,
+            checked: false,
+            originalChecked: existingRow.checked === 1,
+            originalLastCheckedAt: existingRow.last_checked_at,
+          },
+          serverCommittedAt: null,
+          type: `setCheckedState`,
+        };
+
+        await this.logOperation(trx, setCheckedOperation);
+
+        await trx
           .updateTable(`items`)
           .set({ checked: 0 })
           .where(`id`, `=`, existingRow.id)
-          .execute()
-      : this.kysely
+          .execute();
+      } else {
+        // Create new item
+        const newItemId = crypto.randomUUID();
+        const createdAt = Date.now();
+
+        // Log CreateItemOperation for new item
+        const createItemOperation: CreateItemOperation = {
+          clientCreatedAt: Date.now(),
+          id: crypto.randomUUID(),
+          payload: {
+            item: {
+              id: newItemId,
+              name,
+              created_at: createdAt,
+            },
+          },
+          serverCommittedAt: null,
+          type: `createItem`,
+        };
+
+        await this.logOperation(trx, createItemOperation);
+
+        await trx
           .insertInto(`items`)
           .values({
-            id: crypto.randomUUID(),
+            id: newItemId,
             name,
-            created_at: Date.now(),
+            created_at: createdAt,
             checked: 0,
           })
-          .execute());
+          .execute();
+      }
+    });
   }
 
   public async getItems() {
@@ -55,12 +126,47 @@ export class Database {
   }
 
   public async toggleItem(id: string, checked: boolean): Promise<void> {
-    const item = await this.getItem(id);
-    if (item == null) return;
+    await this.kysely.transaction().execute(async (trx) => {
+      const item = await trx
+        .selectFrom(`items`)
+        .selectAll()
+        .where(`id`, `=`, id)
+        .executeTakeFirst();
 
-    await this.updateItem(id, {
-      checked: checked ? 1 : 0,
-      last_checked_at: checked ? Date.now() : item.last_checked_at,
+      if (item == null) return;
+
+      // Log SetCheckedStateOperation
+      const setCheckedOperation: SetCheckedStateOperation = {
+        clientCreatedAt: Date.now(),
+        id: crypto.randomUUID(),
+        payload: checked
+          ? {
+              checked: true,
+              itemId: id,
+              newLastCheckedAt: Date.now(),
+              originalChecked: item.checked === 1,
+              originalLastCheckedAt: item.last_checked_at,
+            }
+          : {
+              itemId: id,
+              checked: false,
+              originalChecked: item.checked === 1,
+              originalLastCheckedAt: item.last_checked_at,
+            },
+        serverCommittedAt: null,
+        type: `setCheckedState`,
+      };
+
+      await this.logOperation(trx, setCheckedOperation);
+
+      await trx
+        .updateTable(`items`)
+        .set({
+          checked: checked ? 1 : 0,
+          last_checked_at: checked ? Date.now() : item.last_checked_at,
+        })
+        .where(`id`, `=`, id)
+        .execute();
     });
   }
 
@@ -68,15 +174,74 @@ export class Database {
     id: string,
     updates: Omit<ItemUpdate, "id">
   ): Promise<void> {
-    const item = await this.getItem(id);
-    if (item == null) return;
+    await this.kysely.transaction().execute(async (trx) => {
+      const item = await trx
+        .selectFrom(`items`)
+        .selectAll()
+        .where(`id`, `=`, id)
+        .executeTakeFirst();
 
-    const updatedItem = { ...item, ...updates };
-    await this.kysely
-      .updateTable(`items`)
-      .set(updatedItem)
-      .where(`id`, `=`, id)
-      .execute();
+      if (item == null) return;
+
+      // If the name is being updated, log a RenameItemOperation
+      if (updates.name != null && updates.name !== item.name) {
+        const renameOperation: RenameItemOperation = {
+          clientCreatedAt: Date.now(),
+          id: crypto.randomUUID(),
+          payload: {
+            itemId: id,
+            newName: updates.name,
+            originalItem: {
+              name: item.name,
+              checked: item.checked,
+              created_at: item.created_at,
+              last_checked_at: item.last_checked_at,
+            },
+          },
+          serverCommittedAt: null,
+          type: `renameItem`,
+        };
+
+        await this.logOperation(trx, renameOperation);
+      }
+
+      // If checked state is being updated, log a SetCheckedStateOperation
+      if (
+        updates.checked != null &&
+        (updates.checked === 1) !== (item.checked === 1)
+      ) {
+        const checked = updates.checked === 1;
+        const setCheckedOperation: SetCheckedStateOperation = {
+          clientCreatedAt: Date.now(),
+          id: crypto.randomUUID(),
+          payload: checked
+            ? {
+                checked: true,
+                itemId: id,
+                newLastCheckedAt: updates.last_checked_at ?? Date.now(),
+                originalChecked: item.checked === 1,
+                originalLastCheckedAt: item.last_checked_at,
+              }
+            : {
+                itemId: id,
+                checked: false,
+                originalChecked: item.checked === 1,
+                originalLastCheckedAt: item.last_checked_at,
+              },
+          serverCommittedAt: null,
+          type: `setCheckedState`,
+        };
+
+        await this.logOperation(trx, setCheckedOperation);
+      }
+
+      const updatedItem = { ...item, ...updates };
+      await trx
+        .updateTable(`items`)
+        .set(updatedItem)
+        .where(`id`, `=`, id)
+        .execute();
+    });
   }
 
   public async getItem(id: string) {
