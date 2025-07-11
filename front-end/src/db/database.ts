@@ -1,4 +1,6 @@
 import type { Kysely, Transaction } from "kysely";
+import type { DB } from "../../db";
+import { applyOperation } from "../operation-logging/apply-operation.ts";
 import type {
   CreateItemOperation,
   Operation,
@@ -7,6 +9,10 @@ import type {
 } from "../operation-logging/operation-types.ts";
 import type { ItemUpdate } from "../types/schemas";
 import type { MergedDB } from "./merged-db";
+
+function narrowTransaction(trx: Transaction<MergedDB>): Transaction<DB> {
+  return trx as unknown as Transaction<DB>;
+}
 
 export class Database {
   private readonly kysely: Kysely<MergedDB>;
@@ -63,12 +69,7 @@ export class Database {
         };
 
         await this.logOperation(trx, setCheckedOperation);
-
-        await trx
-          .updateTable(`items`)
-          .set({ checked: 0 })
-          .where(`id`, `=`, existingRow.id)
-          .execute();
+        await applyOperation(narrowTransaction(trx), setCheckedOperation);
       } else {
         // Create new item
         const newItemId = crypto.randomUUID();
@@ -90,16 +91,7 @@ export class Database {
         };
 
         await this.logOperation(trx, createItemOperation);
-
-        await trx
-          .insertInto(`items`)
-          .values({
-            id: newItemId,
-            name,
-            created_at: createdAt,
-            checked: 0,
-          })
-          .execute();
+        await applyOperation(narrowTransaction(trx), createItemOperation);
       }
     });
   }
@@ -158,15 +150,7 @@ export class Database {
       };
 
       await this.logOperation(trx, setCheckedOperation);
-
-      await trx
-        .updateTable(`items`)
-        .set({
-          checked: checked ? 1 : 0,
-          last_checked_at: checked ? Date.now() : item.last_checked_at,
-        })
-        .where(`id`, `=`, id)
-        .execute();
+      await applyOperation(narrowTransaction(trx), setCheckedOperation);
     });
   }
 
@@ -203,6 +187,7 @@ export class Database {
         };
 
         await this.logOperation(trx, renameOperation);
+        await applyOperation(narrowTransaction(trx), renameOperation);
       }
 
       // If checked state is being updated, log a SetCheckedStateOperation
@@ -233,14 +218,8 @@ export class Database {
         };
 
         await this.logOperation(trx, setCheckedOperation);
+        await applyOperation(narrowTransaction(trx), setCheckedOperation);
       }
-
-      const updatedItem = { ...item, ...updates };
-      await trx
-        .updateTable(`items`)
-        .set(updatedItem)
-        .where(`id`, `=`, id)
-        .execute();
     });
   }
 
