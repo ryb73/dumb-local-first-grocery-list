@@ -107,7 +107,7 @@ This is a local-first grocery list app. The UI, for development purposes, curren
     - [x] Intercept all mutating database actions to log operations to this SQLite log.
 
 3.  **Implement Rollback & Re-application Engine:**
-    - [ ] For each operation type, implement its corresponding inverse operation.
+    - [x] For each operation type, implement its corresponding inverse operation.
     - [ ] Create functions to:
         - [ ] Apply a list of operations to the database.
         - [ ] Roll back (apply inverse of) a list of operations.
