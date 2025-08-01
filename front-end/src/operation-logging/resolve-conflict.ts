@@ -131,9 +131,9 @@ export function resolveConflict(
                     ...localOp.payload,
                     itemId: remoteOp.payload.item.id,
                     originalItem: {
-                      checked: 0,
-                      created_at: remoteOp.payload.item.created_at,
-                      last_checked_at: null,
+                      checked: false,
+                      createdAt: remoteOp.payload.item.createdAt,
+                      lastCheckedAt: null,
                       name: remoteOp.payload.item.name,
                     },
                   },
@@ -168,9 +168,9 @@ export function resolveConflict(
                 id: crypto.randomUUID(),
                 payload: {
                   deletedItem: {
-                    checked: 0,
-                    created_at: remoteOp.payload.item.created_at,
-                    last_checked_at: null,
+                    checked: false,
+                    createdAt: remoteOp.payload.item.createdAt,
+                    lastCheckedAt: null,
                     name: remoteOp.payload.item.name,
                   },
                   itemId: remoteOp.payload.item.id,
@@ -260,8 +260,8 @@ export function resolveConflict(
                   payload: {
                     deletedItem: {
                       checked: originalItem.checked,
-                      created_at: originalItem.created_at,
-                      last_checked_at: originalItem.last_checked_at,
+                      createdAt: originalItem.createdAt,
+                      lastCheckedAt: originalItem.lastCheckedAt,
                       name: originalItem.name,
                     },
                     itemId: localOp.payload.itemId,
@@ -321,9 +321,9 @@ export function resolveConflict(
           }
 
           const newDeletedItem = { ...localOp.payload.deletedItem };
-          newDeletedItem.checked = remoteOp.payload.checked ? 1 : 0;
+          newDeletedItem.checked = remoteOp.payload.checked;
           if (remoteOp.payload.checked) {
-            newDeletedItem.last_checked_at = remoteOp.payload.newLastCheckedAt;
+            newDeletedItem.lastCheckedAt = remoteOp.payload.newLastCheckedAt;
           }
 
           return {
@@ -352,8 +352,8 @@ export function resolveConflict(
                   ...localOp.payload,
                   originalItem: {
                     ...localOp.payload.originalItem,
-                    checked: remoteOp.payload.checked ? 1 : 0,
-                    last_checked_at: remoteOp.payload.checked
+                    checked: remoteOp.payload.checked,
+                    lastCheckedAt: remoteOp.payload.checked
                       ? remoteOp.payload.newLastCheckedAt
                       : null,
                   },

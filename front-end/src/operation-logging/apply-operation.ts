@@ -41,7 +41,7 @@ export async function applyOperation(
         .insertInto(`items`)
         .values({
           checked: 0,
-          created_at: operation.payload.item.created_at,
+          created_at: operation.payload.item.createdAt,
           id: operation.payload.item.id,
           last_checked_at: null,
           name: operation.payload.item.name,

@@ -81,20 +81,16 @@ function createRenameOperation(
   itemId: string,
   newName: string,
   originalItem: {
-    checked: number;
-    created_at: number;
-    last_checked_at: number | null;
+    checked: boolean;
+    createdAt: number;
+    lastCheckedAt: number | null;
     name: string;
   }
 ): RenameItemOperation {
   return {
     clientCreatedAt: nextTimestamp(),
     id: `renameItem-${nextId()}`,
-    payload: {
-      itemId,
-      newName,
-      originalItem,
-    },
+    payload: { itemId, newName, originalItem },
     serverCommittedAt: null,
     type: `renameItem`,
   };
@@ -103,19 +99,16 @@ function createRenameOperation(
 function createDeleteOperation(
   itemId: string,
   deletedItem: {
-    checked: number;
-    created_at: number;
-    last_checked_at: number | null;
+    checked: boolean;
+    createdAt: number;
+    lastCheckedAt: number | null;
     name: string;
   }
 ): DeleteItemOperation {
   return {
     clientCreatedAt: nextTimestamp(),
     id: `deleteItem-${nextId()}`,
-    payload: {
-      deletedItem,
-      itemId,
-    },
+    payload: { deletedItem, itemId },
     serverCommittedAt: null,
     type: `deleteItem`,
   };
@@ -131,7 +124,7 @@ function createCreateItemOperation(
     id: `createItem-${nextId()}`,
     payload: {
       item: {
-        created_at: clientCreatedAt,
+        createdAt: clientCreatedAt,
         id,
         name,
       },
@@ -195,9 +188,9 @@ describe(`rebase`, () => {
     ];
     const remoteOps = [
       createRenameOperation(`B`, `Whole Wheat Bread`, {
-        checked: 0,
-        created_at: createdAt[1]!,
-        last_checked_at: null,
+        checked: false,
+        createdAt: createdAt[1]!,
+        lastCheckedAt: null,
         name: `Bread`,
       }),
     ];
@@ -275,17 +268,17 @@ describe(`rebase`, () => {
 
     const remoteOps = [
       createRenameOperation(`A`, `Oat Milk`, {
-        checked: 0,
-        created_at: itemCreatedAt,
-        last_checked_at: null,
+        checked: false,
+        createdAt: itemCreatedAt,
+        lastCheckedAt: null,
         name: `Milk`,
       }),
     ];
     const localOps = [
       createRenameOperation(`A`, `Almond Milk`, {
-        checked: 0,
-        created_at: itemCreatedAt,
-        last_checked_at: null,
+        checked: false,
+        createdAt: itemCreatedAt,
+        lastCheckedAt: null,
         name: `Milk`,
       }),
     ];
@@ -302,9 +295,9 @@ describe(`rebase`, () => {
             "itemId": "A",
             "newName": "Almond Milk",
             "originalItem": {
-              "checked": 0,
-              "created_at": 1,
-              "last_checked_at": null,
+              "checked": false,
+              "createdAt": 1,
+              "lastCheckedAt": null,
               "name": "Oat Milk",
             },
           },
@@ -358,9 +351,9 @@ describe(`rebase`, () => {
 
     const localOps = [
       createDeleteOperation(`X`, {
-        checked: 0,
-        created_at: clientCreatedAt,
-        last_checked_at: null,
+        checked: false,
+        createdAt: clientCreatedAt,
+        lastCheckedAt: null,
         name: `Coffee`,
       }),
     ];
@@ -378,9 +371,9 @@ describe(`rebase`, () => {
           "id": "deleteItem-op-1",
           "payload": {
             "deletedItem": {
-              "checked": 1,
-              "created_at": 1,
-              "last_checked_at": 3,
+              "checked": true,
+              "createdAt": 1,
+              "lastCheckedAt": 3,
               "name": "Coffee",
             },
             "itemId": "X",
@@ -426,17 +419,17 @@ describe(`rebase`, () => {
 
     const remoteOps = [
       createDeleteOperation(`Y`, {
-        checked: 0,
-        created_at: itemCreatedAt,
-        last_checked_at: null,
+        checked: false,
+        createdAt: itemCreatedAt,
+        lastCheckedAt: null,
         name: `Yogurt`,
       }),
     ];
     const localOps = [
       createRenameOperation(`Y`, `Greek Yogurt`, {
-        checked: 0,
-        created_at: itemCreatedAt,
-        last_checked_at: null,
+        checked: false,
+        createdAt: itemCreatedAt,
+        lastCheckedAt: null,
         name: `Yogurt`,
       }),
     ];
@@ -482,23 +475,23 @@ describe(`rebase`, () => {
 
     // T1 - will conflict with remote op (T2)
     const localOp1 = createRenameOperation(`X`, `Apples`, {
-      checked: 0,
-      created_at: itemsCreatedAt[0]!,
-      last_checked_at: null,
+      checked: false,
+      createdAt: itemsCreatedAt[0]!,
+      lastCheckedAt: null,
       name: `Oranges`,
     });
     // T2 - conflicts with first local op
     const remoteOp = createRenameOperation(`Y`, `Apples`, {
-      checked: 0,
-      created_at: itemsCreatedAt[1]!,
-      last_checked_at: null,
+      checked: false,
+      createdAt: itemsCreatedAt[1]!,
+      lastCheckedAt: null,
       name: `Pears`,
     });
     // T3 - will be invalid after X is deleted
     const localOp2 = createRenameOperation(`X`, `Bananas`, {
-      checked: 0,
-      created_at: itemsCreatedAt[0]!,
-      last_checked_at: null,
+      checked: false,
+      createdAt: itemsCreatedAt[0]!,
+      lastCheckedAt: null,
       name: `Apples`,
     });
 
@@ -515,9 +508,9 @@ describe(`rebase`, () => {
           "id": "uuid-1",
           "payload": {
             "deletedItem": {
-              "checked": 0,
-              "created_at": 1,
-              "last_checked_at": null,
+              "checked": false,
+              "createdAt": 1,
+              "lastCheckedAt": null,
               "name": "Oranges",
             },
             "itemId": "X",
@@ -581,23 +574,23 @@ describe(`rebase`, () => {
 
     // T1 - will conflict with remote op (T2)
     const localOp1 = createRenameOperation(`X`, `Apples`, {
-      checked: 1,
-      created_at: itemsCreatedAt[0]!,
-      last_checked_at: lastCheckedAt,
+      checked: true,
+      createdAt: itemsCreatedAt[0]!,
+      lastCheckedAt,
       name: `Oranges`,
     });
     // T2 - conflicts with first local op
     const remoteOp = createRenameOperation(`Y`, `Apples`, {
-      checked: 0,
-      created_at: itemsCreatedAt[1]!,
-      last_checked_at: null,
+      checked: false,
+      createdAt: itemsCreatedAt[1]!,
+      lastCheckedAt: null,
       name: `Pears`,
     });
     // T3 - will be invalid after X is deleted
     const localOp2 = createRenameOperation(`X`, `Bananas`, {
-      checked: 0,
-      created_at: itemsCreatedAt[0]!,
-      last_checked_at: null,
+      checked: false,
+      createdAt: itemsCreatedAt[0]!,
+      lastCheckedAt: null,
       name: `Apples`,
     });
 
@@ -614,9 +607,9 @@ describe(`rebase`, () => {
           "id": "uuid-1",
           "payload": {
             "deletedItem": {
-              "checked": 1,
-              "created_at": 1,
-              "last_checked_at": 3,
+              "checked": true,
+              "createdAt": 1,
+              "lastCheckedAt": 3,
               "name": "Oranges",
             },
             "itemId": "X",
@@ -723,9 +716,9 @@ describe(`rebase`, () => {
     });
 
     const remoteOp = createRenameOperation(`A`, `Green Apples`, {
-      checked: 0,
-      created_at: itemCreatedAt,
-      last_checked_at: null,
+      checked: false,
+      createdAt: itemCreatedAt,
+      lastCheckedAt: null,
       name: `Apples`,
     });
 
@@ -808,10 +801,10 @@ describe(`rebase`, () => {
     const remoteOps = [createCreateItemOperation(`uuid-remote`, `Cheese`)];
 
     const localOp2 = createRenameOperation(`uuid-local`, `Cheddar`, {
-      created_at: localOp1.payload.item.created_at!,
+      createdAt: localOp1.payload.item.createdAt,
       name: `Cheese`,
-      checked: 0,
-      last_checked_at: null,
+      checked: false,
+      lastCheckedAt: null,
     });
 
     const localOps = [localOp1, localOp2];
@@ -829,9 +822,9 @@ describe(`rebase`, () => {
             "itemId": "uuid-remote",
             "newName": "Cheddar",
             "originalItem": {
-              "checked": 0,
-              "created_at": 2,
-              "last_checked_at": null,
+              "checked": false,
+              "createdAt": 2,
+              "lastCheckedAt": null,
               "name": "Cheese",
             },
           },
@@ -880,17 +873,17 @@ describe(`rebase`, () => {
     const remoteOp1 = createCreateItemOperation(`uuid-remote`, `Milk`);
 
     const remoteOp2 = createRenameOperation(`uuid-remote`, `Skim Milk`, {
-      created_at: remoteOp1.payload.item.created_at!,
+      createdAt: remoteOp1.payload.item.createdAt,
       name: `Milk`,
-      checked: 0,
-      last_checked_at: null,
+      checked: false,
+      lastCheckedAt: null,
     });
 
     const localOp2 = createRenameOperation(`uuid-local`, `Whole Milk`, {
-      created_at: localOp1.payload.item.created_at!,
+      createdAt: localOp1.payload.item.createdAt,
       name: `Milk`,
-      checked: 0,
-      last_checked_at: null,
+      checked: false,
+      lastCheckedAt: null,
     });
 
     const localOps = [localOp1, localOp2];
@@ -909,9 +902,9 @@ describe(`rebase`, () => {
             "itemId": "uuid-remote",
             "newName": "Whole Milk",
             "originalItem": {
-              "checked": 0,
-              "created_at": 2,
-              "last_checked_at": null,
+              "checked": false,
+              "createdAt": 2,
+              "lastCheckedAt": null,
               "name": "Skim Milk",
             },
           },
@@ -960,10 +953,10 @@ describe(`rebase`, () => {
     const remoteOp1 = createCreateItemOperation(`uuid-remote`, `Milk`);
 
     const remoteOp2 = createRenameOperation(`uuid-remote`, `Skim Milk`, {
-      created_at: remoteOp1.payload.item.created_at!,
+      createdAt: remoteOp1.payload.item.createdAt,
       name: `Milk`,
-      checked: 0,
-      last_checked_at: null,
+      checked: false,
+      lastCheckedAt: null,
     });
 
     const remoteOp3 = createSetCheckedOperation(`uuid-remote`, true, {
@@ -971,10 +964,10 @@ describe(`rebase`, () => {
     });
 
     const localOp2 = createRenameOperation(`uuid-local`, `Whole Milk`, {
-      created_at: localOp1.payload.item.created_at!,
+      createdAt: localOp1.payload.item.createdAt,
       name: `Milk`,
-      checked: 0,
-      last_checked_at: null,
+      checked: false,
+      lastCheckedAt: null,
     });
 
     const localOps = [localOp1, localOp2];
@@ -993,9 +986,9 @@ describe(`rebase`, () => {
             "itemId": "uuid-remote",
             "newName": "Whole Milk",
             "originalItem": {
-              "checked": 1,
-              "created_at": 2,
-              "last_checked_at": 4,
+              "checked": true,
+              "createdAt": 2,
+              "lastCheckedAt": 4,
               "name": "Skim Milk",
             },
           },
@@ -1205,10 +1198,10 @@ describe(`rebase`, () => {
     const remoteOp1 = createCreateItemOperation(`uuid-remote`, `Coffee`);
 
     const localOp2 = createRenameOperation(`uuid-local`, `Espresso`, {
-      created_at: localOp1.payload.item.created_at,
+      createdAt: localOp1.payload.item.createdAt,
       name: `Coffee`,
-      checked: 0,
-      last_checked_at: null,
+      checked: false,
+      lastCheckedAt: null,
     });
 
     const remoteOp2 = createSetCheckedOperation(`uuid-remote`, true, {
@@ -1231,9 +1224,9 @@ describe(`rebase`, () => {
             "itemId": "uuid-remote",
             "newName": "Espresso",
             "originalItem": {
-              "checked": 1,
-              "created_at": 2,
-              "last_checked_at": 4,
+              "checked": true,
+              "createdAt": 2,
+              "lastCheckedAt": 4,
               "name": "Coffee",
             },
           },
@@ -1288,16 +1281,16 @@ describe(`rebase`, () => {
       .execute();
 
     const localOp = createRenameOperation(`A`, `Sparkling Water`, {
-      checked: 0,
-      created_at: itemsCreatedAt[0]!,
-      last_checked_at: null,
+      checked: false,
+      createdAt: itemsCreatedAt[0]!,
+      lastCheckedAt: null,
       name: `Tea`,
     });
 
     const remoteOp = createRenameOperation(`B`, `Sparkling Water`, {
-      checked: 0,
-      created_at: itemsCreatedAt[1]!,
-      last_checked_at: null,
+      checked: false,
+      createdAt: itemsCreatedAt[1]!,
+      lastCheckedAt: null,
       name: `Water`,
     });
 
@@ -1315,9 +1308,9 @@ describe(`rebase`, () => {
           "id": "uuid-1",
           "payload": {
             "deletedItem": {
-              "checked": 0,
-              "created_at": 1,
-              "last_checked_at": null,
+              "checked": false,
+              "createdAt": 1,
+              "lastCheckedAt": null,
               "name": "Tea",
             },
             "itemId": "A",
@@ -1373,18 +1366,18 @@ describe(`rebase`, () => {
 
     const localOps = [
       createDeleteOperation(`A`, {
-        checked: 0,
-        created_at: itemCreatedAt,
-        last_checked_at: null,
+        checked: false,
+        createdAt: itemCreatedAt,
+        lastCheckedAt: null,
         name: `Cookies`,
       }),
     ];
 
     const remoteOps = [
       createDeleteOperation(`A`, {
-        checked: 0,
-        created_at: itemCreatedAt,
-        last_checked_at: null,
+        checked: false,
+        createdAt: itemCreatedAt,
+        lastCheckedAt: null,
         name: `Cookies`,
       }),
     ];

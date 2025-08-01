@@ -83,7 +83,7 @@ export class Database {
             item: {
               id: newItemId,
               name,
-              created_at: createdAt,
+              createdAt: createdAt,
             },
           },
           serverCommittedAt: null,
@@ -177,9 +177,9 @@ export class Database {
             newName: updates.name,
             originalItem: {
               name: item.name,
-              checked: item.checked,
-              created_at: item.created_at,
-              last_checked_at: item.last_checked_at,
+              checked: item.checked === 1,
+              createdAt: item.created_at,
+              lastCheckedAt: item.last_checked_at,
             },
           },
           serverCommittedAt: null,

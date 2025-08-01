@@ -56,10 +56,10 @@ export async function reverseOperation(
       await db
         .insertInto(`items`)
         .values({
-          checked: deletedItem.checked,
-          created_at: deletedItem.created_at,
+          checked: deletedItem.checked ? 1 : 0,
+          created_at: deletedItem.createdAt,
           id: operation.payload.itemId,
-          last_checked_at: deletedItem.last_checked_at,
+          last_checked_at: deletedItem.lastCheckedAt,
           name: deletedItem.name,
         })
         .execute();

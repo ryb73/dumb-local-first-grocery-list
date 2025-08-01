@@ -1,100 +1,146 @@
 /* eslint-disable import/no-unused-modules */
-import type { Item } from "../types/schemas";
+import { z } from "zod";
 
 /**
  * Represents the unique identifier for a migration.
  */
-export type MigrationId = string;
+export const migrationIdSchema = z.string();
+export type MigrationId = z.infer<typeof migrationIdSchema>;
 
 /**
- * A generic base for all operations.
+ * A generic base schema for all operations.
  * This structure aligns with the `operations` table in `groceries.log.sqlite3`.
  */
-type BaseOperation<T extends string, P> = {
-  /** Unique ID for this specific operation instance. */
-  id: string;
-  /** The type of operation. */
-  type: T;
+const baseOperationSchema = z.object({
   /** Timestamp (UTC ms since epoch) when the operation was created on the client. */
-  clientCreatedAt: number;
-  /** Timestamp (UTC ms since epoch) when the operation was committed to the server, or null if not yet committed. */
-  serverCommittedAt: number | null;
+  clientCreatedAt: z.number(),
+  /** Unique ID for this specific operation instance. */
+  id: z.string(),
   /** The payload of the operation, containing all necessary details to apply or reverse the operation. */
-  payload: P;
-};
+  payload: z.unknown(),
+  /** Timestamp (UTC ms since epoch) when the operation was committed to the server, or null if not yet committed. */
+  serverCommittedAt: z.number().nullable(),
+  /** The type of operation. */
+  type: z.string(),
+});
 
 // --- Item Operations ---
 
-export type CreateItemPayload = {
-  item: Pick<Item, "created_at" | "id" | "name">;
-};
 /**
- * Operation for when a new item is definitively inserted.
+ * Schema for the payload when a new item is created.
+ */
+export const createItemPayloadSchema = z.object({
+  item: z.object({
+    createdAt: z.number(),
+    id: z.string(),
+    name: z.string(),
+  }),
+});
+export type CreateItemPayload = z.infer<typeof createItemPayloadSchema>;
+
+/**
+ * Schema for operation when a new item is definitively inserted.
  * This corresponds to the case in `Database.addItem` where `existingRow` is null.
  */
-export type CreateItemOperation = BaseOperation<
-  "createItem",
-  CreateItemPayload
+export const createItemOperationSchema = baseOperationSchema.extend({
+  type: z.literal(`createItem`),
+  payload: createItemPayloadSchema,
+});
+export type CreateItemOperation = z.infer<typeof createItemOperationSchema>;
+
+/**
+ * Schema for the payload when an item's checked state is set.
+ */
+export const setCheckedStatePayloadSchema = z
+  .object({
+    itemId: z.string(),
+    /** The original checked state. Necessary for rollbacks. */
+    originalChecked: z.boolean(),
+    /** The original value of last_checked_at. Necessary for rollbacks. */
+    originalLastCheckedAt: z.number().nullable(),
+  })
+  .and(
+    z.discriminatedUnion(`checked`, [
+      z.object({
+        /** The new checked state. */
+        checked: z.literal(false),
+      }),
+      z.object({
+        /** The new checked state. */
+        checked: z.literal(true),
+        /**
+         * The new timestamp (UTC ms since epoch) for when the item was marked as checked.
+         * This is only populated when `checked` is `true`.
+         */
+        newLastCheckedAt: z.number(),
+      }),
+    ])
+  );
+export type SetCheckedStatePayload = z.infer<
+  typeof setCheckedStatePayloadSchema
+>;
+
+export const setCheckedStateOperationSchema = baseOperationSchema.extend({
+  type: z.literal(`setCheckedState`),
+  payload: setCheckedStatePayloadSchema,
+});
+export type SetCheckedStateOperation = z.infer<
+  typeof setCheckedStateOperationSchema
 >;
 
 /**
- * Payload for when an item's checked state is set.
+ * Schema for the payload when an item's name is changed.
  */
-export type SetCheckedStatePayload = {
-  itemId: Item["id"];
-  /** The original checked state. Necessary for rollbacks. */
-  originalChecked: boolean;
-  /** The original value of last_checked_at. Necessary for rollbacks. */
-  originalLastCheckedAt: Item["last_checked_at"];
-} & (
-  | {
-      /** The new checked state. */
-      checked: false;
-    }
-  | {
-      /** The new checked state. */
-      checked: true;
-      /**
-       * The new timestamp (UTC ms since epoch) for when the item was marked as checked.
-       * This is only populated when `checked` is `true`.
-       */
-      newLastCheckedAt: number;
-    }
-);
-export type SetCheckedStateOperation = BaseOperation<
-  "setCheckedState",
-  SetCheckedStatePayload
->;
-
-/**
- * Payload for when an item's name is changed.
- */
-export type RenameItemPayload = {
-  itemId: Item["id"];
-  newName: Item["name"];
+export const renameItemPayloadSchema = z.object({
+  itemId: z.string(),
+  newName: z.string(),
   /** The original item before renaming. Necessary for conflict resolution and rollbacks. */
-  originalItem: Omit<Item, "id">;
-};
-export type RenameItemOperation = BaseOperation<
-  "renameItem",
-  RenameItemPayload
->;
+  originalItem: z.object({
+    createdAt: z.number(),
+    name: z.string(),
+    checked: z.boolean(),
+    lastCheckedAt: z.number().nullable(),
+  }),
+});
+export type RenameItemPayload = z.infer<typeof renameItemPayloadSchema>;
 
-export type DeleteItemPayload = {
-  itemId: Item["id"];
-  deletedItem: Omit<Item, "id">;
-};
+export const renameItemOperationSchema = baseOperationSchema.extend({
+  type: z.literal(`renameItem`),
+  payload: renameItemPayloadSchema,
+});
+export type RenameItemOperation = z.infer<typeof renameItemOperationSchema>;
+
 /**
- * Operation for when an item is deleted. This is only used when resolving conflicts; it is not used
+ * Schema for the payload when an item is deleted.
+ */
+export const deleteItemPayloadSchema = z.object({
+  itemId: z.string(),
+  deletedItem: z.object({
+    createdAt: z.number(),
+    name: z.string(),
+    checked: z.boolean(),
+    lastCheckedAt: z.number().nullable(),
+  }),
+});
+export type DeleteItemPayload = z.infer<typeof deleteItemPayloadSchema>;
+
+/**
+ * Schema for operation when an item is deleted. This is only used when resolving conflicts; it is not used
  * in the normal course of operation.
  */
-export type DeleteItemOperation = BaseOperation<
-  "deleteItem",
-  DeleteItemPayload
->;
+export const deleteItemOperationSchema = baseOperationSchema.extend({
+  type: z.literal(`deleteItem`),
+  payload: deleteItemPayloadSchema,
+});
+export type DeleteItemOperation = z.infer<typeof deleteItemOperationSchema>;
 
-export type Operation =
-  | CreateItemOperation
-  | DeleteItemOperation
-  | RenameItemOperation
-  | SetCheckedStateOperation;
+/**
+ * Schema for any operation type.
+ */
+export const operationSchema = z.discriminatedUnion(`type`, [
+  createItemOperationSchema,
+  deleteItemOperationSchema,
+  renameItemOperationSchema,
+  setCheckedStateOperationSchema,
+]);
+export type Operation = z.infer<typeof operationSchema>;
