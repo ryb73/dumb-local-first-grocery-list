@@ -22,7 +22,12 @@ const db2 = new Database(kysely2, true);
 
 export const ParallelGroceryLists: Component = () => (
   <div class={defined(styles[`container`])}>
-    <GroceryList className={defined(styles[`list`])} db={db1} title="List 1" />
+    <GroceryList
+      className={defined(styles[`list`])}
+      db={db1}
+      showSyncButton
+      title="List 1"
+    />
     <GroceryList className={defined(styles[`list`])} db={db2} title="List 2" />
   </div>
 );

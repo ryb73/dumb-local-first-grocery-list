@@ -9,16 +9,19 @@ import type { Item } from "../types/schemas";
 import { AddItemForm } from "./AddItemForm";
 import { GroceryItem } from "./GroceryItem";
 import styles from "./GroceryList.module.css";
+import { SyncButton, type SyncStatus } from "./SyncButton";
 
 type GroceryListProps = {
   className?: string;
   db: Database;
   title: string;
+  showSyncButton?: boolean;
 };
 
 export const GroceryList: Component<GroceryListProps> = (props) => {
   const [items, setItems] = createSignal<Item[]>([]);
   const [suggestions, setSuggestions] = createSignal<string[]>([]);
+  const [syncStatus, setSyncStatus] = createSignal<SyncStatus>(`idle`);
 
   const sortedItems = () =>
     Array.from(items()).sort((a, b) => {
@@ -46,6 +49,22 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
     await refreshData();
   };
 
+  const handleSync = async () => {
+    // TODO: catch and handle errors
+
+    if (syncStatus() === `syncing`) return;
+
+    setSyncStatus(`syncing`);
+
+    // Simulate sync operation that fails immediately with "Not implemented"
+    await new Promise((resolve) => {
+      // Brief delay to show syncing state
+      setTimeout(resolve, 1000);
+    });
+
+    setSyncStatus(`failure`);
+  };
+
   onMount(() => {
     void (async () => {
       await refreshData();
@@ -60,7 +79,12 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
         .filter(isDefined)
         .join(` `)}
     >
-      <h1 class={defined(styles[`title`])}>{props.title}</h1>
+      <div class={defined(styles[`header`])}>
+        <h1 class={defined(styles[`title`])}>{props.title}</h1>
+        {props.showSyncButton ?? false ? (
+          <SyncButton onClick={() => void handleSync()} status={syncStatus()} />
+        ) : null}
+      </div>
       <AddItemForm
         onAdd={(name) => void handleAdd(name)}
         suggestions={suggestions()}

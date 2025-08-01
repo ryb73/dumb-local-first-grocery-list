@@ -1,0 +1,112 @@
+.container {
+  position: relative;
+  display: inline-block;
+}
+
+.syncButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: transparent;
+  position: relative;
+}
+
+.syncButton:hover:not(:disabled) {
+  transform: scale(1.1);
+}
+
+.syncButton:disabled {
+  cursor: not-allowed;
+}
+
+.icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Idle state - grey */
+.idle {
+  color: #6b7280;
+  background-color: #f3f4f6;
+}
+
+.idle:hover:not(:disabled) {
+  background-color: #e5e7eb;
+}
+
+/* Syncing state - animated orange glow */
+.syncing {
+  color: #ea580c;
+  background-color: #fed7aa;
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(234, 88, 12, 0);
+    transform: scale(1.05);
+  }
+}
+
+/* Offline state - static orange */
+.offline {
+  color: #ea580c;
+  background-color: #fed7aa;
+}
+
+/* Success state - green */
+.success {
+  color: #16a34a;
+  background-color: #bbf7d0;
+}
+
+.success:hover:not(:disabled) {
+  background-color: #a7f3d0;
+}
+
+/* Failure state - red */
+.failure {
+  color: #dc2626;
+  background-color: #fecaca;
+}
+
+.failure:hover:not(:disabled) {
+  background-color: #fca5a5;
+}
+
+/* Tooltip */
+.tooltip {
+  position: absolute;
+  top: -2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1f2937;
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: #1f2937;
+}
