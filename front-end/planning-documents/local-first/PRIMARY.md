@@ -109,7 +109,7 @@ This is a local-first grocery list app. The UI, for development purposes, curren
 3.  **Implement Rollback & Re-application Engine:**
     - [x] For each operation type, implement its corresponding inverse operation.
 
-4.  **Implement Client-Side Sync Orchestration:**
+4.  **Implement Sync Orchestration:**
     - [ ] Implement the client-side logic for steps 0-5 of the "Detailed Sync Algorithm".
       - [ ] 0. Migration compatibility checking
       - [ ] 1. Client requests changes from the server
@@ -117,14 +117,6 @@ This is a local-first grocery list app. The UI, for development purposes, curren
       - [ ] 3. Client builds rebased local operations list
       - [ ] 4. Client applies changes
       - [ ] 5. Client submits rebased changes to the server
+      - [ ] 6. Server applies changes
     - [ ] Manage local markers for "last known server state/version".
-
-5.  **Implement Server-Side Sync Endpoint:**
-    - [ ] Develop the server endpoint to handle step 6 of the "Detailed Sync Algorithm".
-    - [ ] This includes migration compatibility checking, version checking, and atomic application of `rebasedLocalOps`.
-    - (Initially, this will be simulated against the second local SQLite DB).
-
-6.  **Implement Migration Compatibility Checking:**
-    - [ ] Create functions to query the current migration state from both client and server databases.
-    - [ ] Implement migration compatibility verification before sync operations.
-    - [ ] Provide clear error messages when migration states differ.
+    - (Initially, the server side will be simulated against the second local SQLite DB).
