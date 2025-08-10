@@ -108,13 +108,15 @@ This is a local-first grocery list app. The UI, for development purposes, curren
 
 3.  **Implement Rollback & Re-application Engine:**
     - [x] For each operation type, implement its corresponding inverse operation.
-    - [ ] Create functions to:
-        - [ ] Apply a list of operations to the database.
-        - [ ] Roll back (apply inverse of) a list of operations.
 
 4.  **Implement Client-Side Sync Orchestration:**
     - [ ] Implement the client-side logic for steps 0-5 of the "Detailed Sync Algorithm".
-    - [ ] This includes migration compatibility checking, fetching `remoteOps`, unwinding `localOps`, building `rebasedLocalOps` using the `reduce` and `resolveConflict` logic, and applying `remoteOps` then `rebasedLocalOps` in a transaction.
+      - [ ] 0. Migration compatibility checking
+      - [ ] 1. Client requests changes from the server
+      - [ ] 2. Client unwinds local changes
+      - [ ] 3. Client builds rebased local operations list
+      - [ ] 4. Client applies changes
+      - [ ] 5. Client submits rebased changes to the server
     - [ ] Manage local markers for "last known server state/version".
 
 5.  **Implement Server-Side Sync Endpoint:**
