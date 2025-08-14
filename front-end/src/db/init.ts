@@ -10,14 +10,16 @@ import { createOperationLogMigrator } from "./operation-log/migrations/createOpe
 const initDatabase = async (dialect: Dialect) => {
   const kysely = new Kysely<DB>({ dialect });
 
-  const migrator = createMigrator(kysely);
+  if (process.env[`MIGRATE_ON_INIT`] === `true`) {
+    const migrator = createMigrator(kysely);
 
-  const { error } = await migrator.migrateToLatest();
+    const { error } = await migrator.migrateToLatest();
 
-  if (error != null) {
-    console.error(`Migration failed:`, error);
-    // eslint-disable-next-line @typescript-eslint/no-throw-literal
-    throw error;
+    if (error != null) {
+      console.error(`Migration failed:`, error);
+      // eslint-disable-next-line @typescript-eslint/no-throw-literal
+      throw error;
+    }
   }
 
   return kysely;
@@ -27,14 +29,16 @@ const initDatabase = async (dialect: Dialect) => {
 const initOperationLogDatabase = async (dialect: Dialect) => {
   const kysely = new Kysely<OperationLogDB>({ dialect });
 
-  const migrator = createOperationLogMigrator(kysely);
+  if (process.env[`MIGRATE_ON_INIT`] === `true`) {
+    const migrator = createOperationLogMigrator(kysely);
 
-  const { error } = await migrator.migrateToLatest();
+    const { error } = await migrator.migrateToLatest();
 
-  if (error != null) {
-    console.error(`Operation log migration failed:`, error);
-    // eslint-disable-next-line @typescript-eslint/no-throw-literal
-    throw error;
+    if (error != null) {
+      console.error(`Operation log migration failed:`, error);
+      // eslint-disable-next-line @typescript-eslint/no-throw-literal
+      throw error;
+    }
   }
 
   return kysely;
