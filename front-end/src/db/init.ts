@@ -10,7 +10,7 @@ import { createOperationLogMigrator } from "./operation-log/migrations/createOpe
 const initDatabase = async (dialect: Dialect) => {
   const kysely = new Kysely<DB>({ dialect });
 
-  if (process.env[`MIGRATE_ON_INIT`] === `true`) {
+  if (import.meta.env[`MIGRATE_ON_INIT`] === `true`) {
     const migrator = createMigrator(kysely);
 
     const { error } = await migrator.migrateToLatest();
@@ -29,7 +29,7 @@ const initDatabase = async (dialect: Dialect) => {
 const initOperationLogDatabase = async (dialect: Dialect) => {
   const kysely = new Kysely<OperationLogDB>({ dialect });
 
-  if (process.env[`MIGRATE_ON_INIT`] === `true`) {
+  if (import.meta.env[`MIGRATE_ON_INIT`] === `true`) {
     const migrator = createOperationLogMigrator(kysely);
 
     const { error } = await migrator.migrateToLatest();
