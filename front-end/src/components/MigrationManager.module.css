@@ -1,0 +1,212 @@
+.container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 1rem;
+}
+
+.header h1 {
+  margin: 0;
+  color: #2d3748;
+  font-size: 2rem;
+}
+
+.refreshButton {
+  background-color: #4299e1;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.refreshButton:hover {
+  background-color: #3182ce;
+}
+
+.refreshButton:disabled {
+  background-color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.error {
+  background-color: #fed7d7;
+  color: #c53030;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #feb2b2;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  color: #718096;
+  font-size: 1.25rem;
+}
+
+.databaseGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+}
+
+.databaseCard {
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.databaseHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.databaseHeader h2 {
+  margin: 0;
+  color: #2d3748;
+  font-size: 1.25rem;
+}
+
+.databaseActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.migrateButton {
+  background-color: #38a169;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  min-width: 60px;
+}
+
+.migrateButton:hover {
+  background-color: #2f855a;
+}
+
+.migrateButton:nth-child(2) {
+  background-color: #ed8936;
+}
+
+.migrateButton:nth-child(2):hover {
+  background-color: #dd6b20;
+}
+
+.migrationsList {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background-color: #f7fafc;
+}
+
+.noMigrations {
+  padding: 2rem;
+  text-align: center;
+  color: #718096;
+  font-style: italic;
+}
+
+.migrationItem {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.migrationItem:last-child {
+  border-bottom: none;
+}
+
+.migrationItem:hover {
+  background-color: #edf2f7;
+}
+
+.executed {
+  background-color: #f0fff4;
+}
+
+.executed:hover {
+  background-color: #e6fffa;
+}
+
+.pending {
+  background-color: #fffbeb;
+}
+
+.pending:hover {
+  background-color: #fef5e7;
+}
+
+.migrationName {
+  font-weight: 600;
+  color: #2d3748;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+  font-size: 0.875rem;
+}
+
+.migrationStatus {
+  font-size: 0.75rem;
+}
+
+.executedStatus {
+  color: #38a169;
+  font-weight: 500;
+}
+
+.pendingStatus {
+  color: #ed8936;
+  font-weight: 500;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .databaseGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .databaseHeader {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+
+  .migrationItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
