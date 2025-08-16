@@ -24,6 +24,14 @@ export class Database {
   }
 
   /**
+   * Gets the underlying Kysely instance for migration compatibility checks.
+   * This should only be used by sync logic.
+   */
+  public getKyselyInstance(): Kysely<MergedDB> {
+    return this.kysely;
+  }
+
+  /**
    * Logs an operation to the operation log database.
    * This should be called within the same transaction as the main database update.
    */
@@ -83,7 +91,7 @@ export class Database {
             item: {
               id: newItemId,
               name,
-              createdAt: createdAt,
+              createdAt,
             },
           },
           serverCommittedAt: null,

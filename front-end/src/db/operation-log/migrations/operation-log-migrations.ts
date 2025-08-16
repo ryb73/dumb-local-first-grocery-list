@@ -53,6 +53,18 @@ const operationLogMigrations: Record<string, OperationLogMigrationDefinition> =
         },
       },
     },
+    "2025-08-16_01": {
+      productionReady: true,
+      description: `Dummy migration to test migration compatibility`,
+      migration: {
+        up: async () => {
+          // Do nothing
+        },
+        down: async () => {
+          // Do nothing
+        },
+      },
+    },
   };
 
 const filteredOperationLogMigrations = Object.fromEntries(

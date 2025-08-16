@@ -5,6 +5,7 @@ import {
 import type { Component } from "solid-js";
 import { Index, createSignal, onMount } from "solid-js";
 import type { Database } from "../db/database";
+import { checkMigrationCompatibility } from "../sync/migration-compatibility";
 import type { Item } from "../types/schemas";
 import { AddItemForm } from "./AddItemForm";
 import { GroceryItem } from "./GroceryItem";
@@ -21,7 +22,9 @@ type GroceryListProps = {
 export const GroceryList: Component<GroceryListProps> = (props) => {
   const [items, setItems] = createSignal<Item[]>([]);
   const [suggestions, setSuggestions] = createSignal<string[]>([]);
-  const [syncStatus, setSyncStatus] = createSignal<SyncStatus>(`idle`);
+  const [syncStatus, setSyncStatus] = createSignal<SyncStatus>({
+    type: `idle`,
+  });
 
   const sortedItems = () =>
     Array.from(items()).sort((a, b) => {
@@ -50,19 +53,40 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
   };
 
   const handleSync = async () => {
-    // TODO: catch and handle errors
+    if (syncStatus().type === `syncing`) return;
 
-    if (syncStatus() === `syncing`) return;
+    setSyncStatus({ type: `syncing` });
 
-    setSyncStatus(`syncing`);
+    try {
+      // Step 0: Migration compatibility check
+      const compatibilityResult = await checkMigrationCompatibility(
+        props.db.getKyselyInstance()
+      );
 
-    // Simulate sync operation that fails immediately with "Not implemented"
-    await new Promise((resolve) => {
-      // Brief delay to show syncing state
-      setTimeout(resolve, 1000);
-    });
+      if (!compatibilityResult.compatible) {
+        setSyncStatus({
+          type: `failure`,
+          message:
+            compatibilityResult.errorMessage ??
+            `Migration compatibility check failed`,
+        });
+        return;
+      }
 
-    setSyncStatus(`failure`);
+      // TODO: Implement actual sync steps 1-6 from PRIMARY.md
+      // For now, simulate a successful sync
+      await new Promise((resolve) => {
+        setTimeout(resolve, 1000);
+      });
+
+      setSyncStatus({ type: `success` });
+    } catch (error) {
+      console.error(`Sync failed:`, error);
+      setSyncStatus({
+        type: `failure`,
+        message: error instanceof Error ? error.message : `Unknown sync error`,
+      });
+    }
   };
 
   onMount(() => {

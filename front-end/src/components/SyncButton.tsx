@@ -2,7 +2,12 @@ import type { Component } from "solid-js";
 import { createSignal } from "solid-js";
 import styles from "./SyncButton.module.css";
 
-export type SyncStatus = "failure" | "idle" | "offline" | "success" | "syncing";
+export type SyncStatus =
+  | { type: "failure"; message: string }
+  | { type: "idle" }
+  | { type: "offline" }
+  | { type: "success" }
+  | { type: "syncing" };
 
 type SyncButtonProps = {
   status: SyncStatus;
@@ -14,12 +19,12 @@ export const SyncButton: Component<SyncButtonProps> = (props) => {
 
   const getButtonClass = () => {
     const baseClass = styles[`syncButton`];
-    const statusClass = styles[props.status];
+    const statusClass = styles[props.status.type];
     return `${baseClass ?? ``} ${statusClass ?? ``}`.trim();
   };
 
   const getTooltipText = () => {
-    switch (props.status) {
+    switch (props.status.type) {
       case `idle`:
         return `Click to sync`;
       case `syncing`:
@@ -29,14 +34,14 @@ export const SyncButton: Component<SyncButtonProps> = (props) => {
       case `success`:
         return `Sync successful`;
       case `failure`:
-        return `Sync failed`;
+        return props.status.message;
       default:
         return ``;
     }
   };
 
   const handleClick = () => {
-    if (props.status !== `syncing`) {
+    if (props.status.type !== `syncing`) {
       props.onClick();
     }
   };
@@ -50,7 +55,7 @@ export const SyncButton: Component<SyncButtonProps> = (props) => {
     <div class={styles[`container`]}>
       <button
         class={getButtonClass()}
-        disabled={props.status === `syncing`}
+        disabled={props.status.type === `syncing`}
         onBlur={handleBlur}
         onClick={handleClick}
         onFocus={handleFocus}
