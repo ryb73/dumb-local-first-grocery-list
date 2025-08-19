@@ -113,7 +113,7 @@ This is a local-first grocery list app. The UI, for development purposes, curren
     - [ ] Implement the client-side logic for steps 0-5 of the "Detailed Sync Algorithm".
       - [x] 0. Migration compatibility checking
       - [x] 1. Client requests changes from the server
-      - [ ] 2. Client unwinds local changes
+      - [x] 2. Client unwinds local changes
       - [ ] 3. Client builds rebased local operations list
       - [ ] 4. Client applies changes
       - [ ] 5. Client submits rebased changes to the server
