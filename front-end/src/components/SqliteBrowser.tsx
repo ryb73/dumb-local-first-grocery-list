@@ -3,7 +3,7 @@ import { sql } from "kysely";
 import { createResource, createSignal } from "solid-js";
 import { SQLocalKysely } from "sqlocal/kysely";
 import { z } from "zod";
-import { initTestDatabases } from "../db/init";
+import { initMergedDatabase } from "../db/init";
 import styles from "./SqliteBrowser.module.css";
 
 const QueryResultSchema = z.array(z.record(z.unknown()));
@@ -11,14 +11,21 @@ type QueryResult = z.infer<typeof QueryResultSchema>;
 
 export function SqliteBrowser() {
   const [databases] = createResource(async () => {
-    const { db1: kysely1, db2: kysely2 } = await initTestDatabases(
+    const mergedDb1 = await initMergedDatabase(
+      `grocery-list.log.sqlite3`,
       new SQLocalKysely(`grocery-list.sqlite3`).dialect,
-      new SQLocalKysely(`grocery-list-2.sqlite3`).dialect
+      new SQLocalKysely(`grocery-list.log.sqlite3`).dialect
+    );
+
+    const mergedDb2 = await initMergedDatabase(
+      `grocery-list-2.log.sqlite3`,
+      new SQLocalKysely(`grocery-list-2.sqlite3`).dialect,
+      new SQLocalKysely(`grocery-list-2.log.sqlite3`).dialect
     );
 
     return [
-      { name: `Database 1`, kysely: kysely1 },
-      { name: `Database 2`, kysely: kysely2 },
+      { name: `Database 1 (Main + Op Log)`, kysely: mergedDb1 },
+      { name: `Database 2 (Main + Op Log)`, kysely: mergedDb2 },
     ];
   });
 
@@ -88,9 +95,21 @@ export function SqliteBrowser() {
   };
 
   const exampleQueries = [
+    // Main database queries
     `SELECT * FROM items`,
     `SELECT name, checked FROM items WHERE checked = 0`,
     `SELECT COUNT(*) as total_items FROM items`,
+
+    // Operation log queries
+    `SELECT * FROM op_log.operations ORDER BY client_created_at DESC LIMIT 10`,
+    `SELECT type, COUNT(*) as count FROM op_log.operations GROUP BY type`,
+    `SELECT id, type, client_created_at, server_committed_at FROM op_log.operations WHERE server_committed_at IS NULL`,
+    `SELECT JSON_EXTRACT(payload, '$.item.name') as item_name FROM op_log.operations WHERE type = 'createItem' ORDER BY client_created_at DESC LIMIT 5`,
+
+    // Combined queries
+    `SELECT i.name, COUNT(op.id) as operation_count FROM items i LEFT JOIN op_log.operations op ON JSON_EXTRACT(op.payload, '$.itemId') = i.id OR JSON_EXTRACT(op.payload, '$.item.id') = i.id GROUP BY i.id, i.name`,
+
+    // Utility queries
     `PRAGMA table_list`,
   ];
 
@@ -109,9 +128,7 @@ export function SqliteBrowser() {
             </button>
           ))}
         </div>
-        {/* databaseSelector doesn't exist? investigate */}
-        {/* Update: investigated, turns out it never existed */}
-        <div class={styles[`databaseSelector`]}>
+        <div class={defined(styles[`databaseSelector`])}>
           <select
             onChange={(e) => setSelectedDatabase(Number(e.currentTarget.value))}
             value={selectedDatabase()}
