@@ -5,7 +5,7 @@ import {
 import type { Component } from "solid-js";
 import { Index, createSignal, onMount } from "solid-js";
 import type { Database } from "../db/database";
-import { checkMigrationCompatibility } from "../sync/migration-compatibility";
+import { checkMigrationCompatibility, requestChangesFromServer } from "../sync";
 import type { Item } from "../types/schemas";
 import { AddItemForm } from "./AddItemForm";
 import { GroceryItem } from "./GroceryItem";
@@ -73,10 +73,19 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
         return;
       }
 
-      // TODO: Implement actual sync steps 1-6 from PRIMARY.md
-      // For now, simulate a successful sync
+      // Step 1: Client requests changes from the server
+      console.log(`Step 1: Requesting changes from server...`);
+      const remoteOps = await requestChangesFromServer(
+        props.db.getKyselyInstance()
+      );
+
+      console.log(`Received ${remoteOps.length} remote operations from server`);
+      console.log(`Remote operations:`, remoteOps);
+
+      // TODO: Implement steps 2-6 from PRIMARY.md
+      // For now, just log what we received and simulate success
       await new Promise((resolve) => {
-        setTimeout(resolve, 1000);
+        setTimeout(resolve, 500);
       });
 
       setSyncStatus({ type: `success` });
