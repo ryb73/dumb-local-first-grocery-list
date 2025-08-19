@@ -42,6 +42,7 @@ module.exports = {
     ],
     "jest/padding-around-all": `off`,
     "jest/padding-around-expect-groups": `off`,
+    "no-await-in-loop": `off`,
     "no-console": `off`,
     "no-void": `off`,
     "react/jsx-key": `off`,

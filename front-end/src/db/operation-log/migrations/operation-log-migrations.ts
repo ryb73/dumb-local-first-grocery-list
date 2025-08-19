@@ -119,7 +119,6 @@ const operationLogMigrations: Record<string, OperationLogMigrationDefinition> =
               newCreateItemPayloadSchema.parse(newPayload);
 
               // Update the row with the new payload
-              // eslint-disable-next-line no-await-in-loop
               await db
                 .updateTable(`operations`)
                 .set({
@@ -178,7 +177,6 @@ const operationLogMigrations: Record<string, OperationLogMigrationDefinition> =
               oldCreateItemPayloadSchema.parse(oldPayload);
 
               // Update the row with the old payload format
-              // eslint-disable-next-line no-await-in-loop
               await db
                 .updateTable(`operations`)
                 .set({

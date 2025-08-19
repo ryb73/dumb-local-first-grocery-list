@@ -5,7 +5,13 @@ import {
 import type { Component } from "solid-js";
 import { Index, createSignal, onMount } from "solid-js";
 import type { Database } from "../db/database";
-import { checkMigrationCompatibility, requestChangesFromServer } from "../sync";
+import { applyOperationMergedDB } from "../operation-logging/apply-operation";
+import {
+  checkMigrationCompatibility,
+  rebaseLocalOperations,
+  requestChangesFromServer,
+  unwindLocalChanges,
+} from "../sync";
 import type { Item } from "../types/schemas";
 import { AddItemForm } from "./AddItemForm";
 import { GroceryItem } from "./GroceryItem";
@@ -82,11 +88,35 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
       console.log(`Received ${remoteOps.length} remote operations from server`);
       console.log(`Remote operations:`, remoteOps);
 
-      // TODO: Implement steps 2-6 from PRIMARY.md
-      // For now, just log what we received and simulate success
-      await new Promise((resolve) => {
-        setTimeout(resolve, 500);
-      });
+      // Steps 2-4: Execute within a single transaction for atomicity
+      await props.db
+        .getKyselyInstance()
+        .transaction()
+        .execute(async (trx) => {
+          // Step 2: Client unwinds local changes
+          console.log(`Step 2: Unwinding local changes...`);
+          const localOps = await unwindLocalChanges(trx);
+          console.log(`Unwound ${localOps.length} local operations`);
+          console.log(`Local operations:`, localOps);
+
+          // Step 3: Client builds rebased local operations list (stub)
+          console.log(`Step 3: Building rebased local operations list...`);
+          const rebasedLocalOps = rebaseLocalOperations(localOps, remoteOps);
+          console.log(`Rebased to ${rebasedLocalOps.length} operations`);
+          console.log(`Rebased operations:`, rebasedLocalOps);
+
+          // Step 4: Client applies changes (stub - only apply rebased local ops)
+          console.log(`Step 4: Applying rebased local operations...`);
+          for (const operation of rebasedLocalOps) {
+            await applyOperationMergedDB(trx, operation);
+          }
+          console.log(
+            `Applied ${rebasedLocalOps.length} rebased local operations`
+          );
+        });
+
+      // Refresh the UI to show the updated state
+      await refreshData();
 
       setSyncStatus({ type: `success` });
     } catch (error) {

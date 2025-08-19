@@ -1,5 +1,6 @@
 import type { Kysely } from "kysely";
 import type { DB } from "../../db";
+import type { MergedDB } from "../db/merged-db";
 import type { Operation } from "./operation-types.ts";
 
 /**
@@ -57,4 +58,18 @@ export async function applyOperation(
       break;
     }
   }
+}
+
+/**
+ * Applies an operation to a MergedDB database.
+ * This function delegates to the main applyOperation function by casting the database type.
+ *
+ * @param db The Kysely MergedDB database instance.
+ * @param operation The operation to apply.
+ */
+export async function applyOperationMergedDB(
+  db: Kysely<MergedDB>,
+  operation: Operation
+): Promise<void> {
+  await applyOperation(db as unknown as Kysely<DB>, operation);
 }

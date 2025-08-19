@@ -1,5 +1,6 @@
 import type { Kysely } from "kysely";
 import type { DB } from "../../db";
+import type { MergedDB } from "../db/merged-db";
 import type { Operation } from "./operation-types.ts";
 
 /**
@@ -72,4 +73,11 @@ export async function reverseOperation(
       );
     }
   }
+}
+
+export async function reverseOperationMergedDB(
+  db: Kysely<MergedDB>,
+  operation: Operation
+) {
+  await reverseOperation(db as unknown as Kysely<DB>, operation);
 }
