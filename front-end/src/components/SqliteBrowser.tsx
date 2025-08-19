@@ -109,8 +109,9 @@ export function SqliteBrowser() {
             </button>
           ))}
         </div>
-        {/* TODO: databaseSelector doesn't exist? investigate */}
-        <div class={defined(styles[`databaseSelector`])}>
+        {/* databaseSelector doesn't exist? investigate */}
+        {/* Update: investigated, turns out it never existed */}
+        <div class={styles[`databaseSelector`]}>
           <select
             onChange={(e) => setSelectedDatabase(Number(e.currentTarget.value))}
             value={selectedDatabase()}
