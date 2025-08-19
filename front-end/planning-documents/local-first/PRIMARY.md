@@ -114,8 +114,8 @@ This is a local-first grocery list app. The UI, for development purposes, curren
       - [x] 0. Migration compatibility checking
       - [x] 1. Client requests changes from the server
       - [x] 2. Client unwinds local changes
-      - [ ] 3. Client builds rebased local operations list
-      - [ ] 4. Client applies changes
+      - [x] 3. Client builds rebased local operations list
+      - [x] 4. Client applies changes
       - [ ] 5. Client submits rebased changes to the server
       - [ ] 6. Server applies changes
     - [ ] Manage local markers for "last known server state/version".

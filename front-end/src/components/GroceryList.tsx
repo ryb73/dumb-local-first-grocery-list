@@ -99,13 +99,19 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
           console.log(`Unwound ${localOps.length} local operations`);
           console.log(`Local operations:`, localOps);
 
-          // Step 3: Client builds rebased local operations list (stub)
+          // Step 3: Client builds rebased local operations list
           console.log(`Step 3: Building rebased local operations list...`);
           const rebasedLocalOps = rebaseLocalOperations(localOps, remoteOps);
           console.log(`Rebased to ${rebasedLocalOps.length} operations`);
           console.log(`Rebased operations:`, rebasedLocalOps);
 
-          // Step 4: Client applies changes (stub - only apply rebased local ops)
+          // Step 4: Client applies changes - remote operations first, then rebased local operations
+          console.log(`Step 4: Applying remote operations...`);
+          for (const operation of remoteOps) {
+            await applyOperationMergedDB(trx, operation);
+          }
+          console.log(`Applied ${remoteOps.length} remote operations`);
+
           console.log(`Step 4: Applying rebased local operations...`);
           for (const operation of rebasedLocalOps) {
             await applyOperationMergedDB(trx, operation);

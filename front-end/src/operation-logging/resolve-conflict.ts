@@ -5,7 +5,7 @@ function areNamesEqual(a: string, b: string) {
   return a.trim().toLocaleLowerCase() === b.trim().toLocaleLowerCase();
 }
 
-type Context = { newEffectiveIdsByOldId: Map<string, string> };
+export type RebaseContext = { newEffectiveIdsByOldId: Map<string, string> };
 
 /**
  * Transforms the itemId in the local operation to the new effective itemId
@@ -16,7 +16,7 @@ type Context = { newEffectiveIdsByOldId: Map<string, string> };
  */
 function transformOldIdsToNew(
   localOp: Operation,
-  context: Context
+  context: RebaseContext
 ): Operation | null {
   switch (localOp.type) {
     case `createItem`: {
@@ -90,8 +90,8 @@ function transformOldIdsToNew(
 export function resolveConflict(
   remoteOp: Operation,
   localOp: Operation,
-  context: Context
-): { transformedOps: Operation[]; newContext: Context } {
+  context: RebaseContext
+): { transformedOps: Operation[]; newContext: RebaseContext } {
   const localOpWithTransformedId = transformOldIdsToNew(localOp, context);
   if (localOpWithTransformedId != null)
     return resolveConflict(remoteOp, localOpWithTransformedId, context);

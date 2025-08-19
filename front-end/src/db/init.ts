@@ -7,10 +7,10 @@ import { createMigrator } from "./migrations/createMigrator";
 import { createOperationLogMigrator } from "./operation-log/migrations/createOperationLogMigrator";
 
 // Initialize a specific database with migrations
-const initDatabase = async (dialect: Dialect) => {
+const initDatabase = async (dialect: Dialect, migrate = false) => {
   const kysely = new Kysely<DB>({ dialect });
 
-  if (import.meta.env[`MIGRATE_ON_INIT`] === `true`) {
+  if (migrate || import.meta.env[`MIGRATE_ON_INIT`] === `true`) {
     const migrator = createMigrator(kysely);
 
     const { error } = await migrator.migrateToLatest();
@@ -26,10 +26,10 @@ const initDatabase = async (dialect: Dialect) => {
 };
 
 // Initialize operation log database with migrations
-const initOperationLogDatabase = async (dialect: Dialect) => {
+const initOperationLogDatabase = async (dialect: Dialect, migrate = false) => {
   const kysely = new Kysely<OperationLogDB>({ dialect });
 
-  if (import.meta.env[`MIGRATE_ON_INIT`] === `true`) {
+  if (migrate || import.meta.env[`MIGRATE_ON_INIT`] === `true`) {
     const migrator = createOperationLogMigrator(kysely);
 
     const { error } = await migrator.migrateToLatest();
@@ -48,11 +48,15 @@ const initOperationLogDatabase = async (dialect: Dialect) => {
 export const initMergedDatabase = async (
   operationLogDbName: string,
   mainDialect: Dialect,
-  operationLogDialect: Dialect
+  operationLogDialect: Dialect,
+  migrate = false
 ) => {
   // Initialize both databases separately first to run migrations
-  const mainDb = await initDatabase(mainDialect);
-  const operationLogDb = await initOperationLogDatabase(operationLogDialect);
+  const mainDb = await initDatabase(mainDialect, migrate);
+  const operationLogDb = await initOperationLogDatabase(
+    operationLogDialect,
+    migrate
+  );
 
   // Close the separate operation log connection since we'll attach it to main
   await operationLogDb.destroy();

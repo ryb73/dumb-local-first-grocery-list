@@ -25,7 +25,8 @@ describe(`Merged Database`, () => {
     mergedKysely = await initMergedDatabase(
       testOperationLogDbName,
       mainDialect,
-      operationLogDialect
+      operationLogDialect,
+      true
     );
   });
 

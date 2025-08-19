@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import type { DB } from "../../../../operation-log-db";
 import { devOperationLogMigrations } from "./operation-log-migrations.ts";
 
-describe(`createItem payload migration (2025-01-20_02)`, () => {
+describe(`createItem payload migration (2025-08-19_01)`, () => {
   let db: Kysely<DB> | null = null;
 
   beforeEach(async () => {
@@ -21,7 +21,7 @@ describe(`createItem payload migration (2025-01-20_02)`, () => {
 
     // Get all migrations except our target migration
     const allMigrations = Object.entries(devOperationLogMigrations);
-    const targetMigrationKey = `2025-01-20_02`;
+    const targetMigrationKey = `2025-08-19_01`;
 
     // Run only migrations that come before our target migration
     const preMigrations = Object.fromEntries(
@@ -86,7 +86,7 @@ describe(`createItem payload migration (2025-01-20_02)`, () => {
       .execute();
 
     // Get our target migration
-    const targetMigration = devOperationLogMigrations[`2025-01-20_02`]!;
+    const targetMigration = devOperationLogMigrations[`2025-08-19_01`]!;
 
     // Run the UP migration
     await targetMigration.up(db!);
@@ -158,7 +158,7 @@ describe(`createItem payload migration (2025-01-20_02)`, () => {
       ])
       .execute();
 
-    const targetMigration = devOperationLogMigrations[`2025-01-20_02`]!;
+    const targetMigration = devOperationLogMigrations[`2025-08-19_01`]!;
 
     // Run the DOWN migration (rollback)
     await targetMigration.down!(db!);
@@ -197,7 +197,7 @@ describe(`createItem payload migration (2025-01-20_02)`, () => {
       ])
       .execute();
 
-    const targetMigration = devOperationLogMigrations[`2025-01-20_02`]!;
+    const targetMigration = devOperationLogMigrations[`2025-08-19_01`]!;
 
     // Should throw an error (since we removed try/catch)
     await expect(targetMigration.up(db!)).rejects.toThrow();
@@ -224,7 +224,7 @@ describe(`createItem payload migration (2025-01-20_02)`, () => {
       ])
       .execute();
 
-    const targetMigration = devOperationLogMigrations[`2025-01-20_02`]!;
+    const targetMigration = devOperationLogMigrations[`2025-08-19_01`]!;
 
     // Run UP migration
     await targetMigration.up(db!);
@@ -321,7 +321,7 @@ describe(`createItem payload migration (2025-01-20_02)`, () => {
       ])
       .execute();
 
-    const targetMigration = devOperationLogMigrations[`2025-01-20_02`]!;
+    const targetMigration = devOperationLogMigrations[`2025-08-19_01`]!;
 
     // Run the UP migration
     await targetMigration.up(db!);
