@@ -118,5 +118,4 @@ This is a local-first grocery list app. The UI, for development purposes, curren
       - [x] 4. Client applies changes
       - [ ] 5. Client submits rebased changes to the server
       - [ ] 6. Server applies changes
-    - [ ] Manage local markers for "last known server state/version".
     - (Initially, the server side will be simulated against the second local SQLite DB).
