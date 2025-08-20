@@ -1409,4 +1409,98 @@ describe(`rebase`, () => {
       ).toEqual(expectedIntermediateState);
     }
   });
+
+  it(`Case 14: Create-Rename Conflict with Subsequent Remote Rename`, async () => {
+    // Initial state is empty
+
+    const remoteOp1 = createCreateItemOperation(`uuid-remote`, `Bad 1`);
+    const localOp1 = createCreateItemOperation(`uuid-local`, `Bad 2`);
+
+    const localOp2 = createRenameOperation(`uuid-local`, `Bad 1`, {
+      createdAt: localOp1.payload.item.createdAt,
+      name: `Bad 2`,
+      checked: false,
+      lastCheckedAt: null,
+    });
+
+    const remoteOp2 = createRenameOperation(`uuid-remote`, `Good`, {
+      createdAt: remoteOp1.payload.item.createdAt,
+      name: `Bad 1`,
+      checked: false,
+      lastCheckedAt: null,
+    });
+
+    const localOps = [localOp1, localOp2];
+    const remoteOps = [remoteOp1, remoteOp2];
+
+    const rebasedOps = rebase(localOps, remoteOps, resolveConflict, {
+      newEffectiveIdsByOldId: new Map(),
+    });
+
+    expect(rebasedOps).toMatchInlineSnapshot(`
+      [
+        {
+          "clientCreatedAt": 2,
+          "id": "createItem-op-2",
+          "payload": {
+            "item": {
+              "createdAt": 2,
+              "id": "uuid-local",
+              "name": "Bad 2",
+            },
+          },
+          "serverCommittedAt": null,
+          "type": "createItem",
+        },
+        {
+          "clientCreatedAt": 3,
+          "id": "uuid-1",
+          "payload": {
+            "deletedItem": {
+              "checked": false,
+              "createdAt": 2,
+              "lastCheckedAt": null,
+              "name": "Bad 2",
+            },
+            "itemId": "uuid-local",
+            "noIdMap": true,
+          },
+          "serverCommittedAt": null,
+          "type": "deleteItem",
+        },
+      ]
+    `);
+
+    const allAppliedOps = [...remoteOps, ...rebasedOps];
+    const states = [await dumpDb(db!)];
+
+    for (const op of allAppliedOps) {
+      await applyOperation(db!, op);
+      states.push(await dumpDb(db!));
+    }
+
+    const stateAfterAllApplied = states.pop();
+
+    expect(stateAfterAllApplied).toMatchInlineSnapshot(`
+      [
+        {
+          "checked": 0,
+          "created_at": 1,
+          "id": "uuid-remote",
+          "last_checked_at": null,
+          "name": "Good",
+        },
+      ]
+    `);
+
+    for (const op of allAppliedOps.slice().reverse()) {
+      await reverseOperation(db!, op);
+
+      const expectedIntermediateState = states.pop();
+      expect(
+        await dumpDb(db!),
+        `error reverting op: ${JSON.stringify(op)}`
+      ).toEqual(expectedIntermediateState);
+    }
+  });
 });

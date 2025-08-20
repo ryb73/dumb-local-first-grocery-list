@@ -23,6 +23,11 @@ function transformOldIdsToNew(
       return null;
     }
     case `deleteItem`: {
+      // Skip ID mapping if noIdMap flag is set
+      if (localOp.payload.noIdMap === true) {
+        return null;
+      }
+
       if (!context.newEffectiveIdsByOldId.has(localOp.payload.itemId)) {
         return null;
       }
@@ -37,7 +42,6 @@ function transformOldIdsToNew(
         },
       };
     }
-    // eslint-disable-next-line sonarjs/no-duplicated-branches
     case `renameItem`: {
       if (!context.newEffectiveIdsByOldId.has(localOp.payload.itemId)) {
         return null;
@@ -152,6 +156,10 @@ export function resolveConflict(
             };
           }
 
+          // Local item is being renamed to the same name as a remotely created item.
+          // This represents a merge conflict: both sides want an item with the same name.
+          // Resolution strategy: Keep the remote item, delete the local item, and redirect
+          // all future references to the local item ID to use the remote item ID instead.
           const newContext = {
             ...context,
             newEffectiveIdsByOldId: new Map(context.newEffectiveIdsByOldId),
@@ -167,13 +175,12 @@ export function resolveConflict(
                 clientCreatedAt: localOp.clientCreatedAt,
                 id: crypto.randomUUID(),
                 payload: {
-                  deletedItem: {
-                    checked: false,
-                    createdAt: remoteOp.payload.item.createdAt,
-                    lastCheckedAt: null,
-                    name: remoteOp.payload.item.name,
-                  },
-                  itemId: remoteOp.payload.item.id,
+                  // Delete the LOCAL item (the one being renamed), not the remote item.
+                  // This preserves the remote item and any subsequent operations on it.
+                  deletedItem: localOp.payload.originalItem,
+                  itemId: localOp.payload.itemId,
+                  // Prevent ID mapping to ensure we delete the local item, not the merged remote item
+                  noIdMap: true,
                 },
                 serverCommittedAt: null,
                 type: `deleteItem`,

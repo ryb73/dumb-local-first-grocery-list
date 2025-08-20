@@ -239,3 +239,22 @@ This tests that the rebase logic correctly handles cases where both sides delete
 *   **Conflict Resolution Logic**: `resolveConflict(remote: deleteItem, local: deleteItem)` should return `[]` because the local operation is made redundant by the remote operation.
 *   **Expected `rebasedLocalOps`**: `[]`
 *   **Expected Final State**: Item A is deleted.
+
+---
+
+### Case 14: Create-Rename Conflict with Subsequent Remote Rename
+
+This tests a complex scenario where local creates an item, then renames it to conflict with a remotely created item, while the remote item is subsequently renamed. The local item should be merged with the remote item and the final name should reflect the remote rename.
+
+*   **Initial State**: Empty list.
+*   **Local Operations**:
+    1.  `{ type: 'createItem', payload: { item: { id: 'uuid-local', name: 'Bad 2' } }, clientCreatedAt: T2 }`
+    2.  `{ type: 'renameItem', payload: { itemId: 'uuid-local', newName: 'Bad 1', originalName: 'Bad 2' }, clientCreatedAt: T3 }`
+*   **Remote Operations**:
+    1.  `{ type: 'createItem', payload: { item: { id: 'uuid-remote', name: 'Bad 1' } }, clientCreatedAt: T1 }`
+    2.  `{ type: 'renameItem', payload: { itemId: 'uuid-remote', newName: 'Good', originalName: 'Bad 1' }, clientCreatedAt: T4 }`
+*   **Rebase Trace**:
+    1.  **Process local op 1 (`createItem` for "Bad 2")**: No conflict with remote ops since names differ.
+    2.  **Process local op 2 (`renameItem` to "Bad 1")**: Conflicts with remote create("Bad 1"). The local item should be deleted and mapped to the remote item. Since the remote item was later renamed to "Good", this reflects the final state.
+*   **Expected `rebasedLocalOps`**: `[{ type: 'deleteItem', payload: { itemId: 'uuid-local' } }]` (the local item is deleted since it's merged with the remote item)
+*   **Expected Final State**: One item exists: `{ id: 'uuid-remote', name: 'Good' }` (the remote item with its final name).

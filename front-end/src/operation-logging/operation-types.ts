@@ -121,6 +121,11 @@ export const deleteItemPayloadSchema = z.object({
     checked: z.boolean(),
     lastCheckedAt: z.number().nullable(),
   }),
+  /**
+   * If true, prevents ID mapping transformation during conflict resolution.
+   * Used when deleting a local item that should not be redirected to a merged remote item.
+   */
+  noIdMap: z.boolean().optional(),
 });
 export type DeleteItemPayload = z.infer<typeof deleteItemPayloadSchema>;
 
