@@ -3,4 +3,6 @@ export * from "./migration-compatibility";
 export * from "./rebase-local-operations";
 export * from "./request-changes";
 export * from "./state-tracking";
+export * from "./submit-changes-to-server";
 export * from "./unwind-local-changes";
+export * from "./update-operation-log";

@@ -42,6 +42,7 @@ module.exports = {
     ],
     "jest/padding-around-all": `off`,
     "jest/padding-around-expect-groups": `off`,
+    "jsx-a11y/label-has-associated-control": `off`,
     "no-await-in-loop": `off`,
     "no-console": `off`,
     "no-void": `off`,

@@ -5,12 +5,15 @@ import {
 import type { Component } from "solid-js";
 import { Index, createSignal, onMount } from "solid-js";
 import type { Database } from "../db/database";
-import { applyOperationMergedDB } from "../operation-logging/apply-operation";
+import { applyAndLogOperation } from "../operation-logging/apply-operation";
+import type { Operation } from "../operation-logging/operation-types";
 import {
   checkMigrationCompatibility,
   rebaseLocalOperations,
   requestChangesFromServer,
+  submitChangesToServer,
   unwindLocalChanges,
+  updateOperationLogAfterSync,
 } from "../sync";
 import type { Item } from "../types/schemas";
 import { AddItemForm } from "./AddItemForm";
@@ -81,12 +84,17 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
 
       // Step 1: Client requests changes from the server
       console.log(`Step 1: Requesting changes from server...`);
-      const remoteOps = await requestChangesFromServer(
+      const serverResponse = await requestChangesFromServer(
         props.db.getKyselyInstance()
       );
 
+      const { operations: remoteOps, serverVersion } = serverResponse;
       console.log(`Received ${remoteOps.length} remote operations from server`);
+      console.log(`Server version: ${serverVersion ?? `null`}`);
       console.log(`Remote operations:`, remoteOps);
+
+      // Variable to store rebased operations for steps 5-6
+      let rebasedLocalOps: Operation[] = [];
 
       // Steps 2-4: Execute within a single transaction for atomicity
       await props.db
@@ -101,25 +109,60 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
 
           // Step 3: Client builds rebased local operations list
           console.log(`Step 3: Building rebased local operations list...`);
-          const rebasedLocalOps = rebaseLocalOperations(localOps, remoteOps);
+          rebasedLocalOps = rebaseLocalOperations(localOps, remoteOps);
           console.log(`Rebased to ${rebasedLocalOps.length} operations`);
           console.log(`Rebased operations:`, rebasedLocalOps);
 
           // Step 4: Client applies changes - remote operations first, then rebased local operations
           console.log(`Step 4: Applying remote operations...`);
           for (const operation of remoteOps) {
-            await applyOperationMergedDB(trx, operation);
+            await applyAndLogOperation(trx, operation);
           }
           console.log(`Applied ${remoteOps.length} remote operations`);
 
           console.log(`Step 4: Applying rebased local operations...`);
           for (const operation of rebasedLocalOps) {
-            await applyOperationMergedDB(trx, operation);
+            await applyAndLogOperation(trx, operation);
           }
           console.log(
             `Applied ${rebasedLocalOps.length} rebased local operations`
           );
         });
+
+      // Step 5: Client submits rebased changes to server (if any)
+      if (rebasedLocalOps.length > 0) {
+        console.log(`Step 5: Submitting rebased changes to server...`);
+        const submitResponse = await submitChangesToServer(
+          rebasedLocalOps,
+          serverVersion
+        );
+
+        if (!submitResponse.success) {
+          throw new Error(
+            `Failed to submit changes to server: ${submitResponse.errorMessage!}`
+          );
+        }
+
+        // Step 6 is handled by the server, but we need to update our local operation log
+        // with the commit timestamps returned from the server
+        if (submitResponse.commitTimestamps != null) {
+          await props.db
+            .getKyselyInstance()
+            .transaction()
+            .execute(async (trx) => {
+              await updateOperationLogAfterSync(
+                trx,
+                submitResponse.commitTimestamps!
+              );
+            });
+        }
+
+        console.log(
+          `Successfully completed sync with ${rebasedLocalOps.length} local changes`
+        );
+      } else {
+        console.log(`No local changes to submit to server`);
+      }
 
       // Refresh the UI to show the updated state
       await refreshData();

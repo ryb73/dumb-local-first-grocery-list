@@ -1,4 +1,4 @@
-import type { Kysely } from "kysely";
+import type { Kysely, Transaction } from "kysely";
 import type { DB } from "../../db";
 import type { MergedDB } from "../db/merged-db";
 import type { Operation } from "./operation-types.ts";
@@ -72,4 +72,31 @@ export async function applyOperationMergedDB(
   operation: Operation
 ): Promise<void> {
   await applyOperation(db as unknown as Kysely<DB>, operation);
+}
+
+/**
+ * Applies an operation to the database and logs it to the operation log within a transaction.
+ * This ensures atomicity between the main database update and operation log update.
+ *
+ * @param trx The transaction to execute within
+ * @param operation The operation to apply and log
+ */
+export async function applyAndLogOperation(
+  trx: Transaction<MergedDB>,
+  operation: Operation
+): Promise<void> {
+  // Apply the operation to the main database
+  await applyOperationMergedDB(trx, operation);
+
+  // Log the operation to the operation log
+  await trx
+    .insertInto(`op_log.operations`)
+    .values({
+      client_created_at: operation.clientCreatedAt,
+      id: operation.id,
+      payload: JSON.stringify(operation.payload),
+      server_committed_at: operation.serverCommittedAt,
+      type: operation.type,
+    })
+    .execute();
 }

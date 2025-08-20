@@ -2,7 +2,7 @@ import type { Transaction } from "kysely";
 import type { MergedDB } from "../../db/merged-db";
 import type { Operation } from "../../operation-logging/operation-types";
 import { operationSchema } from "../../operation-logging/operation-types";
-import { reverseOperationMergedDB } from "../../operation-logging/reverse-operation";
+import { reverseAndRemoveOperation } from "../../operation-logging/reverse-operation";
 
 /**
  * Unwinds (rolls back) all local, unsynced changes from the client database.
@@ -38,10 +38,10 @@ export async function unwindLocalChanges(
   // Parse and validate the operations
   const localOps = operationSchema.array().parse(transformedOps);
 
-  // Apply reverse operations in reverse chronological order (most recent first)
+  // Apply reverse operations and remove them from the log in reverse chronological order (most recent first)
   // This ensures that dependent operations are unwound in the correct sequence
   for (const operation of localOps) {
-    await reverseOperationMergedDB(trx, operation);
+    await reverseAndRemoveOperation(trx, operation);
   }
 
   // Return operations in their original chronological order (oldest first)

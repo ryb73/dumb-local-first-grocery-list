@@ -105,7 +105,7 @@ export class Database {
   }
 
   public async getItems() {
-    const dayAgo = Date.now() - 3000;
+    const dayAgo = Date.now() - 1000 * 60 * 60 * 24;
     return await this.kysely
       .selectFrom(`items`)
       .selectAll()

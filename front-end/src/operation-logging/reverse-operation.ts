@@ -1,4 +1,4 @@
-import type { Kysely } from "kysely";
+import type { Kysely, Transaction } from "kysely";
 import type { DB } from "../../db";
 import type { MergedDB } from "../db/merged-db";
 import type { Operation } from "./operation-types.ts";
@@ -75,9 +75,30 @@ export async function reverseOperation(
   }
 }
 
-export async function reverseOperationMergedDB(
+async function reverseOperationMergedDB(
   db: Kysely<MergedDB>,
   operation: Operation
 ) {
   await reverseOperation(db as unknown as Kysely<DB>, operation);
+}
+
+/**
+ * Reverses an operation and removes it from the operation log within a transaction.
+ * This ensures atomicity between undoing the operation and removing it from the log.
+ *
+ * @param trx The transaction to execute within
+ * @param operation The operation to reverse and remove from the log
+ */
+export async function reverseAndRemoveOperation(
+  trx: Transaction<MergedDB>,
+  operation: Operation
+): Promise<void> {
+  // Reverse the operation in the main database
+  await reverseOperationMergedDB(trx, operation);
+
+  // Remove the operation from the operation log
+  await trx
+    .deleteFrom(`op_log.operations`)
+    .where(`id`, `=`, operation.id)
+    .execute();
 }
