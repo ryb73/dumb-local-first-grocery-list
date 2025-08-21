@@ -110,12 +110,12 @@ This is a local-first grocery list app. The UI, for development purposes, curren
     - [x] For each operation type, implement its corresponding inverse operation.
 
 4.  **Implement Sync Orchestration:**
-    - [ ] Implement the client-side logic for steps 0-5 of the "Detailed Sync Algorithm".
+    - [x] Implement the client-side logic for steps 0-5 of the "Detailed Sync Algorithm".
       - [x] 0. Migration compatibility checking
       - [x] 1. Client requests changes from the server
       - [x] 2. Client unwinds local changes
       - [x] 3. Client builds rebased local operations list
       - [x] 4. Client applies changes
-      - [ ] 5. Client submits rebased changes to the server
-      - [ ] 6. Server applies changes
+      - [x] 5. Client submits rebased changes to the server
+      - [x] 6. Server applies changes
     - (Initially, the server side will be simulated against the second local SQLite DB).

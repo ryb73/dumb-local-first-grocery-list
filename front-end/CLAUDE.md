@@ -32,8 +32,9 @@ This is a **local-first grocery list application** that simulates client-server 
 **Database-First Architecture**: All application state lives in SQLite databases. Components are reactive views over database data with 5-second refresh intervals.
 
 **Dual Database Setup**: Two SQLite databases simulate client/server for local development:
-- `initTestDatabases()` in `src/db/init.ts` creates both databases
-- `ParallelGroceryLists` component manages both instances
+- `initMergedDatabase()` in `src/db/init.ts` creates main database with attached operation log
+- `ParallelGroceryLists` component manages both instances with separate operation logs
+- Each database uses OPFS storage (`grocery-list.sqlite3` + `grocery-list.log.sqlite3`)
 
 **Operation Logging System** (in `src/operation-logging/`): Implements sophisticated local-first sync with:
 - Strongly typed operation definitions (`operation-types.ts`)
@@ -60,16 +61,39 @@ This is a **local-first grocery list application** that simulates client-server 
 
 ### Current Sync Implementation Status
 
-The local-first sync system is **partially implemented**:
-- ✅ Operation type definitions and rebase algorithm
-- ✅ Conflict resolution with comprehensive tests  
-- ✅ Apply/reverse operation functions
-- ❌ Operation logging to database (planned for separate SQLite file)
-- ❌ Full sync workflow integration with UI
+The local-first sync system is **extensively implemented**:
+
+**✅ Core Sync Infrastructure**:
+- Operation type definitions and rebase algorithm (`src/operation-logging/`)
+- Conflict resolution with comprehensive tests in `rebase.test.ts`
+- Apply/reverse operation functions with full coverage
+- Operation log database schema and migrations (`src/db/operation-log/`)
+- Merged database architecture with attached operation log
+
+**✅ Client-Side Sync Engine** (`src/sync/client/`):
+- `rebase-local-operations.ts`: Rebase uncommitted local operations against server changes
+- `request-changes.ts`: Request and apply changes from server
+- `state-tracking.ts`: Track sync state and migration compatibility
+- `submit-changes-to-server.ts`: Submit local operations to server
+- `unwind-local-changes.ts`: Temporarily unwind local changes for clean rebase
+- `update-operation-log.ts`: Manage operation log state during sync
+
+**✅ Server-Side Sync Engine** (`src/sync/server/`):
+- `apply-client-changes.ts`: Apply and validate incoming client operations
+- `migration-state.ts`: Track database migration state for compatibility
+- `operations.ts`: Server operation handlers and validation
+
+**🔄 Integration Status**:
+- Sync infrastructure fully operational with test coverage
+- UI integration partially complete (sync button exists in `GroceryList`)
+- Production sync workflow ready for activation
 
 ### Development Workflow
 
-**Database Changes**: Always create migrations in `src/db/migrations/migrations.ts`, then run `pnpm migrate-for-codegen && pnpm generate-kysely-types` to update types.
+**Database Changes**: 
+- Main schema: Create migrations in `src/db/migrations/migrations.ts`
+- Operation log schema: Create migrations in `src/db/operation-log/migrations/operation-log-migrations.ts`
+- After changes, run `pnpm migrate-for-codegen && pnpm generate-kysely-types` to update types
 
 **Testing**: Uses in-memory SQLite databases. Tests focus heavily on operation rebase scenarios with before/after state validation.
 
@@ -84,3 +108,5 @@ The local-first sync system is **partially implemented**:
 **Component State**: Prefer database queries over component state. Use SolidJS signals for UI reactivity but keep data in SQLite as the single source of truth.
 
 **Operation Logging**: When adding new mutation operations, ensure they include enough information for both forward application and reversal (see existing operations in `operation-types.ts`).
+
+**Sync Development**: The sync engine is production-ready with comprehensive client/server modules. New sync-related features should extend the existing patterns in `src/sync/` rather than reimplementing core functionality.
