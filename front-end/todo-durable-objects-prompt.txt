@@ -1,0 +1,3 @@
+This project is a local-first grocery list which, for testing purposes, displays two lists: one representing the "real" client, and one representing the "server" (even though it exists purely on the client-side).
+
+I'd like to migrate the faux "server" to Cloudflare Workers with Durable Objects. Can you help plan this project?
