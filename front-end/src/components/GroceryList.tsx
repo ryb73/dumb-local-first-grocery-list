@@ -10,11 +10,11 @@ import type { Operation } from "../operation-logging/operation-types";
 import {
   checkMigrationCompatibility,
   rebaseLocalOperations,
-  requestChangesFromServer,
-  submitChangesToServer,
+  syncWithServer,
   unwindLocalChanges,
   updateOperationLogAfterSync,
 } from "../sync";
+import type { SyncResponse } from "../sync/server/sync";
 import type { Item } from "../types/schemas";
 import { AddItemForm } from "./AddItemForm";
 import { GroceryItem } from "./GroceryItem";
@@ -82,86 +82,110 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
         return;
       }
 
-      // Step 1: Client requests changes from the server
-      console.log(`Step 1: Requesting changes from server...`);
-      const serverResponse = await requestChangesFromServer(
-        props.db.getKyselyInstance()
-      );
+      // Step 1: Call combined sync endpoint
+      console.log(`Step 1: Calling combined sync endpoint...`);
+      const syncResponse = await syncWithServer(props.db.getKyselyInstance());
 
-      const { operations: remoteOps, serverVersion } = serverResponse;
-      console.log(`Received ${remoteOps.length} remote operations from server`);
-      console.log(`Server version: ${serverVersion ?? `null`}`);
-      console.log(`Remote operations:`, remoteOps);
+      console.log(`Sync response:`, syncResponse);
+      console.log(`Status: ${syncResponse.status}`);
 
-      // Variable to store rebased operations for steps 5-6
-      let rebasedLocalOps: Operation[] = [];
-
-      // Steps 2-4: Execute within a single transaction for atomicity
-      await props.db
-        .getKyselyInstance()
-        .transaction()
-        .execute(async (trx) => {
-          // Step 2: Client unwinds local changes
-          console.log(`Step 2: Unwinding local changes...`);
-          const localOps = await unwindLocalChanges(trx);
-          console.log(`Unwound ${localOps.length} local operations`);
-          console.log(`Local operations:`, localOps);
-
-          // Step 3: Client builds rebased local operations list
-          console.log(`Step 3: Building rebased local operations list...`);
-          rebasedLocalOps = rebaseLocalOperations(localOps, remoteOps);
-          console.log(`Rebased to ${rebasedLocalOps.length} operations`);
-          console.log(`Rebased operations:`, rebasedLocalOps);
-
-          // Step 4: Client applies changes - remote operations first, then rebased local operations
-          console.log(`Step 4: Applying remote operations...`);
-          for (const operation of remoteOps) {
-            await applyAndLogOperation(trx, operation);
-          }
-          console.log(`Applied ${remoteOps.length} remote operations`);
-
-          console.log(`Step 4: Applying rebased local operations...`);
-          for (const operation of rebasedLocalOps) {
-            await applyAndLogOperation(trx, operation);
-          }
-          console.log(
-            `Applied ${rebasedLocalOps.length} rebased local operations`
-          );
-        });
-
-      // Step 5: Client submits rebased changes to server (if any)
-      if (rebasedLocalOps.length > 0) {
-        console.log(`Step 5: Submitting rebased changes to server...`);
-        const submitResponse = await submitChangesToServer(
-          rebasedLocalOps,
-          serverVersion
+      // If local operations were rejected (due to remote changes), apply remote changes and retry
+      if (syncResponse.status === `rejected`) {
+        console.log(
+          `Remote operations: ${syncResponse.remoteOperations.length}`
+        );
+        console.log(
+          `Local operations rejected, applying remote changes and retrying...`
         );
 
-        if (!submitResponse.success) {
-          throw new Error(
-            `Failed to submit changes to server: ${submitResponse.errorMessage!}`
-          );
-        }
+        // Variable to store rebased operations
+        let rebasedLocalOps: Operation[] = [];
 
-        // Step 6 is handled by the server, but we need to update our local operation log
-        // with the commit timestamps returned from the server
-        if (submitResponse.commitTimestamps != null) {
+        // Steps 2-4: Execute within a single transaction for atomicity
+        await props.db
+          .getKyselyInstance()
+          .transaction()
+          .execute(async (trx) => {
+            // Step 2: Client unwinds local changes
+            console.log(`Step 2: Unwinding local changes...`);
+            const unwoundLocalOps = await unwindLocalChanges(trx);
+            console.log(`Unwound ${unwoundLocalOps.length} local operations`);
+
+            // Step 3: Client builds rebased local operations list
+            console.log(`Step 3: Building rebased local operations list...`);
+            rebasedLocalOps = rebaseLocalOperations(
+              unwoundLocalOps,
+              syncResponse.remoteOperations
+            );
+            console.log(`Rebased to ${rebasedLocalOps.length} operations`);
+
+            // Step 4: Client applies changes - remote operations first, then rebased local operations
+            console.log(`Step 4: Applying remote operations...`);
+            for (const operation of syncResponse.remoteOperations) {
+              await applyAndLogOperation(trx, operation);
+            }
+            console.log(
+              `Applied ${syncResponse.remoteOperations.length} remote operations`
+            );
+
+            console.log(`Step 4: Applying rebased local operations...`);
+            for (const operation of rebasedLocalOps) {
+              await applyAndLogOperation(trx, operation);
+            }
+            console.log(
+              `Applied ${rebasedLocalOps.length} rebased local operations`
+            );
+          });
+
+        // Step 5: Retry sync with rebased operations
+        if (rebasedLocalOps.length > 0) {
+          console.log(`Step 5: Retrying sync with rebased operations...`);
+          const retryResponse: SyncResponse = await syncWithServer(
+            props.db.getKyselyInstance()
+          );
+
+          if (retryResponse.status === `rejected`) {
+            throw new Error(
+              `Sync failed: rebased operations were still rejected`
+            );
+          }
+
+          // Update operation log with commit timestamps
           await props.db
             .getKyselyInstance()
             .transaction()
             .execute(async (trx) => {
               await updateOperationLogAfterSync(
                 trx,
-                submitResponse.commitTimestamps!
+                retryResponse.commitTimestamps
+              );
+            });
+
+          console.log(
+            `Successfully completed sync after retry with ${rebasedLocalOps.length} rebased operations`
+          );
+        } else {
+          console.log(
+            `No rebased operations to submit after applying remote changes`
+          );
+        }
+      } else {
+        if (syncResponse.commitTimestamps.size > 0) {
+          // Local operations were accepted, update operation log
+          await props.db
+            .getKyselyInstance()
+            .transaction()
+            .execute(async (trx) => {
+              await updateOperationLogAfterSync(
+                trx,
+                syncResponse.commitTimestamps
               );
             });
         }
 
         console.log(
-          `Successfully completed sync with ${rebasedLocalOps.length} local changes`
+          `Successfully completed sync with ${syncResponse.commitTimestamps.size} accepted local operations`
         );
-      } else {
-        console.log(`No local changes to submit to server`);
       }
 
       // Refresh the UI to show the updated state
