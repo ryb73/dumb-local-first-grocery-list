@@ -41,13 +41,14 @@ async function getLatestMigration(
 /**
  * Gets the migration state for both main and operation log databases on the client.
  */
-async function getClientMigrationState(
+export async function getClientMigrationState(
   clientDb: Kysely<MergedDB>
 ): Promise<MigrationState> {
-  const [mainMigration, operationLogMigration] = await Promise.all([
-    getLatestMigration(clientDb, `kysely_migration`),
-    getLatestMigration(clientDb, `op_log.kysely_migration`),
-  ]);
+  const mainMigration = await getLatestMigration(clientDb, `kysely_migration`);
+  const operationLogMigration = await getLatestMigration(
+    clientDb,
+    `op_log.kysely_migration`
+  );
 
   return {
     mainMigration,

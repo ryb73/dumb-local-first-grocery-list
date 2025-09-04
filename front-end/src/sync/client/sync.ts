@@ -2,13 +2,14 @@ import type { Kysely } from "kysely";
 import type { MergedDB } from "../../db/merged-db";
 import { type SyncResponse, sync as serverSync } from "../server/sync";
 import { getLocalOperations } from "./get-local-operations";
+import { getClientMigrationState } from "./migration-compatibility";
 import { getLastKnownServerVersion } from "./state-tracking";
 
 /**
- * Combined sync function that handles both requesting remote changes and submitting local changes
+ * Combined sync function that handles migration compatibility checking, requesting remote changes, and submitting local changes
  * in a single network call. This implements the optimized sync algorithm that reduces round trips.
  *
- * This function automatically retrieves any local operations that need to be synced.
+ * This function automatically retrieves any local operations that need to be synced and checks migration compatibility.
  *
  * @param clientDb The client's database connection
  * @returns Response containing remote operations and status of submitted local operations
@@ -16,11 +17,10 @@ import { getLastKnownServerVersion } from "./state-tracking";
 export async function syncWithServer(
   clientDb: Kysely<MergedDB>
 ): Promise<SyncResponse> {
-  // Get the last known server version and local operations in parallel
-  const [lastKnownServerVersion, retrievedLocalOperations] = await Promise.all([
-    getLastKnownServerVersion(clientDb),
-    getLocalOperations(clientDb),
-  ]);
+  // Get the last known server version, local operations, and client migration state
+  const lastKnownServerVersion = await getLastKnownServerVersion(clientDb);
+  const retrievedLocalOperations = await getLocalOperations(clientDb);
+  const clientMigrationState = await getClientMigrationState(clientDb);
 
   console.log(
     `Client sync: submitting ${
@@ -31,5 +31,9 @@ export async function syncWithServer(
   );
 
   // Call the combined sync endpoint
-  return await serverSync(retrievedLocalOperations, lastKnownServerVersion);
+  return await serverSync(
+    retrievedLocalOperations,
+    lastKnownServerVersion,
+    clientMigrationState
+  );
 }

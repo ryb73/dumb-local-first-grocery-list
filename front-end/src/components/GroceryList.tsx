@@ -8,7 +8,6 @@ import type { Database } from "../db/database";
 import { applyAndLogOperation } from "../operation-logging/apply-operation";
 import type { Operation } from "../operation-logging/operation-types";
 import {
-  checkMigrationCompatibility,
   rebaseLocalOperations,
   syncWithServer,
   unwindLocalChanges,
@@ -67,27 +66,21 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
     setSyncStatus({ type: `syncing` });
 
     try {
-      // Step 0: Migration compatibility check
-      const compatibilityResult = await checkMigrationCompatibility(
-        props.db.getKyselyInstance()
-      );
-
-      if (!compatibilityResult.compatible) {
-        setSyncStatus({
-          type: `failure`,
-          message:
-            compatibilityResult.errorMessage ??
-            `Migration compatibility check failed`,
-        });
-        return;
-      }
-
       // Step 1: Call combined sync endpoint
       console.log(`Step 1: Calling combined sync endpoint...`);
       const syncResponse = await syncWithServer(props.db.getKyselyInstance());
 
       console.log(`Sync response:`, syncResponse);
       console.log(`Status: ${syncResponse.status}`);
+
+      // Check for migration incompatibility
+      if (syncResponse.status === `migration_incompatible`) {
+        setSyncStatus({
+          type: `failure`,
+          message: syncResponse.errorMessage,
+        });
+        return;
+      }
 
       // If local operations were rejected (due to remote changes), apply remote changes and retry
       if (syncResponse.status === `rejected`) {
@@ -144,7 +137,10 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
             props.db.getKyselyInstance()
           );
 
-          if (retryResponse.status === `rejected`) {
+          if (
+            retryResponse.status === `rejected` ||
+            retryResponse.status === `migration_incompatible`
+          ) {
             throw new Error(
               `Sync failed: rebased operations were still rejected`
             );
@@ -170,6 +166,7 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
           );
         }
       } else {
+        // Status is accepted - handle accepted local operations
         if (syncResponse.commitTimestamps.size > 0) {
           // Local operations were accepted, update operation log
           await props.db

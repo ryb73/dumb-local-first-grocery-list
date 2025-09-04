@@ -3,6 +3,10 @@ import { sql } from "kysely";
 import { applyAndLogOperation } from "../../operation-logging/apply-operation";
 import type { Operation } from "../../operation-logging/operation-types";
 import { getServerDatabase } from "./database";
+import {
+  type MigrationState,
+  getServerMigrationState,
+} from "./migration-state";
 import { getOperationsAfterVersionWithVersion } from "./operations";
 
 /**
@@ -28,11 +32,22 @@ export type SyncResponse =
       remoteOperations: Operation[];
       /** Optional error message explaining the rejection */
       errorMessage?: string;
+    }
+  | {
+      /** Status indicating migration incompatibility */
+      status: "migration_incompatible";
+      /** The server's migration state */
+      serverState: MigrationState;
+      /** Human-readable error message */
+      errorMessage: string;
     };
 
 /**
- * Combined sync endpoint that handles both requesting remote changes and submitting local changes.
+ * Combined sync endpoint that handles migration compatibility checking, requesting remote changes, and submitting local changes.
  * This optimizes the sync process by reducing network round trips.
+ *
+ * First checks migration compatibility between client and server.
+ * If migrations are incompatible, returns migration_incompatible status.
  *
  * If the client has local operations to submit:
  * - If there are remote changes that conflict, local operations are rejected and remote changes are returned
@@ -43,11 +58,13 @@ export type SyncResponse =
  *
  * @param localOperations Local operations the client wants to submit (empty array if none)
  * @param expectedServerVersion The server version the client expects (for conflict detection)
+ * @param clientMigrationState The client's migration state for compatibility checking
  * @returns Combined response with remote operations and status of local operations
  */
 export async function sync(
   localOperations: Operation[],
-  expectedServerVersion: number | null
+  expectedServerVersion: number | null,
+  clientMigrationState: MigrationState
 ): Promise<SyncResponse> {
   console.log(
     `Combined sync: ${
@@ -56,6 +73,41 @@ export async function sync(
       expectedServerVersion ?? `null`
     }`
   );
+
+  // Step 0: Check migration compatibility
+  const serverMigrationState = await getServerMigrationState();
+
+  const mainCompatible =
+    clientMigrationState.mainMigration === serverMigrationState.mainMigration;
+  const opLogCompatible =
+    clientMigrationState.operationLogMigration ===
+    serverMigrationState.operationLogMigration;
+
+  if (!mainCompatible || !opLogCompatible) {
+    const messages: string[] = [];
+
+    if (!mainCompatible) {
+      messages.push(
+        `Main database: client=${
+          clientMigrationState.mainMigration ?? `none`
+        }, server=${serverMigrationState.mainMigration ?? `none`}`
+      );
+    }
+
+    if (!opLogCompatible) {
+      messages.push(
+        `Operation log: client=${
+          clientMigrationState.operationLogMigration ?? `none`
+        }, server=${serverMigrationState.operationLogMigration ?? `none`}`
+      );
+    }
+
+    return {
+      status: `migration_incompatible`,
+      serverState: serverMigrationState,
+      errorMessage: `Migration version mismatch. ${messages.join(`; `)}`,
+    };
+  }
 
   const serverDb = await getServerDatabase();
 
