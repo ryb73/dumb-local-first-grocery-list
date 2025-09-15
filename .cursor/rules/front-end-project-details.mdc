@@ -1,7 +1,6 @@
 ---
-description:
-globs:
-alwaysApply: true
+globs: front-end/
+alwaysApply: false
 ---
 # Project Framework
 - Package manager: pnpm

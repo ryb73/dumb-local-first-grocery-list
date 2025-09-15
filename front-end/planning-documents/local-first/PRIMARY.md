@@ -2,7 +2,7 @@
 
 ## App Description
 
-This is a local-first grocery list app. The UI, for development purposes, currently maintains and renders two lists: one representing the "client" and one representing the "server". Both lists are stored in separate SQLite databases in OPFS on the client. This setup simulates client-server synchronization and conflict resolution workflows. **Note:** Local-first synchronization features described in this document are not yet implemented; the current app is a foundation for these features.
+This is a local-first grocery list app. The UI, for development purposes, currently maintains and renders two lists: one representing the "client" and one representing the "server". Both lists are stored in separate SQLite databases in OPFS on the client. This setup simulates client-server synchronization and conflict resolution workflows.
 
 ## Desired Change-Tracking & Sync System
 
