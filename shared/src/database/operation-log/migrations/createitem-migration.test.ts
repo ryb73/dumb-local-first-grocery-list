@@ -2,8 +2,8 @@ import Database from "better-sqlite3";
 import { Kysely, Migrator, SqliteDialect } from "kysely";
 // eslint-disable-next-line @typescript-eslint/no-shadow
 import { beforeEach, describe, expect, it } from "vitest";
-import type { DB } from "../../../../operation-log-db";
-import { devOperationLogMigrations } from "./operation-log-migrations.ts";
+import type { DB } from "../../operation-log-db.js";
+import { devOperationLogMigrations } from "../../operation-log-migrations.js";
 
 describe(`createItem payload migration (2025-08-19_01)`, () => {
   let db: Kysely<DB> | null = null;

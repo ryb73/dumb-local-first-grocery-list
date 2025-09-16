@@ -15,6 +15,7 @@ module.exports = {
 
   rules: {
     "@stylistic/lines-between-class-members": `off`,
+    "etc/no-internal": `off`,
     "func-style": `off`,
     "import/no-anonymous-default-export": `off`,
     "import/no-extraneous-dependencies": [

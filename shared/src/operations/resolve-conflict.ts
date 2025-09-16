@@ -1,5 +1,5 @@
-import { defined } from "@ryb73/super-duper-parakeet/lib/src/type-checks";
-import type { Operation } from "./operation-types";
+import { defined } from "@ryb73/super-duper-parakeet/lib/src/type-checks.js";
+import type { Operation } from "./operation-types.js";
 
 function areNamesEqual(a: string, b: string) {
   return a.trim().toLocaleLowerCase() === b.trim().toLocaleLowerCase();

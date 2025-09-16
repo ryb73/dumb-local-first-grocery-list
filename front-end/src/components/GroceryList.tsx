@@ -1,3 +1,5 @@
+import { applyAndLogOperation } from "@grocery-list/shared";
+import type { Item, Operation } from "@grocery-list/shared";
 import {
   defined,
   isDefined,
@@ -5,8 +7,6 @@ import {
 import type { Component } from "solid-js";
 import { Index, createSignal, onMount } from "solid-js";
 import type { Database } from "../db/database";
-import { applyAndLogOperation } from "../operation-logging/apply-operation";
-import type { Operation } from "../operation-logging/operation-types";
 import {
   rebaseLocalOperations,
   syncWithServer,
@@ -14,7 +14,6 @@ import {
   updateOperationLogAfterSync,
 } from "../sync";
 import type { SyncResponse } from "../sync/server/sync";
-import type { Item } from "../types/schemas";
 import { AddItemForm } from "./AddItemForm";
 import { GroceryItem } from "./GroceryItem";
 import styles from "./GroceryList.module.css";

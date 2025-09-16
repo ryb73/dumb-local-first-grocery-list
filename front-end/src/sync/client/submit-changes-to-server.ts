@@ -1,4 +1,4 @@
-import type { Operation } from "../../operation-logging/operation-types";
+import type { Operation } from "@grocery-list/shared";
 import { applyClientChanges } from "../server/apply-client-changes";
 
 /**

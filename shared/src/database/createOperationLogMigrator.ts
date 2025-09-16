@@ -1,9 +1,9 @@
 import { type Kysely, Migrator } from "kysely";
-import type { DB } from "../../../../operation-log-db";
+import type { DB } from "./operation-log-db.js";
 import {
   devOperationLogMigrations,
   operationLogMigrations,
-} from "./operation-log-migrations.ts";
+} from "./operation-log-migrations.js";
 
 /**
  * Creates a Kysely migrator for the operation log database.

@@ -1,7 +1,7 @@
+import type { Item } from "@grocery-list/shared";
 import { defined } from "@ryb73/super-duper-parakeet/lib/src/type-checks";
 import type { Component } from "solid-js";
 import { createSignal } from "solid-js";
-import type { Item } from "../types/schemas";
 import styles from "./GroceryItem.module.css";
 
 type Props = {

@@ -1,11 +1,11 @@
 import BetterSqlite3 from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
-import type { DB } from "../../db";
-import { createMigrator } from "./migrations/createMigrator.ts";
-import { migrationScript } from "./migrationScript.ts";
+import { createMigrator } from "./createMigrator.js";
+import { migrationScript } from "./migrationScript.js";
+import { MainDB } from "../index.js";
 
 async function migrate() {
-  const db = new Kysely<DB>({
+  const db = new Kysely<MainDB>({
     dialect: new SqliteDialect({
       database: BetterSqlite3(`local-db-for-codegen.sqlite3`),
     }),

@@ -1,6 +1,6 @@
+import { applyAndLogOperation } from "@grocery-list/shared";
+import type { Operation } from "@grocery-list/shared";
 import { sql } from "kysely";
-import { applyAndLogOperation } from "../../operation-logging/apply-operation";
-import type { Operation } from "../../operation-logging/operation-types";
 import { getServerDatabase } from "./database";
 
 /**

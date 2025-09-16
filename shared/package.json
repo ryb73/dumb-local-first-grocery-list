@@ -1,0 +1,36 @@
+{
+  "name": "@grocery-list/shared",
+  "version": "1.0.0",
+  "description": "Shared types, operations, and database logic for the grocery list application",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "generate-kysely-types": "DATABASE_URL=./local-db-for-codegen.sqlite3 kysely-codegen --out-file src/database/main-db.d.ts",
+    "generate-operation-log-kysely-types": "DATABASE_URL=./local-db-for-codegen.log.sqlite3 kysely-codegen --out-file src/database/operation-log-db.d.ts",
+    "migrate-for-codegen": "pnpm build && node dist/database/migrate-for-codegen.js",
+    "migrate-for-operation-log-codegen": "pnpm build && node dist/database/migrate-for-operation-log-codegen.js",
+    "test": "vitest run",
+    "watch": "tsc --watch"
+  },
+  "author": "Ryan Biwer",
+  "license": "AGPL-3.0-only",
+  "files": [
+    "src/"
+  ],
+  "packageManager": "pnpm@10.15.1+sha512.34e538c329b5553014ca8e8f4535997f96180a1d0f614339357449935350d924e22f8614682191264ec33d1462ac21561aff97f6bb18065351c162c7e8f6de67",
+  "dependencies": {
+    "@ryb73/super-duper-parakeet": "^13.0.2",
+    "zod": "^4.1.8"
+  },
+  "peerDependencies": {
+    "kysely": "^0.28.7"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "better-sqlite3": "^12.2.0",
+    "kysely-codegen": "^0.19.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}

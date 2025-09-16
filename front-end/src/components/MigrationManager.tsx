@@ -1,3 +1,5 @@
+import type { MainDB , OperationLogDB } from "@grocery-list/shared";
+import { createMigrator , createOperationLogMigrator } from "@grocery-list/shared";
 import { defined } from "@ryb73/super-duper-parakeet/lib/src/type-checks";
 import {
   Kysely,
@@ -8,10 +10,6 @@ import {
 import type { Component } from "solid-js";
 import { createSignal, onMount } from "solid-js";
 import { SQLocalKysely } from "sqlocal/kysely";
-import type { DB } from "../../db";
-import type { DB as OperationLogDB } from "../../operation-log-db";
-import { createMigrator } from "../db/migrations/createMigrator";
-import { createOperationLogMigrator } from "../db/operation-log/migrations/createOperationLogMigrator";
 import styles from "./MigrationManager.module.css";
 
 type MigrationStatus = {
@@ -21,7 +19,7 @@ type MigrationStatus = {
 
 type DatabaseMigrationInfo = {
   isOperationLog: boolean;
-  kysely: Kysely<DB> | Kysely<OperationLogDB>;
+  kysely: Kysely<MainDB> | Kysely<OperationLogDB>;
   migrator: Migrator;
   migrations: MigrationStatus[];
   name: string;
@@ -70,10 +68,10 @@ export const MigrationManager: Component = () => {
       setIsLoading(true);
       setError(null);
 
-      const mainKysely1 = new Kysely<DB>({
+      const mainKysely1 = new Kysely<MainDB>({
         dialect: new SQLocalKysely(`grocery-list.sqlite3`).dialect,
       });
-      const mainKysely2 = new Kysely<DB>({
+      const mainKysely2 = new Kysely<MainDB>({
         dialect: new SQLocalKysely(`grocery-list-2.sqlite3`).dialect,
       });
 

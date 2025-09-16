@@ -3,8 +3,8 @@
  * database in a single transaction using SQLite's ATTACH DATABASE feature.
  */
 
-import type { DB as MainDB } from "../../db";
-import type { DB as OperationLogDB } from "../../operation-log-db";
+import type { DB as MainDB } from "./main-db.js";
+import type { DB as OperationLogDB } from "./operation-log-db.js";
 
 /**
  * Database type that includes tables from both the main database

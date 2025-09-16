@@ -1,6 +1,6 @@
+import type { MergedDB } from "@grocery-list/shared";
 import type { Kysely } from "kysely";
 import { sql } from "kysely";
-import type { MergedDB } from "../../db/merged-db";
 
 /**
  * Gets the last known server version (timestamp) that the client has synced with.

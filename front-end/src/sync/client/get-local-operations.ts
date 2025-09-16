@@ -1,7 +1,6 @@
+import type { MergedDB , Operation } from "@grocery-list/shared";
+import { operationSchema } from "@grocery-list/shared";
 import type { Kysely } from "kysely";
-import type { MergedDB } from "../../db/merged-db";
-import type { Operation } from "../../operation-logging/operation-types";
-import { operationSchema } from "../../operation-logging/operation-types";
 
 /**
  * Retrieves all local operations that haven't been committed to the server.

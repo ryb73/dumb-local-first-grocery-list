@@ -1,11 +1,11 @@
 import { existsSync, unlinkSync } from "fs";
+import { initMergedDatabase } from "@grocery-list/shared";
+import type { MergedDB } from "@grocery-list/shared";
 import Database from "better-sqlite3";
 import type { Kysely } from "kysely";
 import { SqliteDialect } from "kysely";
 // eslint-disable-next-line @typescript-eslint/no-shadow
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { initMergedDatabase } from "./init";
-import type { MergedDB } from "./merged-db";
 
 describe(`Merged Database`, () => {
   let mergedKysely: Kysely<MergedDB> | null;

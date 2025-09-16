@@ -1,7 +1,7 @@
+import { initMergedDatabase } from "@grocery-list/shared";
+import type { MergedDB } from "@grocery-list/shared";
 import type { Kysely } from "kysely";
 import { SQLocalKysely } from "sqlocal/kysely";
-import { initMergedDatabase } from "../../db/init";
-import type { MergedDB } from "../../db/merged-db";
 
 /**
  * Creates a connection to the server database.

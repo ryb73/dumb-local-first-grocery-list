@@ -1,6 +1,6 @@
+import type { MergedDB } from "@grocery-list/shared";
 import type { Kysely } from "kysely";
 import { sql } from "kysely";
-import type { MergedDB } from "../../db/merged-db";
 import {
   type MigrationState,
   getServerMigrationState,

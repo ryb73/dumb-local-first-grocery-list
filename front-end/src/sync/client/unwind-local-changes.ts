@@ -1,8 +1,9 @@
+import type { MergedDB, Operation } from "@grocery-list/shared";
+import {
+  operationSchema,
+  reverseAndRemoveOperation,
+} from "@grocery-list/shared";
 import type { Transaction } from "kysely";
-import type { MergedDB } from "../../db/merged-db";
-import type { Operation } from "../../operation-logging/operation-types";
-import { operationSchema } from "../../operation-logging/operation-types";
-import { reverseAndRemoveOperation } from "../../operation-logging/reverse-operation";
 
 /**
  * Unwinds (rolls back) all local, unsynced changes from the client database.

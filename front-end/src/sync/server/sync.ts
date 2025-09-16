@@ -1,7 +1,7 @@
+import { applyAndLogOperation } from "@grocery-list/shared";
+import type { Operation } from "@grocery-list/shared";
 import { defined } from "@ryb73/super-duper-parakeet/lib/src/type-checks";
 import { sql } from "kysely";
-import { applyAndLogOperation } from "../../operation-logging/apply-operation";
-import type { Operation } from "../../operation-logging/operation-types";
 import { getServerDatabase } from "./database";
 import {
   type MigrationState,

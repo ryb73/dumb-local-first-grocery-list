@@ -1,5 +1,5 @@
+import type { MergedDB } from "@grocery-list/shared";
 import type { Kysely } from "kysely";
-import type { MergedDB } from "../../db/merged-db";
 import { type SyncResponse, sync as serverSync } from "../server/sync";
 import { getLocalOperations } from "./get-local-operations";
 import { getClientMigrationState } from "./migration-compatibility";

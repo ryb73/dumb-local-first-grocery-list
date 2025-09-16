@@ -1,5 +1,5 @@
+import type { MergedDB } from "@grocery-list/shared";
 import type { Transaction } from "kysely";
-import type { MergedDB } from "../../db/merged-db";
 
 /**
  * Updates the client's operation log to mark operations as server-committed.

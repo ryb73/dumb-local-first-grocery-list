@@ -1,9 +1,7 @@
+import { applyOperationMergedDB , initMergedDatabase , operationSchema } from "@grocery-list/shared";
 import type { Component } from "solid-js";
 import { For, createSignal } from "solid-js";
 import { SQLocalKysely } from "sqlocal/kysely";
-import { initMergedDatabase } from "../db/init";
-import { applyOperationMergedDB } from "../operation-logging/apply-operation";
-import { operationSchema } from "../operation-logging/operation-types";
 import styles from "./DatabaseRebuild.module.css";
 
 type DatabaseOption = `both` | `client` | `server`;

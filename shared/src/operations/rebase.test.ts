@@ -12,18 +12,18 @@ import {
   vi,
   /* eslint-enable @typescript-eslint/no-shadow */
 } from "vitest";
-import type { DB } from "../../db";
-import { createMigrator } from "../db/migrations/createMigrator.ts";
-import { applyOperation } from "./apply-operation.ts";
+import type { DB } from "../database/main-db.js";
+import { createMigrator } from "../database/createMigrator.js";
+import { applyOperation } from "./apply-operation.js";
 import type {
   CreateItemOperation,
   DeleteItemOperation,
   RenameItemOperation,
   SetCheckedStateOperation,
-} from "./operation-types.ts";
-import { rebase } from "./rebase.ts";
-import { resolveConflict } from "./resolve-conflict.ts";
-import { reverseOperation } from "./reverse-operation.ts";
+} from "./operation-types.js";
+import { rebase } from "./rebase.js";
+import { resolveConflict } from "./resolve-conflict.js";
+import { reverseOperation } from "./reverse-operation.js";
 
 // Helper functions for creating mock operations
 let operationCounter = 0;

@@ -1,7 +1,7 @@
 import type { Kysely, Transaction } from "kysely";
-import type { DB } from "../../db";
-import type { MergedDB } from "../db/merged-db";
-import type { Operation } from "./operation-types.ts";
+import type { DB } from "../database/main-db.js";
+import type { MergedDB } from "../database/merged-db.js";
+import type { Operation } from "./operation-types.js";
 
 /**
  * NOTE: This file explicitly writes out object keys instead of using spread operators

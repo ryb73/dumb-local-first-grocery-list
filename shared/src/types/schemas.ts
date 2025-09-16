@@ -1,5 +1,5 @@
 import type { Insertable, Selectable, Updateable } from "kysely";
-import type { Items } from "../../db";
+import type { Items } from "../database/main-db.js";
 
 export type Item = Selectable<Items>;
 // eslint-disable-next-line import/no-unused-modules

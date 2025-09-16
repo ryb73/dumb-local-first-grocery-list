@@ -1,9 +1,9 @@
+import { initMergedDatabase } from "@grocery-list/shared";
 import { defined } from "@ryb73/super-duper-parakeet/lib/src/type-checks";
 import { sql } from "kysely";
 import { createResource, createSignal } from "solid-js";
 import { SQLocalKysely } from "sqlocal/kysely";
 import { z } from "zod";
-import { initMergedDatabase } from "../db/init";
 import styles from "./SqliteBrowser.module.css";
 
 const QueryResultSchema = z.array(z.record(z.unknown()));

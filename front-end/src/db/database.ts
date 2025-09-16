@@ -1,17 +1,17 @@
+import {
+  type CreateItemOperation,
+  type ItemUpdate,
+  type MainDB,
+  type MergedDB,
+  type Operation,
+  type RenameItemOperation,
+  type SetCheckedStateOperation,
+  applyOperation,
+} from "@grocery-list/shared";
 import type { Kysely, Transaction } from "kysely";
-import type { DB } from "../../db";
-import { applyOperation } from "../operation-logging/apply-operation.ts";
-import type {
-  CreateItemOperation,
-  Operation,
-  RenameItemOperation,
-  SetCheckedStateOperation,
-} from "../operation-logging/operation-types.ts";
-import type { ItemUpdate } from "../types/schemas";
-import type { MergedDB } from "./merged-db";
 
-function narrowTransaction(trx: Transaction<MergedDB>): Transaction<DB> {
-  return trx as unknown as Transaction<DB>;
+function narrowTransaction(trx: Transaction<MergedDB>): Transaction<MainDB> {
+  return trx as unknown as Transaction<MainDB>;
 }
 
 export class Database {

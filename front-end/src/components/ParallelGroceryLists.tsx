@@ -1,8 +1,8 @@
+import { initMergedDatabase } from "@grocery-list/shared";
 import { defined } from "@ryb73/super-duper-parakeet/lib/src/type-checks";
 import { type Component, Show, createResource } from "solid-js";
 import { SQLocalKysely } from "sqlocal/kysely";
 import { Database } from "../db/database";
-import { initMergedDatabase } from "../db/init";
 import { GroceryList } from "./GroceryList";
 import styles from "./ParallelGroceryLists.module.css";
 

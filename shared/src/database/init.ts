@@ -1,16 +1,16 @@
 import { Kysely, sql } from "kysely";
 import type { Dialect } from "kysely";
-import type { DB } from "../../db";
-import type { DB as OperationLogDB } from "../../operation-log-db";
-import type { MergedDB } from "./merged-db";
-import { createMigrator } from "./migrations/createMigrator";
-import { createOperationLogMigrator } from "./operation-log/migrations/createOperationLogMigrator";
+import type { DB } from "./main-db.js";
+import type { DB as OperationLogDB } from "./operation-log-db.js";
+import type { MergedDB } from "./merged-db.js";
+import { createMigrator } from "./createMigrator.js";
+import { createOperationLogMigrator } from "./createOperationLogMigrator.js";
 
 // Initialize a specific database with migrations
 const initDatabase = async (dialect: Dialect, migrate = false) => {
   const kysely = new Kysely<DB>({ dialect });
 
-  if (migrate || import.meta.env[`MIGRATE_ON_INIT`] === `true`) {
+  if (migrate) {
     const migrator = createMigrator(kysely);
 
     const { error } = await migrator.migrateToLatest();
@@ -29,7 +29,7 @@ const initDatabase = async (dialect: Dialect, migrate = false) => {
 const initOperationLogDatabase = async (dialect: Dialect, migrate = false) => {
   const kysely = new Kysely<OperationLogDB>({ dialect });
 
-  if (migrate || import.meta.env[`MIGRATE_ON_INIT`] === `true`) {
+  if (migrate) {
     const migrator = createOperationLogMigrator(kysely);
 
     const { error } = await migrator.migrateToLatest();

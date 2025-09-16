@@ -1,6 +1,6 @@
+import type { Operation } from "@grocery-list/shared";
+import { operationSchema } from "@grocery-list/shared";
 import { sql } from "kysely";
-import type { Operation } from "../../operation-logging/operation-types";
-import { operationSchema } from "../../operation-logging/operation-types";
 import type { ServerChangesResponse } from "../client/request-changes";
 import { getServerDatabase } from "./database";
 

@@ -92,19 +92,21 @@ back-end/
    cd grocery-list/shared
    npm init -y
    ```
+   - [x] Create directory structure
+   - [x] Initialize npm package
 
 2. **Move shared code to shared library**:
-   - Database types and schemas
-   - Migration definitions and runners
-   - Operation types and logic
-   - Conflict resolution and rebase algorithms
+   - [x] Database types and schemas
+   - [x] Migration definitions and runners
+   - [x] Operation types and logic
+   - [x] Conflict resolution and rebase algorithms
 
 3. **Set up build system**:
-   - TypeScript compilation
-   - Type definitions export
+   - [x] TypeScript compilation
+   - [x] Type definitions export
 
 4. **Update package dependencies**:
-   - Add necessary dependencies (kysely, zod, etc.)
+   - [x] Add necessary dependencies (kysely, zod, etc.)
 
 ### Phase 2: Create Server Application
 

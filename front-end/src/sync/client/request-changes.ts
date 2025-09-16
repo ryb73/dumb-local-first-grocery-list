@@ -1,6 +1,5 @@
+import type { MergedDB, Operation } from "@grocery-list/shared";
 import type { Kysely } from "kysely";
-import type { MergedDB } from "../../db/merged-db";
-import type { Operation } from "../../operation-logging/operation-types";
 import { getOperationsAfterVersionWithVersion } from "../server/operations";
 import { getLastKnownServerVersion } from "./state-tracking";
 

@@ -1,7 +1,5 @@
-import type { Operation } from "../../operation-logging/operation-types";
-import { rebase } from "../../operation-logging/rebase";
-import type { RebaseContext } from "../../operation-logging/resolve-conflict";
-import { resolveConflict } from "../../operation-logging/resolve-conflict";
+import type { Operation, RebaseContext } from "@grocery-list/shared";
+import { rebase, resolveConflict } from "@grocery-list/shared";
 
 /**
  * Implementation of step 3: Client builds rebased local operations list.
