@@ -1,5 +1,5 @@
 import { applyAndLogOperation } from "@grocery-list/shared";
-import type { Item, Operation } from "@grocery-list/shared";
+import type { Item, Operation, SyncResponse } from "@grocery-list/shared";
 import {
   defined,
   isDefined,
@@ -13,7 +13,6 @@ import {
   unwindLocalChanges,
   updateOperationLogAfterSync,
 } from "../sync";
-import type { SyncResponse } from "../sync/server/sync";
 import { AddItemForm } from "./AddItemForm";
 import { GroceryItem } from "./GroceryItem";
 import styles from "./GroceryList.module.css";
@@ -165,8 +164,12 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
           );
         }
       } else {
+        const numOperations = Object.entries(
+          syncResponse.commitTimestamps
+        ).length;
+
         // Status is accepted - handle accepted local operations
-        if (syncResponse.commitTimestamps.size > 0) {
+        if (numOperations > 0) {
           // Local operations were accepted, update operation log
           await props.db
             .getKyselyInstance()
@@ -180,7 +183,7 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
         }
 
         console.log(
-          `Successfully completed sync with ${syncResponse.commitTimestamps.size} accepted local operations`
+          `Successfully completed sync with ${numOperations} accepted local operations`
         );
       }
 

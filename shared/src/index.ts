@@ -18,3 +18,6 @@ export * from "./operations/apply-operation.js";
 export * from "./operations/reverse-operation.js";
 export * from "./operations/resolve-conflict.js";
 export * from "./operations/rebase.js";
+
+// Sync types and schemas
+export * from "./sync/types.js";

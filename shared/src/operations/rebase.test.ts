@@ -12,8 +12,8 @@ import {
   vi,
   /* eslint-enable @typescript-eslint/no-shadow */
 } from "vitest";
-import type { DB } from "../database/main-db.js";
 import { createMigrator } from "../database/createMigrator.js";
+import type { DB } from "../database/main-db.js";
 import { applyOperation } from "./apply-operation.js";
 import type {
   CreateItemOperation,

@@ -1,46 +1,14 @@
 import { applyAndLogOperation } from "@grocery-list/shared";
-import type { Operation } from "@grocery-list/shared";
+import type {
+  MigrationState,
+  Operation,
+  SyncResponse,
+} from "@grocery-list/shared";
 import { defined } from "@ryb73/super-duper-parakeet/lib/src/type-checks";
 import { sql } from "kysely";
-import { getServerDatabase } from "./database";
-import {
-  type MigrationState,
-  getServerMigrationState,
-} from "./migration-state";
-import { getOperationsAfterVersionWithVersion } from "./operations";
-
-/**
- * Response from the combined sync endpoint.
- * This is a discriminated union based on the sync status.
- */
-export type SyncResponse =
-  | {
-      /** Status indicating local operations were accepted */
-      status: "accepted";
-      /** Current server version after processing */
-      serverVersion: number | null;
-      /** Commit timestamps for accepted operations (indexed by operation ID) */
-      commitTimestamps: Map<string, number>;
-    }
-  | {
-      /** Status indicating local operations were rejected due to conflicts */
-      status: "rejected";
-      /** Current server version */
-      // TODO: is this needed?
-      serverVersion: number;
-      /** Remote operations that the client needs to apply */
-      remoteOperations: Operation[];
-      /** Optional error message explaining the rejection */
-      errorMessage?: string;
-    }
-  | {
-      /** Status indicating migration incompatibility */
-      status: "migration_incompatible";
-      /** The server's migration state */
-      serverState: MigrationState;
-      /** Human-readable error message */
-      errorMessage: string;
-    };
+import { getServerDatabase } from "./database/connection.js";
+import { getServerMigrationState } from "./migration-state.js";
+import { getOperationsAfterVersionWithVersion } from "./operations.js";
 
 /**
  * Combined sync endpoint that handles migration compatibility checking, requesting remote changes, and submitting local changes.
@@ -135,7 +103,7 @@ export async function sync(
       console.log(`No local or remote operations to process`);
 
       return {
-        commitTimestamps: new Map(),
+        commitTimestamps: {},
         serverVersion: remoteResponse.serverVersion,
         status: `accepted`,
       };
@@ -167,12 +135,12 @@ export async function sync(
       }
 
       // Apply operations and log them with server timestamps
-      const commitTimestamps = new Map<string, number>();
+      const commitTimestamps: Record<string, number> = {};
 
       for (const operation of localOperations) {
         // Generate commit timestamp for this operation
         const commitTimestamp = Date.now();
-        commitTimestamps.set(operation.id, commitTimestamp);
+        commitTimestamps[operation.id] = commitTimestamp;
 
         // Apply the operation and log it with the server commit timestamp
         const operationWithServerTimestamp = {

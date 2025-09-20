@@ -1,17 +1,7 @@
-import type { MergedDB } from "@grocery-list/shared";
+import type { MergedDB, MigrationState } from "@grocery-list/shared";
 import type { Kysely } from "kysely";
 import { sql } from "kysely";
-import { getServerDatabase } from "./database";
-
-/**
- * Represents the migration state of a database.
- */
-export type MigrationState = {
-  /** The highest applied migration name for the main database */
-  mainMigration: string | null;
-  /** The highest applied migration name for the operation log database */
-  operationLogMigration: string | null;
-};
+import { getServerDatabase } from "./database/connection.js";
 
 /**
  * Gets the latest applied migration name from a Kysely migration table.

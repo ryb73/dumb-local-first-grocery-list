@@ -16,11 +16,9 @@ function narrowTransaction(trx: Transaction<MergedDB>): Transaction<MainDB> {
 
 export class Database {
   private readonly kysely: Kysely<MergedDB>;
-  private readonly isServer: boolean;
 
-  public constructor(kysely: Kysely<MergedDB>, isServer: boolean) {
+  public constructor(kysely: Kysely<MergedDB>) {
     this.kysely = kysely;
-    this.isServer = isServer;
   }
 
   /**
@@ -45,7 +43,7 @@ export class Database {
         client_created_at: operation.clientCreatedAt,
         id: operation.id,
         payload: JSON.stringify(operation.payload),
-        server_committed_at: this.isServer ? Date.now() : null,
+        server_committed_at: null,
         type: operation.type,
       })
       .execute();

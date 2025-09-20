@@ -21,8 +21,8 @@ export const ParallelGroceryLists: Component = () => {
       ),
     ]);
 
-    const db1 = new Database(kysely1, false);
-    const db2 = new Database(kysely2, true);
+    const db1 = new Database(kysely1);
+    const db2 = new Database(kysely2);
 
     return { db1, db2 };
   });
@@ -42,6 +42,7 @@ export const ParallelGroceryLists: Component = () => {
             <GroceryList
               className={defined(styles[`list`])}
               db={dbs.db2}
+              showSyncButton
               title="List 2"
             />
           </div>

@@ -1,6 +1,6 @@
-import type { MergedDB } from "@grocery-list/shared";
+import type { MergedDB, SyncRequest, SyncResponse } from "@grocery-list/shared";
+import { syncResponseSchema } from "@grocery-list/shared";
 import type { Kysely } from "kysely";
-import { type SyncResponse, sync as serverSync } from "../server/sync";
 import { getLocalOperations } from "./get-local-operations";
 import { getClientMigrationState } from "./migration-compatibility";
 import { getLastKnownServerVersion } from "./state-tracking";
@@ -30,10 +30,49 @@ export async function syncWithServer(
     }`
   );
 
-  // Call the combined sync endpoint
-  return await serverSync(
-    retrievedLocalOperations,
-    lastKnownServerVersion,
-    clientMigrationState
+  // Prepare the sync request
+  const syncRequest = {
+    localOperations: retrievedLocalOperations,
+    expectedServerVersion: lastKnownServerVersion,
+    clientMigrationState,
+  } satisfies SyncRequest;
+
+  // Get server URL from environment or use default
+  // TODO: parse import.meta.env[`VITE_SERVER_URL`] as a string (if defined)
+  const serverUrl =
+    import.meta.env[`VITE_SERVER_URL`] ?? `http://localhost:3001`;
+
+  console.log(`HTTP sync: sending request to ${serverUrl}/sync`);
+
+  const response = await fetch(`${serverUrl}/sync`, {
+    method: `POST`,
+    headers: {
+      "Content-Type": `application/json`,
+    },
+    body: JSON.stringify(syncRequest),
+  });
+
+  if (!response.ok) {
+    let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+
+    try {
+      const errorBody = await response.text();
+      if (errorBody !== ``) {
+        errorMessage += ` - ${errorBody}`;
+      }
+    } catch {
+      // Ignore errors when reading error response body
+    }
+
+    throw new Error(errorMessage);
+  }
+
+  // Parse and validate the response
+  const responseData = await response.json();
+  const validatedResponse = syncResponseSchema.parse(responseData);
+
+  console.log(
+    `HTTP sync: received response with status=${validatedResponse.status}`
   );
+  return validatedResponse;
 }

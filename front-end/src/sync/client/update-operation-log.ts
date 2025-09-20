@@ -10,14 +10,16 @@ import type { Transaction } from "kysely";
  */
 export async function updateOperationLogAfterSync(
   trx: Transaction<MergedDB>,
-  commitTimestamps: Map<string, number>
+  commitTimestamps: Record<string, number>
 ): Promise<void> {
+  const entries = Object.entries(commitTimestamps);
+
   console.log(
-    `Updating operation log with ${commitTimestamps.size} commit timestamps`
+    `Updating operation log with ${entries.length} commit timestamps`
   );
 
   // Update each operation's server_committed_at timestamp
-  for (const [operationId, commitTimestamp] of commitTimestamps) {
+  for (const [operationId, commitTimestamp] of entries) {
     await trx
       .updateTable(`op_log.operations`)
       .set({ server_committed_at: commitTimestamp })
@@ -26,6 +28,6 @@ export async function updateOperationLogAfterSync(
   }
 
   console.log(
-    `Successfully updated operation log for ${commitTimestamps.size} operations`
+    `Successfully updated operation log for ${entries.length} operations`
   );
 }

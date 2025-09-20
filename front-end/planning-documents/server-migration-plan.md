@@ -116,24 +116,37 @@ back-end/
    cd grocery-list/back-end
    npm init -y
    ```
+   - [x] Create back-end directory structure
+   - [x] Initialize npm package
+   - [x] Set up TypeScript configuration
 
 2. **Set up server framework**
+   - [x] Install Express and dependencies
+   - [x] Configure build system
 
 3. **Move server logic**:
-   - Port sync logic from `src/sync/server/`
-   - Adapt for HTTP endpoints
-   - Update database connection logic
+   - [x] Port sync logic from `src/sync/server/sync.ts`
+   - [x] Port `apply-client-changes.ts`
+   - [x] Port `operations.ts`
+   - [x] Port `migration-state.ts`
+   - [x] Convert `database.ts` to `database/connection.ts` with better-sqlite3
+   - [x] Update imports to use shared library
+   - [x] Adapt database connection for filesystem SQLite
 
 4. **Implement HTTP API**:
-   - POST `/sync` endpoint
-   - Request/response validation
-   - Error handling and status codes
+   - [x] POST `/sync` endpoint with full sync logic
+   - [x] Request/response validation using Zod schemas
+   - [x] Error handling middleware and status codes
+   - [x] Health check endpoint (`/health`)
+   - [x] CORS support for client connections
+   - [x] Database migration initialization on server startup
 
 ### Phase 3: Update Client Application
 
 1. **Remove server simulation**:
    - Delete `src/sync/server/` directory
    - Remove server database references
+   - Replace second GroceryList.tsx instance, the one that represents the "server", with simply a second local instance that syncs to the HTTP server
 
 2. **Implement HTTP client**:
    - Create HTTP client for sync operations
