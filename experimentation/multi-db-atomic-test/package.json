@@ -17,7 +17,7 @@
     "solid-js": "^1.9.7",
     "sqlocal": "^0.14.1",
     "typescript": "^5.8.3",
-    "vite": "^6.3.5"
+    "vite": "^6.3.6"
   },
   "devDependencies": {
     "@types/node": "^22.15.23",
