@@ -1,3 +1,5 @@
+import { EventEmitter } from "events";
+import type { LongPollingResponse } from "@grocery-list/shared";
 import {
   createMigrator,
   createOperationLogMigrator,
@@ -6,6 +8,7 @@ import {
   syncResponseSchema,
 } from "@grocery-list/shared";
 import cors from "cors";
+import type { Response as ExpressResponse } from "express";
 import express from "express";
 import { z } from "zod";
 import {
@@ -17,6 +20,13 @@ import { sync } from "./sync.js";
 const app = express();
 const PORT =
   process.env[`PORT`] != null ? Number.parseInt(process.env[`PORT`], 10) : 3001;
+
+// Event emitter for notifying clients about database changes
+// eslint-disable-next-line unicorn/prefer-event-target
+const changeNotifier = new EventEmitter();
+
+// Long-polling timeout in milliseconds (45 seconds)
+const LONG_POLL_TIMEOUT = 45_000;
 
 // Middleware
 app.use(cors());
@@ -86,11 +96,61 @@ app.post(`/sync`, async (req, res, next) => {
 
     console.log(`Sync response: status=${validatedResponse.status}`);
 
+    // If operations were successfully applied, notify all long-polling clients
+    if (validatedResponse.status === `accepted` && localOperations.length > 0) {
+      console.log(`Notifying clients of database changes`);
+      changeNotifier.emit(`changes`);
+    }
+
     res.json(validatedResponse);
   } catch (error) {
     next(error);
   }
 });
+
+/**
+ * GET /changes/poll - Long-polling endpoint for change notifications
+ * Clients can connect to this endpoint and will be notified when changes occur on the server.
+ * The connection will be held open until either:
+ * 1. Changes are detected (returns immediately with { hasChanges: true })
+ * 2. Timeout is reached (returns with { hasChanges: false })
+ */
+app.get(
+  `/changes/poll`,
+  (req, res: ExpressResponse<LongPollingResponse>, next) => {
+    try {
+      console.log(`Long-poll connection established`);
+
+      // Set headers for long-polling
+      res.setHeader(`Cache-Control`, `no-cache`);
+      res.setHeader(`Content-Type`, `application/json`);
+
+      // Set up timeout
+      const timeout = setTimeout(() => {
+        console.log(`Long-poll timeout reached`);
+        res.json({ hasChanges: false });
+      }, LONG_POLL_TIMEOUT);
+
+      // Listen for changes
+      const onChanges = () => {
+        clearTimeout(timeout);
+        console.log(`Long-poll responding with changes`);
+        res.json({ hasChanges: true });
+      };
+
+      changeNotifier.once(`changes`, onChanges);
+
+      // Clean up on client disconnect
+      req.on(`close`, () => {
+        console.log(`Long-poll client disconnected`);
+        clearTimeout(timeout);
+        changeNotifier.removeListener(`changes`, onChanges);
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 /**
  * GET /health - Health check endpoint
@@ -131,6 +191,9 @@ async function startServer() {
       console.log(`Server running on port ${PORT}`);
       console.log(`Health check: http://localhost:${PORT}/health`);
       console.log(`Sync endpoint: http://localhost:${PORT}/sync`);
+      console.log(
+        `Long-polling endpoint: http://localhost:${PORT}/changes/poll`
+      );
     });
   } catch (error) {
     console.error(`Failed to start server:`, error);

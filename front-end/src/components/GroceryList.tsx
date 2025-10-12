@@ -5,7 +5,7 @@ import {
   isDefined,
 } from "@ryb73/super-duper-parakeet/lib/src/type-checks";
 import type { Component } from "solid-js";
-import { Index, createSignal, onMount } from "solid-js";
+import { Index, createSignal, onCleanup, onMount } from "solid-js";
 import type { Database } from "../db/database";
 import {
   rebaseLocalOperations,
@@ -13,6 +13,7 @@ import {
   unwindLocalChanges,
   updateOperationLogAfterSync,
 } from "../sync";
+import { createLongPollingListener } from "../sync/client/long-polling";
 import { AddItemForm } from "./AddItemForm";
 import { GroceryItem } from "./GroceryItem";
 import styles from "./GroceryList.module.css";
@@ -41,21 +42,6 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
   const refreshData = async () => {
     setItems(await props.db.getItems());
     setSuggestions(await props.db.getSuggestions());
-  };
-
-  const handleAdd = async (name: string) => {
-    await props.db.addItem(name);
-    await refreshData();
-  };
-
-  const handleToggle = async (id: string, checked: boolean) => {
-    await props.db.toggleItem(id, checked);
-    await refreshData();
-  };
-
-  const handleEdit = async (id: string, newName: string) => {
-    await props.db.updateItem(id, { name: newName });
-    await refreshData();
   };
 
   const handleSync = async () => {
@@ -200,11 +186,51 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
     }
   };
 
+  const handleAdd = async (name: string) => {
+    await props.db.addItem(name);
+    void handleSync();
+    await refreshData();
+  };
+
+  const handleToggle = async (id: string, checked: boolean) => {
+    await props.db.toggleItem(id, checked);
+    void handleSync();
+    await refreshData();
+  };
+
+  const handleEdit = async (id: string, newName: string) => {
+    await props.db.updateItem(id, { name: newName });
+    void handleSync();
+    await refreshData();
+  };
+
   onMount(() => {
     void (async () => {
       await refreshData();
-      const interval = setInterval(() => void refreshData(), 5000);
-      return () => clearInterval(interval);
+
+      // Set up long-polling for automatic sync
+      const longPollingListener = createLongPollingListener(
+        () => {
+          console.log(
+            `Long-poll: Changes detected, triggering sync for ${props.title}`
+          );
+          void handleSync();
+        },
+        (status) => {
+          console.log(`Long-poll status for ${props.title}:`, status);
+          // Optionally update sync status based on long-polling status
+          if (status.type === `error`) {
+            console.warn(`Long-poll error for ${props.title}: ${status.error}`);
+          }
+        }
+      );
+
+      // Start long-polling
+      longPollingListener.start();
+
+      onCleanup(() => {
+        longPollingListener.stop();
+      });
     })();
   });
 

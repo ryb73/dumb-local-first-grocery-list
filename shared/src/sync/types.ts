@@ -67,3 +67,13 @@ export const syncRequestSchema = z.object({
 });
 
 export type SyncRequest = z.infer<typeof syncRequestSchema>;
+
+/**
+ * Schema for long-polling response
+ */
+export const longPollingResponseSchema = z.object({
+  /** Whether changes are available on the server */
+  hasChanges: z.boolean(),
+});
+
+export type LongPollingResponse = z.infer<typeof longPollingResponseSchema>;
