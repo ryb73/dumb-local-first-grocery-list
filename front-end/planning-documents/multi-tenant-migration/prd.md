@@ -104,10 +104,7 @@ Each list maintains two SQLite databases on the filesystem:
 - **Operation log database**: `<uuid>.log.sqlite3` - Contains sync operation log
 
 ### List Registry/Index
-**Open Question**: Where to store the "list of lists" that a user has accessed?
-- Option A: Master index database on client (`lists-index.sqlite3`)
-- Option B: Browser localStorage/IndexedDB
-- Option C: Other approaches to consider
+The list of recently accessed lists will be stored in **browser localStorage** as a simple array of UUIDs. This provides sufficient functionality for tracking list access history without the overhead of maintaining a separate database.
 
 ## List Metadata
 
