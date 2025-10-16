@@ -8,16 +8,23 @@ import styles from "./ParallelGroceryLists.module.css";
 
 export const ParallelGroceryLists: Component = () => {
   const [dbs] = createResource(async () => {
+    // TEMPORARY: Use hardcoded list ID until Phase 4 routing is implemented
+    // Note: Using "-one" and "-two" suffixes to simulate two clients accessing the same list
+    // Both will sync with the server using just "default-list" (without suffix)
+    const TEMP_LIST_ID = `default-list`;
+
     const [kysely1, kysely2] = await Promise.all([
       initMergedDatabase(
-        `grocery-list.log.sqlite3`,
-        new SQLocalKysely(`grocery-list.sqlite3`).dialect,
-        new SQLocalKysely(`grocery-list.log.sqlite3`).dialect
+        `${TEMP_LIST_ID}-one.log.sqlite3`,
+        new SQLocalKysely(`${TEMP_LIST_ID}-one.sqlite3`).dialect,
+        new SQLocalKysely(`${TEMP_LIST_ID}-one.log.sqlite3`).dialect,
+        true
       ),
       initMergedDatabase(
-        `grocery-list-2.log.sqlite3`,
-        new SQLocalKysely(`grocery-list-2.sqlite3`).dialect,
-        new SQLocalKysely(`grocery-list-2.log.sqlite3`).dialect
+        `${TEMP_LIST_ID}-two.log.sqlite3`,
+        new SQLocalKysely(`${TEMP_LIST_ID}-two.sqlite3`).dialect,
+        new SQLocalKysely(`${TEMP_LIST_ID}-two.log.sqlite3`).dialect,
+        true
       ),
     ]);
 

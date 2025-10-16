@@ -69,6 +69,8 @@ app.use(
  * POST /sync - Main sync endpoint
  * Handles the combined sync operation with migration compatibility checking,
  * requesting remote changes, and submitting local changes.
+ *
+ * TODO: This will be replaced by /list/:listId/sync in Phase 2
  */
 app.post(`/sync`, async (req, res, next) => {
   try {
@@ -84,8 +86,12 @@ app.post(`/sync`, async (req, res, next) => {
       } operations, expected version: ${String(expectedServerVersion)}`
     );
 
+    // TEMPORARY: Use a hardcoded list ID until Phase 2 routing is implemented
+    const TEMP_LIST_ID = `default-list`;
+
     // Call the sync function
     const syncResult = await sync(
+      TEMP_LIST_ID,
       localOperations,
       expectedServerVersion,
       clientMigrationState
@@ -170,16 +176,19 @@ async function startServer() {
   try {
     console.log(`Initializing database...`);
 
+    // TEMPORARY: Use a hardcoded list ID until Phase 2 routing is implemented
+    const TEMP_LIST_ID = `default-list`;
+
     // Run main database migrations
     console.log(`Running main database migrations...`);
-    const mainDb = getMainDatabase();
+    const mainDb = getMainDatabase(TEMP_LIST_ID);
     const mainMigrator = createMigrator(mainDb);
     await migrationScript(mainDb, mainMigrator);
     await mainDb.destroy();
 
     // Run operation log migrations
     console.log(`Running operation log migrations...`);
-    const opLogDb = getOperationLogDatabase();
+    const opLogDb = getOperationLogDatabase(TEMP_LIST_ID);
     const opLogMigrator = createOperationLogMigrator(opLogDb);
     await migrationScript(opLogDb, opLogMigrator);
     await opLogDb.destroy();

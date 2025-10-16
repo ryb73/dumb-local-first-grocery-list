@@ -39,9 +39,13 @@ async function getServerMigrationStateFromDb(serverDb: Kysely<MergedDB>) {
 /**
  * Gets the server's migration state.
  * This is the server-side implementation that would run on the actual server.
+ *
+ * @param listId - UUID of the list to check migration state for
  */
-export async function getServerMigrationState(): Promise<MigrationState> {
-  const serverDb = await getServerDatabase();
+export async function getServerMigrationState(
+  listId: string
+): Promise<MigrationState> {
+  const serverDb = await getServerDatabase(listId);
 
   try {
     return await getServerMigrationStateFromDb(serverDb);

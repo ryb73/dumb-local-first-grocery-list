@@ -98,6 +98,8 @@ Each list maintains two SQLite databases in OPFS:
 - **Main database**: `<uuid>.sqlite3` - Contains grocery items and list data
 - **Operation log database**: `<uuid>.log.sqlite3` - Contains sync operation log
 
+**Testing Multiple Clients**: When testing multiple client instances accessing the same list (e.g., simulating two devices), use suffixed database names locally (`<uuid>-one.sqlite3`, `<uuid>-two.sqlite3`) while syncing with the server using the base `<uuid>`. This allows parallel testing without conflicts.
+
 ### Server-Side Storage
 Each list maintains two SQLite databases on the filesystem:
 - **Main database**: `<uuid>.sqlite3` - Contains grocery items and list data
@@ -109,7 +111,7 @@ The list of recently accessed lists will be stored in **browser localStorage** a
 ## List Metadata
 
 Each list should track the following metadata:
-- **Name** (user-editable, default: "Grocery List" or "Untitled List")
+- **Name** (user-editable, default: "Untitled List")
 
 ## Technical Implementation
 
@@ -184,3 +186,24 @@ POST ~~/sync~~ /list/<uuid>/sync
   - Provide "Go Home" button to return to `/`
   - Do not create local databases
   - Do not add to local registry
+
+---
+
+## Implementation Progress
+
+### Phase 1: Database & Storage Architecture ✅ COMPLETED
+
+**Back-end Changes:**
+- ✅ Updated `getServerDatabase()` to accept `listId` parameter
+- ✅ Modified database file paths to use `<uuid>.sqlite3` and `<uuid>.log.sqlite3` naming convention
+- ✅ Updated `getMainDatabase()` and `getOperationLogDatabase()` to accept `listId` parameter
+- ✅ Modified `sync()` function to accept `listId` as first parameter
+- ✅ Updated `getServerMigrationState()` to accept `listId`
+- ✅ Refactored `operations.ts` functions to accept `serverDb` parameter instead of creating connections internally
+- ✅ Added temporary `TEMP_LIST_ID = 'default-list'` constant in server startup for backwards compatibility
+
+**Front-end Changes:**
+- ✅ Updated `ParallelGroceryLists` component to use `default-list-one` and `default-list-two` database naming
+- ✅ Added migration flag (`true`) to `initMergedDatabase` calls to ensure schema is created
+- ✅ Added comments documenting that both test clients sync with server using base `default-list` ID
+

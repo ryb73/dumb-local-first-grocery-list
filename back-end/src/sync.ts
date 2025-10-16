@@ -24,12 +24,14 @@ import { getOperationsAfterVersionWithVersion } from "./operations.js";
  * If the client has no local operations:
  * - Just returns any remote operations that need to be applied
  *
+ * @param listId UUID of the list to sync
  * @param localOperations Local operations the client wants to submit (empty array if none)
  * @param expectedServerVersion The server version the client expects (for conflict detection)
  * @param clientMigrationState The client's migration state for compatibility checking
  * @returns Combined response with remote operations and status of local operations
  */
 export async function sync(
+  listId: string,
   localOperations: Operation[],
   expectedServerVersion: number | null,
   clientMigrationState: MigrationState
@@ -43,7 +45,7 @@ export async function sync(
   );
 
   // Step 0: Check migration compatibility
-  const serverMigrationState = await getServerMigrationState();
+  const serverMigrationState = await getServerMigrationState(listId);
 
   const mainCompatible =
     clientMigrationState.mainMigration === serverMigrationState.mainMigration;
@@ -77,11 +79,12 @@ export async function sync(
     };
   }
 
-  const serverDb = await getServerDatabase();
+  const serverDb = await getServerDatabase(listId);
 
   try {
     // First, check if there are any remote operations the client needs
     const remoteResponse = await getOperationsAfterVersionWithVersion(
+      serverDb,
       expectedServerVersion
     );
 
