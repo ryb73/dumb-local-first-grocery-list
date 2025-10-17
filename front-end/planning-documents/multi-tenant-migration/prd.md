@@ -177,6 +177,14 @@ POST ~~/sync~~ /list/<uuid>/sync
 - Routes to appropriate list database on server
 - If list doesn't already exist, creates and initializes the database
 
+#### Long-Polling Change Notification (Modified)
+```
+GET ~~/changes/poll~~ /list/<uuid>/changes/poll
+```
+- Existing `/changes/poll` endpoint moved to `/list/<uuid>/changes/poll` to scope notifications to individual lists
+- Clients connect to this endpoint to receive real-time notifications when the specific list changes
+- Each list has independent change notifications
+
 ## Error Handling
 
 ### List Not Found
@@ -206,4 +214,23 @@ POST ~~/sync~~ /list/<uuid>/sync
 - ✅ Updated `ParallelGroceryLists` component to use `default-list-one` and `default-list-two` database naming
 - ✅ Added migration flag (`true`) to `initMergedDatabase` calls to ensure schema is created
 - ✅ Added comments documenting that both test clients sync with server using base `default-list` ID
+
+
+### Phase 2: API Endpoint Updates ✅ COMPLETED
+
+**Back-end Changes:**
+- ✅ Added `GET /list/:listId/exists` endpoint to check if a list exists on the server
+- ✅ Moved `POST /sync` to `POST /list/:listId/sync` with list ID as URL parameter
+- ✅ Moved `GET /changes/poll` to `GET /list/:listId/changes/poll` to scope notifications per list
+- ✅ Removed legacy `/sync` endpoint
+- ✅ Added `listExistsResponseSchema` to shared package for response validation
+- ✅ Added proper TypeScript response type annotations to all endpoints
+
+**Front-end Changes:**
+- ✅ Updated `syncWithServer()` to accept `listId` parameter and call `/list/:listId/sync`
+- ✅ Added `checkListExists()` function to check list existence on server
+- ✅ Updated `createLongPollingListener()` to accept `listId` parameter and call `/list/:listId/changes/poll`
+- ✅ Updated `GroceryList` component to accept `listId` prop and pass it to sync and polling functions
+- ✅ Updated `ParallelGroceryLists` to pass `listId="default-list"` to both list instances
+- ✅ Imported `listExistsResponseSchema` from shared package
 

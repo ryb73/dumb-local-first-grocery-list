@@ -139,10 +139,10 @@ app.post(
 
       console.log(`Sync response: status=${validatedResponse.status}`);
 
-      // If operations were successfully applied, notify all long-polling clients
+      // If operations were successfully applied, notify all long-polling clients for this list
       if (validatedResponse.status === `accepted` && localOperations.length > 0) {
-        console.log(`Notifying clients of database changes`);
-        changeNotifier.emit(`changes`);
+        console.log(`Notifying clients of database changes for list ${listId}`);
+        changeNotifier.emit(`changes:${listId}`);
       }
 
       res.json(validatedResponse);
@@ -153,17 +153,18 @@ app.post(
 );
 
 /**
- * GET /changes/poll - Long-polling endpoint for change notifications
- * Clients can connect to this endpoint and will be notified when changes occur on the server.
+ * GET /list/:listId/changes/poll - Long-polling endpoint for change notifications
+ * Clients can connect to this endpoint and will be notified when changes occur on the specific list.
  * The connection will be held open until either:
  * 1. Changes are detected (returns immediately with { hasChanges: true })
  * 2. Timeout is reached (returns with { hasChanges: false })
  */
 app.get(
-  `/changes/poll`,
+  `/list/:listId/changes/poll`,
   (req, res: ExpressResponse<LongPollingResponse>, next) => {
+    const { listId } = req.params;
     try {
-      console.log(`Long-poll connection established`);
+      console.log(`Long-poll connection established for list ${listId}`);
 
       // Set headers for long-polling
       res.setHeader(`Cache-Control`, `no-cache`);
@@ -171,24 +172,25 @@ app.get(
 
       // Set up timeout
       const timeout = setTimeout(() => {
-        console.log(`Long-poll timeout reached`);
+        console.log(`Long-poll timeout reached for list ${listId}`);
         res.json({ hasChanges: false });
       }, LONG_POLL_TIMEOUT);
 
-      // Listen for changes
+      // Listen for changes to this specific list
+      const eventName = `changes:${listId}`;
       const onChanges = () => {
         clearTimeout(timeout);
-        console.log(`Long-poll responding with changes`);
+        console.log(`Long-poll responding with changes for list ${listId}`);
         res.json({ hasChanges: true });
       };
 
-      changeNotifier.once(`changes`, onChanges);
+      changeNotifier.once(eventName, onChanges);
 
       // Clean up on client disconnect
       req.on(`close`, () => {
-        console.log(`Long-poll client disconnected`);
+        console.log(`Long-poll client disconnected for list ${listId}`);
         clearTimeout(timeout);
-        changeNotifier.removeListener(`changes`, onChanges);
+        changeNotifier.removeListener(eventName, onChanges);
       });
     } catch (error) {
       next(error);
@@ -242,7 +244,7 @@ async function startServer() {
       );
       console.log(`Sync endpoint: http://localhost:${PORT}/list/:listId/sync`);
       console.log(
-        `Long-polling endpoint: http://localhost:${PORT}/changes/poll`
+        `Long-polling endpoint: http://localhost:${PORT}/list/:listId/changes/poll`
       );
     });
   } catch (error) {

@@ -1,7 +1,7 @@
 /**
  * Long-polling client for listening to server-side change notifications.
  * This module handles establishing and maintaining long-polling connections
- * to the server's /changes/poll endpoint.
+ * to the server's /list/:listId/changes/poll endpoint.
  */
 
 import { longPollingResponseSchema } from "@grocery-list/shared";
@@ -38,11 +38,13 @@ const getServerUrl = (): string =>
  * Creates a long-polling listener that will call the provided callback
  * whenever the server indicates that changes are available.
  *
+ * @param listId The ID of the list to listen for changes on
  * @param onChangesAvailable Callback to invoke when server changes are detected
  * @param onStatusChange Optional callback to invoke when connection status changes
  * @returns LongPollingListener instance
  */
 export function createLongPollingListener(
+  listId: string,
   onChangesAvailable: () => void,
   onStatusChange?: (status: LongPollingStatus) => void
 ): LongPollingListener {
@@ -67,11 +69,12 @@ export function createLongPollingListener(
 
     try {
       const serverUrl = getServerUrl();
-      console.log(`Long-poll: Starting request to ${serverUrl}/changes/poll`);
+      const pollEndpoint = `${serverUrl}/list/${listId}/changes/poll`;
+      console.log(`Long-poll: Starting request to ${pollEndpoint}`);
 
       abortController = new AbortController();
 
-      const response = await fetch(`${serverUrl}/changes/poll`, {
+      const response = await fetch(pollEndpoint, {
         method: `GET`,
         headers: {
           "Content-Type": `application/json`,

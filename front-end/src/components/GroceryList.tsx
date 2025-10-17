@@ -215,6 +215,7 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
 
       // Set up long-polling for automatic sync
       const longPollingListener = createLongPollingListener(
+        props.listId,
         () => {
           console.log(
             `Long-poll: Changes detected, triggering sync for ${props.title}`
