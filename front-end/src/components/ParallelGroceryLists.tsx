@@ -43,12 +43,14 @@ export const ParallelGroceryLists: Component = () => {
             <GroceryList
               className={defined(styles[`list`])}
               db={dbs.db1}
+              listId="default-list"
               showSyncButton
               title="List 1"
             />
             <GroceryList
               className={defined(styles[`list`])}
               db={dbs.db2}
+              listId="default-list"
               showSyncButton
               title="List 2"
             />

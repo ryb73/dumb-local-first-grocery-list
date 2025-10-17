@@ -77,3 +77,13 @@ export const longPollingResponseSchema = z.object({
 });
 
 export type LongPollingResponse = z.infer<typeof longPollingResponseSchema>;
+
+/**
+ * Schema for list exists response
+ */
+export const listExistsResponseSchema = z.object({
+  /** Whether the list exists on the server */
+  exists: z.boolean(),
+});
+
+export type ListExistsResponse = z.infer<typeof listExistsResponseSchema>;

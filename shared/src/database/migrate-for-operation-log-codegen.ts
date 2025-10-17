@@ -1,8 +1,8 @@
 import BetterSqlite3 from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
-import { migrationScript } from "./migrationScript.js";
+import type { OperationLogDB } from "../index.js";
 import { createOperationLogMigrator } from "./createOperationLogMigrator.js";
-import { OperationLogDB } from "../index.js";
+import { migrationScript } from "./migrationScript.js";
 
 async function migrate() {
   const db = new Kysely<OperationLogDB>({

@@ -1,10 +1,10 @@
 import { Kysely, sql } from "kysely";
 import type { Dialect } from "kysely";
-import type { DB } from "./main-db.js";
-import type { DB as OperationLogDB } from "./operation-log-db.js";
-import type { MergedDB } from "./merged-db.js";
 import { createMigrator } from "./createMigrator.js";
 import { createOperationLogMigrator } from "./createOperationLogMigrator.js";
+import type { DB } from "./main-db.js";
+import type { MergedDB } from "./merged-db.js";
+import type { DB as OperationLogDB } from "./operation-log-db.js";
 
 // Initialize a specific database with migrations
 const initDatabase = async (dialect: Dialect, migrate = false) => {

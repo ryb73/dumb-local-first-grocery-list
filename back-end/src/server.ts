@@ -1,8 +1,15 @@
 import { EventEmitter } from "events";
-import type { LongPollingResponse } from "@grocery-list/shared";
+import fs from "fs";
+import path from "path";
+import type {
+  ListExistsResponse,
+  LongPollingResponse,
+  SyncResponse,
+} from "@grocery-list/shared";
 import {
   createMigrator,
   createOperationLogMigrator,
+  listExistsResponseSchema,
   migrationScript,
   syncRequestSchema,
   syncResponseSchema,
@@ -66,53 +73,84 @@ app.use(
 );
 
 /**
- * POST /sync - Main sync endpoint
+ * GET /list/:listId/exists - Check if a list exists on the server
+ * Returns whether the specified list's databases exist on the server.
+ */
+app.get(
+  `/list/:listId/exists`,
+  (req, res: ExpressResponse<ListExistsResponse>, next) => {
+    try {
+      const { listId } = req.params;
+      const dataDir = process.env[`DATA_DIR`] ?? `./data`;
+
+      const mainDbPath = path.join(dataDir, `${listId}.sqlite3`);
+      const logDbPath = path.join(dataDir, `${listId}.log.sqlite3`);
+
+      // Check if both database files exist
+      const exists = fs.existsSync(mainDbPath) && fs.existsSync(logDbPath);
+
+      console.log(
+        `List existence check: listId=${listId}, exists=${String(exists)}`
+      );
+
+      // Validate response before sending
+      const validatedResponse = listExistsResponseSchema.parse({ exists });
+
+      res.json(validatedResponse);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /list/:listId/sync - Main sync endpoint
  * Handles the combined sync operation with migration compatibility checking,
  * requesting remote changes, and submitting local changes.
- *
- * TODO: This will be replaced by /list/:listId/sync in Phase 2
  */
-app.post(`/sync`, async (req, res, next) => {
-  try {
-    // Validate request body
-    const validatedRequest = syncRequestSchema.parse(req.body);
+app.post(
+  `/list/:listId/sync`,
+  async (req, res: ExpressResponse<SyncResponse>, next) => {
+    try {
+      const { listId } = req.params;
 
-    const { localOperations, expectedServerVersion, clientMigrationState } =
-      validatedRequest;
+      // Validate request body
+      const validatedRequest = syncRequestSchema.parse(req.body);
 
-    console.log(
-      `Sync request: ${
-        localOperations.length
-      } operations, expected version: ${String(expectedServerVersion)}`
-    );
+      const { localOperations, expectedServerVersion, clientMigrationState } =
+        validatedRequest;
 
-    // TEMPORARY: Use a hardcoded list ID until Phase 2 routing is implemented
-    const TEMP_LIST_ID = `default-list`;
+      console.log(
+        `Sync request for list ${listId}: ${
+          localOperations.length
+        } operations, expected version: ${String(expectedServerVersion)}`
+      );
 
-    // Call the sync function
-    const syncResult = await sync(
-      TEMP_LIST_ID,
-      localOperations,
-      expectedServerVersion,
-      clientMigrationState
-    );
+      // Call the sync function
+      const syncResult = await sync(
+        listId,
+        localOperations,
+        expectedServerVersion,
+        clientMigrationState
+      );
 
-    // Validate response before sending
-    const validatedResponse = syncResponseSchema.parse(syncResult);
+      // Validate response before sending
+      const validatedResponse = syncResponseSchema.parse(syncResult);
 
-    console.log(`Sync response: status=${validatedResponse.status}`);
+      console.log(`Sync response: status=${validatedResponse.status}`);
 
-    // If operations were successfully applied, notify all long-polling clients
-    if (validatedResponse.status === `accepted` && localOperations.length > 0) {
-      console.log(`Notifying clients of database changes`);
-      changeNotifier.emit(`changes`);
+      // If operations were successfully applied, notify all long-polling clients
+      if (validatedResponse.status === `accepted` && localOperations.length > 0) {
+        console.log(`Notifying clients of database changes`);
+        changeNotifier.emit(`changes`);
+      }
+
+      res.json(validatedResponse);
+    } catch (error) {
+      next(error);
     }
-
-    res.json(validatedResponse);
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 /**
  * GET /changes/poll - Long-polling endpoint for change notifications
@@ -199,7 +237,10 @@ async function startServer() {
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
       console.log(`Health check: http://localhost:${PORT}/health`);
-      console.log(`Sync endpoint: http://localhost:${PORT}/sync`);
+      console.log(
+        `List existence: http://localhost:${PORT}/list/:listId/exists`
+      );
+      console.log(`Sync endpoint: http://localhost:${PORT}/list/:listId/sync`);
       console.log(
         `Long-polling endpoint: http://localhost:${PORT}/changes/poll`
       );

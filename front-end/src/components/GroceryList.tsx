@@ -22,6 +22,7 @@ import { SyncButton, type SyncStatus } from "./SyncButton";
 type GroceryListProps = {
   className?: string;
   db: Database;
+  listId: string;
   title: string;
   showSyncButton?: boolean;
 };
@@ -52,7 +53,10 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
     try {
       // Step 1: Call combined sync endpoint
       console.log(`Step 1: Calling combined sync endpoint...`);
-      const syncResponse = await syncWithServer(props.db.getKyselyInstance());
+      const syncResponse = await syncWithServer(
+        props.listId,
+        props.db.getKyselyInstance()
+      );
 
       console.log(`Sync response:`, syncResponse);
       console.log(`Status: ${syncResponse.status}`);
@@ -118,6 +122,7 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
         if (rebasedLocalOps.length > 0) {
           console.log(`Step 5: Retrying sync with rebased operations...`);
           const retryResponse: SyncResponse = await syncWithServer(
+            props.listId,
             props.db.getKyselyInstance()
           );
 
