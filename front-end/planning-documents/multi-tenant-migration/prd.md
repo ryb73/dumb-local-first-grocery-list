@@ -264,3 +264,10 @@ GET ~~/changes/poll~~ /list/<uuid>/changes/poll
 - ✅ Updated `ParallelGroceryLists` to accept `listId` prop (removed hardcoded list ID)
 - ✅ Created basic `LandingPage` component at `/` route
 - ✅ As a temporary measure, the landing page displays link to default list (`/list/default-list`)
+
+
+### Phase 5: List Registry ✅ COMPLETED
+
+**Front-end Changes:**
+- ✅ Created `list-registry.ts` utility module that stores list UUIDs in localStorage and provides functions to add/remove lists and fetch metadata (name, last modified) by loading databases and querying operation log
+- ✅ Added comprehensive test coverage
