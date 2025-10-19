@@ -28,9 +28,16 @@ const app = express();
 const PORT =
   process.env[`PORT`] != null ? Number.parseInt(process.env[`PORT`], 10) : 3001;
 
+// Define event types for the change notifier
+// Maps event names to their argument tuple types
+type ChangeNotifierEvents = {
+  changes: [listId: string];
+};
+
 // Event emitter for notifying clients about database changes
+// Typed to enforce correct event emission and listening patterns
 // eslint-disable-next-line unicorn/prefer-event-target
-const changeNotifier = new EventEmitter();
+const changeNotifier = new EventEmitter<ChangeNotifierEvents>();
 
 // Long-polling timeout in milliseconds (45 seconds)
 const LONG_POLL_TIMEOUT = 45_000;
@@ -139,10 +146,13 @@ app.post(
 
       console.log(`Sync response: status=${validatedResponse.status}`);
 
-      // If operations were successfully applied, notify all long-polling clients for this list
-      if (validatedResponse.status === `accepted` && localOperations.length > 0) {
+      // If operations were successfully applied, notify all long-polling clients
+      if (
+        validatedResponse.status === `accepted` &&
+        localOperations.length > 0
+      ) {
         console.log(`Notifying clients of database changes for list ${listId}`);
-        changeNotifier.emit(`changes:${listId}`);
+        changeNotifier.emit(`changes`, listId);
       }
 
       res.json(validatedResponse);
@@ -170,27 +180,37 @@ app.get(
       res.setHeader(`Cache-Control`, `no-cache`);
       res.setHeader(`Content-Type`, `application/json`);
 
-      // Set up timeout
-      const timeout = setTimeout(() => {
-        console.log(`Long-poll timeout reached for list ${listId}`);
-        res.json({ hasChanges: false });
-      }, LONG_POLL_TIMEOUT);
+      // Declare timeout variable for use in onChanges callback
+      // eslint-disable-next-line prefer-const
+      let timeout: NodeJS.Timeout;
 
-      // Listen for changes to this specific list
-      const eventName = `changes:${listId}`;
-      const onChanges = () => {
+      // Listen for changes and filter by list ID
+      const onChanges = (changedListId: string) => {
+        // Only respond if the changed list matches this connection's list
+        if (changedListId !== listId) return;
+
         clearTimeout(timeout);
         console.log(`Long-poll responding with changes for list ${listId}`);
         res.json({ hasChanges: true });
+
+        // Remove listener after responding
+        changeNotifier.removeListener(`changes`, onChanges);
       };
 
-      changeNotifier.once(eventName, onChanges);
+      changeNotifier.on(`changes`, onChanges);
+
+      // Set up timeout after onChanges is defined
+      timeout = setTimeout(() => {
+        console.log(`Long-poll timeout reached for list ${listId}`);
+        changeNotifier.removeListener(`changes`, onChanges);
+        res.json({ hasChanges: false });
+      }, LONG_POLL_TIMEOUT);
 
       // Clean up on client disconnect
       req.on(`close`, () => {
         console.log(`Long-poll client disconnected for list ${listId}`);
         clearTimeout(timeout);
-        changeNotifier.removeListener(eventName, onChanges);
+        changeNotifier.removeListener(`changes`, onChanges);
       });
     } catch (error) {
       next(error);
