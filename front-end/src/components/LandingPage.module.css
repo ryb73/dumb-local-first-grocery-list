@@ -1,0 +1,27 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.content {
+  text-align: center;
+  max-width: 600px;
+}
+
+.content p {
+  margin: 1rem 0;
+  font-size: 1.1rem;
+}
+
+.content a {
+  color: #0066cc;
+  text-decoration: none;
+}
+
+.content a:hover {
+  text-decoration: underline;
+}

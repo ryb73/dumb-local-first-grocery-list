@@ -6,24 +6,33 @@ import { Database } from "../db/database";
 import { GroceryList } from "./GroceryList";
 import styles from "./ParallelGroceryLists.module.css";
 
-export const ParallelGroceryLists: Component = () => {
+type ParallelGroceryListsProps = {
+  /**
+   * The list ID to use for both parallel grocery lists.
+   * Defaults to "default-list" for backwards compatibility.
+   */
+  listId: string;
+};
+
+export const ParallelGroceryLists: Component<ParallelGroceryListsProps> = (
+  props
+) => {
   const [dbs] = createResource(async () => {
-    // TEMPORARY: Use hardcoded list ID until Phase 4 routing is implemented
     // Note: Using "-one" and "-two" suffixes to simulate two clients accessing the same list
-    // Both will sync with the server using just "default-list" (without suffix)
-    const TEMP_LIST_ID = `default-list`;
+    // Both will sync with the server using the base listId (without suffix)
+    const currentListId = props.listId;
 
     const [kysely1, kysely2] = await Promise.all([
       initMergedDatabase(
-        `${TEMP_LIST_ID}-one.log.sqlite3`,
-        new SQLocalKysely(`${TEMP_LIST_ID}-one.sqlite3`).dialect,
-        new SQLocalKysely(`${TEMP_LIST_ID}-one.log.sqlite3`).dialect,
+        `${currentListId}-one.log.sqlite3`,
+        new SQLocalKysely(`${currentListId}-one.sqlite3`).dialect,
+        new SQLocalKysely(`${currentListId}-one.log.sqlite3`).dialect,
         true
       ),
       initMergedDatabase(
-        `${TEMP_LIST_ID}-two.log.sqlite3`,
-        new SQLocalKysely(`${TEMP_LIST_ID}-two.sqlite3`).dialect,
-        new SQLocalKysely(`${TEMP_LIST_ID}-two.log.sqlite3`).dialect,
+        `${currentListId}-two.log.sqlite3`,
+        new SQLocalKysely(`${currentListId}-two.sqlite3`).dialect,
+        new SQLocalKysely(`${currentListId}-two.log.sqlite3`).dialect,
         true
       ),
     ]);
@@ -43,13 +52,13 @@ export const ParallelGroceryLists: Component = () => {
             <GroceryList
               className={defined(styles[`list`])}
               db={dbs.db1}
-              listId="default-list"
+              listId={props.listId}
               showSyncButton
             />
             <GroceryList
               className={defined(styles[`list`])}
               db={dbs.db2}
-              listId="default-list"
+              listId={props.listId}
               showSyncButton
             />
           </div>
