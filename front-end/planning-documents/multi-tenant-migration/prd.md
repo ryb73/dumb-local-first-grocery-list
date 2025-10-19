@@ -256,3 +256,11 @@ GET ~~/changes/poll~~ /list/<uuid>/changes/poll
 - ✅ Removed `title` prop from GroceryList component (now fetched from database)
 - ✅ Updated `ParallelGroceryLists` to remove title prop
 
+
+### Phase 4: UI & Routing
+
+**Front-end Changes:**
+- ✅ Added `/list/:listId` route using @solidjs/router
+- ✅ Updated `ParallelGroceryLists` to accept `listId` prop (removed hardcoded list ID)
+- ✅ Created basic `LandingPage` component at `/` route
+- ✅ As a temporary measure, the landing page displays link to default list (`/list/default-list`)
