@@ -9,8 +9,8 @@
     "generate-kysely-types": "DATABASE_URL=./local-db-for-codegen.sqlite3 kysely-codegen --out-file src/database/main-db.d.ts",
     "generate-operation-log-kysely-types": "DATABASE_URL=./local-db-for-codegen.log.sqlite3 kysely-codegen --out-file src/database/operation-log-db.d.ts",
     "lint": "eslint . --ext ts --ext tsx --ext js --ext jsx",
-    "migrate-for-codegen": "pnpm build && node dist/database/migrate-for-codegen.js",
-    "migrate-for-operation-log-codegen": "pnpm build && node dist/database/migrate-for-operation-log-codegen.js",
+    "migrate-for-codegen": "pnpm build && node lib/database/migrate-for-codegen.js",
+    "migrate-for-operation-log-codegen": "pnpm build && node lib/database/migrate-for-operation-log-codegen.js",
     "test": "vitest run",
     "watch": "tsc --watch"
   },

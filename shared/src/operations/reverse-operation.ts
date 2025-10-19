@@ -67,6 +67,14 @@ export async function reverseOperation(
       break;
     }
 
+    case `setListName`: {
+      await db
+        .updateTable(`list_metadata`)
+        .set({ name: operation.payload.originalName })
+        .execute();
+      break;
+    }
+
     default: {
       throw new Error(
         `Unsupported operation type: ${JSON.stringify(operation)}`

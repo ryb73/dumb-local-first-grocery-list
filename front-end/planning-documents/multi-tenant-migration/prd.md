@@ -234,3 +234,25 @@ GET ~~/changes/poll~~ /list/<uuid>/changes/poll
 - ✅ Updated `ParallelGroceryLists` to pass `listId="default-list"` to both list instances
 - ✅ Imported `listExistsResponseSchema` from shared package
 
+
+### Phase 3: List Metadata ✅ COMPLETED
+
+**Shared Package Changes:**
+- ✅ Added migration `2025-10-17` creating `list_metadata` table with singleton row containing list name
+- ✅ Regenerated Kysely types to include `list_metadata` table
+- ✅ Created `SetListNameOperation` type with `newName` and `originalName` payload
+- ✅ Implemented `applyOperation` logic for `setListName` (updates list_metadata.name)
+- ✅ Implemented `reverseOperation` logic for `setListName` (restores originalName)
+- ✅ Implemented conflict resolution for `setListName` using Last-Writer-Wins (LWW) based on clientCreatedAt
+- ✅ Updated `resolve-conflict.ts` to handle `setListName` in all operation type cases
+
+**Front-end Changes:**
+- ✅ Added `getListName()` method to Database class (fetches current list name from list_metadata)
+- ✅ Added `setListName(newName)` method to Database class (updates name and logs operation atomically)
+- ✅ Updated `GroceryList` component to load and display list name from database
+- ✅ Implemented inline editing for list name (click-to-edit with ✎/✓/✕ buttons matching GroceryItem pattern)
+- ✅ Added validation for list name (cannot be empty, max length 256 characters)
+- ✅ Integrated sync trigger on list name change
+- ✅ Removed `title` prop from GroceryList component (now fetched from database)
+- ✅ Updated `ParallelGroceryLists` to remove title prop
+

@@ -57,6 +57,13 @@ export async function applyOperation(
         .execute();
       break;
     }
+    case `setListName`: {
+      await db
+        .updateTable(`list_metadata`)
+        .set({ name: operation.payload.newName })
+        .execute();
+      break;
+    }
   }
 }
 

@@ -73,6 +73,10 @@ function transformOldIdsToNew(
         },
       };
     }
+    case `setListName`: {
+      // setListName doesn't reference item IDs, so no transformation needed
+      return null;
+    }
   }
 
   throw new Error(
@@ -190,9 +194,10 @@ export function resolveConflict(
           };
         }
         case `setCheckedState`:
-        case `deleteItem`: {
-          // A remote item was created. A local operation modified a different item.
-          // These are independent operations on different items and cannot conflict.
+        case `deleteItem`:
+        case `setListName`: {
+          // A remote item was created. A local operation modified a different item or list metadata.
+          // These are independent operations and cannot conflict.
           return {
             transformedOps: [localOp],
             newContext: context,
@@ -303,8 +308,9 @@ export function resolveConflict(
             newContext: context,
           };
         }
-        case `setCheckedState`: {
-          // Remote renamed an item, local op modified an item.
+        case `setCheckedState`:
+        case `setListName`: {
+          // Remote renamed an item, local op modified an item or list metadata.
           // If it's the same item, the local op is still valid as it's by ID.
           // No conflict.
           return { transformedOps: [localOp], newContext: context };
@@ -319,8 +325,9 @@ export function resolveConflict(
 
     case `setCheckedState`: {
       switch (localOp.type) {
-        // Create, Rename, and Delete operations are orthogonal or take precedence.
+        // Create, Rename, Delete, and SetListName operations are orthogonal or take precedence.
         case `createItem`:
+        case `setListName`:
           return { transformedOps: [localOp], newContext: context };
         case `deleteItem`: {
           if (remoteOp.payload.itemId !== localOp.payload.itemId) {
@@ -414,6 +421,7 @@ export function resolveConflict(
     case `deleteItem`: {
       switch (localOp.type) {
         case `createItem`:
+        case `setListName`:
           // Cannot conflict.
           return { transformedOps: [localOp], newContext: context };
         case `renameItem`:
@@ -425,6 +433,46 @@ export function resolveConflict(
             return { transformedOps: [], newContext: context };
           }
           return { transformedOps: [localOp], newContext: context };
+      }
+      throw new Error(
+        `Unhandled local operation type: ${
+          (localOp as Operation).type
+        } for remote operation type: ${remoteOp.type}`
+      );
+    }
+
+    case `setListName`: {
+      switch (localOp.type) {
+        case `createItem`:
+        case `renameItem`:
+        case `setCheckedState`:
+        case `deleteItem`:
+          // Remote changed list metadata, local op modified an item.
+          // These are independent operations and cannot conflict.
+          return { transformedOps: [localOp], newContext: context };
+
+        case `setListName`: {
+          // Both operations change the list name. Use Last-Writer-Wins (LWW).
+          if (localOp.clientCreatedAt <= remoteOp.clientCreatedAt) {
+            // Remote is newer or same, so local is discarded.
+            return { transformedOps: [], newContext: context };
+          }
+
+          // Local is newer, it "wins", but must be transformed.
+          // Update originalName to reflect the state after the remote operation.
+          return {
+            transformedOps: [
+              {
+                ...localOp,
+                payload: {
+                  ...localOp.payload,
+                  originalName: remoteOp.payload.newName,
+                },
+              },
+            ],
+            newContext: context,
+          };
+        }
       }
       throw new Error(
         `Unhandled local operation type: ${

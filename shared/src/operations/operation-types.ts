@@ -139,6 +139,24 @@ export const deleteItemOperationSchema = baseOperationSchema.extend({
 });
 export type DeleteItemOperation = z.infer<typeof deleteItemOperationSchema>;
 
+// --- List Metadata Operations ---
+
+/**
+ * Schema for the payload when the list name is changed.
+ */
+export const setListNamePayloadSchema = z.object({
+  newName: z.string(),
+  /** The original list name before renaming. Necessary for rollbacks. */
+  originalName: z.string(),
+});
+export type SetListNamePayload = z.infer<typeof setListNamePayloadSchema>;
+
+export const setListNameOperationSchema = baseOperationSchema.extend({
+  type: z.literal(`setListName`),
+  payload: setListNamePayloadSchema,
+});
+export type SetListNameOperation = z.infer<typeof setListNameOperationSchema>;
+
 /**
  * Schema for any operation type.
  */
@@ -147,5 +165,6 @@ export const operationSchema = z.discriminatedUnion(`type`, [
   deleteItemOperationSchema,
   renameItemOperationSchema,
   setCheckedStateOperationSchema,
+  setListNameOperationSchema,
 ]);
 export type Operation = z.infer<typeof operationSchema>;

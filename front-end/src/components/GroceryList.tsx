@@ -23,13 +23,15 @@ type GroceryListProps = {
   className?: string;
   db: Database;
   listId: string;
-  title: string;
   showSyncButton?: boolean;
 };
 
 export const GroceryList: Component<GroceryListProps> = (props) => {
   const [items, setItems] = createSignal<Item[]>([]);
   const [suggestions, setSuggestions] = createSignal<string[]>([]);
+  const [listName, setListName] = createSignal(``);
+  const [isEditingName, setIsEditingName] = createSignal(false);
+  const [newListName, setNewListName] = createSignal(``);
   const [syncStatus, setSyncStatus] = createSignal<SyncStatus>({
     type: `idle`,
   });
@@ -43,6 +45,7 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
   const refreshData = async () => {
     setItems(await props.db.getItems());
     setSuggestions(await props.db.getSuggestions());
+    setListName(await props.db.getListName());
   };
 
   const handleSync = async () => {
@@ -193,20 +196,49 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
 
   const handleAdd = async (name: string) => {
     await props.db.addItem(name);
-    void handleSync();
-    await refreshData();
+    await handleSync();
   };
 
   const handleToggle = async (id: string, checked: boolean) => {
     await props.db.toggleItem(id, checked);
-    void handleSync();
-    await refreshData();
+    await handleSync();
   };
 
   const handleEdit = async (id: string, newName: string) => {
     await props.db.updateItem(id, { name: newName });
-    void handleSync();
-    await refreshData();
+    await handleSync();
+  };
+
+  const handleEditNameClick = () => {
+    setIsEditingName(true);
+    setNewListName(listName());
+  };
+
+  const handleRenameSubmit = async () => {
+    const trimmedName = newListName().trim();
+
+    // Validation: cannot be empty, max length 256
+    if (trimmedName === ``) {
+      // Revert to original name if empty
+      setIsEditingName(false);
+      return;
+    }
+
+    if (trimmedName.length > 256) {
+      // Don't submit if too long
+      return;
+    }
+
+    setIsEditingName(false);
+
+    if (trimmedName !== listName()) {
+      await props.db.setListName(trimmedName);
+      await handleSync();
+    }
+  };
+
+  const handleRenameCancel = () => {
+    setIsEditingName(false);
   };
 
   onMount(() => {
@@ -218,15 +250,15 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
         props.listId,
         () => {
           console.log(
-            `Long-poll: Changes detected, triggering sync for ${props.title}`
+            `Long-poll: Changes detected, triggering sync for ${listName()}`
           );
           void handleSync();
         },
         (status) => {
-          console.log(`Long-poll status for ${props.title}:`, status);
+          console.log(`Long-poll status for ${listName()}:`, status);
           // Optionally update sync status based on long-polling status
           if (status.type === `error`) {
-            console.warn(`Long-poll error for ${props.title}: ${status.error}`);
+            console.warn(`Long-poll error for ${listName()}: ${status.error}`);
           }
         }
       );
@@ -247,7 +279,55 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
         .join(` `)}
     >
       <div class={defined(styles[`header`])}>
-        <h1 class={defined(styles[`title`])}>{props.title}</h1>
+        <div class={defined(styles[`title`])}>
+          {isEditingName() ? (
+            <>
+              <input
+                class={defined(styles[`titleInput`])}
+                onBlur={() => void handleRenameSubmit()}
+                onChange={(e) => setNewListName(e.target.value)}
+                onKeyDown={(e) => {
+                  setNewListName(e.currentTarget.value);
+                  if (e.key === `Enter`) void handleRenameSubmit();
+                  if (e.key === `Escape`) handleRenameCancel();
+                }}
+                ref={(el) => {
+                  setTimeout(() => {
+                    el.focus();
+                    el.select();
+                  }, 1);
+                }}
+                type="text"
+                value={newListName()}
+              />
+              <button
+                class={defined(styles[`editButton`])}
+                onClick={() => void handleRenameSubmit()}
+                type="button"
+              >
+                ✓
+              </button>
+              <button
+                class={defined(styles[`editButton`])}
+                onClick={handleRenameCancel}
+                type="button"
+              >
+                ✕
+              </button>
+            </>
+          ) : (
+            <>
+              <h1>{listName()}</h1>
+              <button
+                class={defined(styles[`editButton`])}
+                onClick={handleEditNameClick}
+                type="button"
+              >
+                ✎
+              </button>
+            </>
+          )}
+        </div>
         {props.showSyncButton ?? false ? (
           <SyncButton onClick={() => void handleSync()} status={syncStatus()} />
         ) : null}

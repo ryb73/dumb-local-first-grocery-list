@@ -17,6 +17,11 @@ export interface Items {
   name: string;
 }
 
+export interface ListMetadata {
+  name: string;
+}
+
 export interface DB {
   items: Items;
+  list_metadata: ListMetadata;
 }

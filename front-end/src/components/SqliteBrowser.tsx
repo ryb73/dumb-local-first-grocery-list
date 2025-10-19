@@ -12,15 +12,15 @@ type QueryResult = z.infer<typeof QueryResultSchema>;
 export function SqliteBrowser() {
   const [databases] = createResource(async () => {
     const mergedDb1 = await initMergedDatabase(
-      `grocery-list.log.sqlite3`,
-      new SQLocalKysely(`grocery-list.sqlite3`).dialect,
-      new SQLocalKysely(`grocery-list.log.sqlite3`).dialect
+      `default-list-one.log.sqlite3`,
+      new SQLocalKysely(`default-list-one.sqlite3`).dialect,
+      new SQLocalKysely(`default-list-one.log.sqlite3`).dialect
     );
 
     const mergedDb2 = await initMergedDatabase(
-      `grocery-list-2.log.sqlite3`,
-      new SQLocalKysely(`grocery-list-2.sqlite3`).dialect,
-      new SQLocalKysely(`grocery-list-2.log.sqlite3`).dialect
+      `default-list-two.log.sqlite3`,
+      new SQLocalKysely(`default-list-two.sqlite3`).dialect,
+      new SQLocalKysely(`default-list-two.log.sqlite3`).dialect
     );
 
     return [

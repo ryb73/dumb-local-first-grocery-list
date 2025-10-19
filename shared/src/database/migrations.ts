@@ -297,6 +297,31 @@ const migrations: Record<string, MigrationDefinition> = {
       },
     },
   },
+  "2025-10-17": {
+    productionReady: true,
+    description: `Add list_metadata table with single row for list name`,
+    migration: {
+      up: async (db: Kysely<any>) => {
+        // Create list_metadata singleton table with a CHECK constraint to ensure only one row
+        await db.schema
+          .createTable(`list_metadata`)
+          .addColumn(`name`, `text`, (col) =>
+            col.notNull().primaryKey().defaultTo(`Untitled List`)
+          )
+          .modifyEnd(sql`STRICT`)
+          .execute();
+
+        // Insert the default row
+        await db
+          .insertInto(`list_metadata`)
+          .values({ name: `Untitled List` })
+          .execute();
+      },
+      down: async (db: Kysely<any>) => {
+        await db.schema.dropTable(`list_metadata`).execute();
+      },
+    },
+  },
 };
 
 const filteredMigrations = Object.fromEntries(

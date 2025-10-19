@@ -6,8 +6,10 @@ import {
   type Operation,
   type RenameItemOperation,
   type SetCheckedStateOperation,
+  type SetListNameOperation,
   applyOperation,
 } from "@grocery-list/shared";
+import { defined } from "@ryb73/super-duper-parakeet/lib/src/type-checks";
 import type { Kysely, Transaction } from "kysely";
 
 function narrowTransaction(trx: Transaction<MergedDB>): Transaction<MainDB> {
@@ -235,5 +237,47 @@ export class Database {
       .selectAll()
       .where(`id`, `=`, id)
       .executeTakeFirst();
+  }
+
+  /**
+   * Gets the current list name.
+   */
+  public async getListName(): Promise<string> {
+    const result = await this.kysely
+      .selectFrom(`list_metadata`)
+      .select(`name`)
+      .executeTakeFirst();
+
+    return result!.name;
+  }
+
+  /**
+   * Sets the list name and logs the operation.
+   */
+  public async setListName(newName: string): Promise<void> {
+    await this.kysely.transaction().execute(async (trx) => {
+      // Get the current list name
+      const currentName = defined(
+        await trx.selectFrom(`list_metadata`).select(`name`).executeTakeFirst()
+      );
+
+      // If name hasn't changed, don't create an operation
+      if (currentName.name === newName) return;
+
+      // Log SetListNameOperation
+      const setListNameOperation: SetListNameOperation = {
+        clientCreatedAt: Date.now(),
+        id: crypto.randomUUID(),
+        payload: {
+          newName,
+          originalName: currentName.name,
+        },
+        serverCommittedAt: null,
+        type: `setListName`,
+      };
+
+      await this.logOperation(trx, setListNameOperation);
+      await applyOperation(narrowTransaction(trx), setListNameOperation);
+    });
   }
 }
