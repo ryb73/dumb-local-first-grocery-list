@@ -289,3 +289,19 @@ GET ~~/changes/poll~~ /list/<uuid>/changes/poll
 
 **Back-end Changes:**
 - ✅ Fixed `getServerDatabase()` in `connection.ts` to pass `migrate: true` to `initMergedDatabase()`: Server now properly initializes databases with full schema on first sync of new lists
+
+
+### Phase 7: Landing Page Enhancements ✅ COMPLETED
+
+**Front-end Changes:**
+- ✅ Created `format-relative-time.ts` utility for displaying relative timestamps (e.g., "2 hours ago")
+- ✅ Updated `getRecentListsWithMetadata()` to show placeholder "(Missing List)" for failed database loads instead of skipping them
+- ✅ Enhanced `LandingPage` component to display recently accessed lists with:
+  - Loading spinner while fetching metadata
+  - Empty state message: "No lists yet. Create your first list to get started!"
+  - Vertical list of recently accessed lists showing name and last modified timestamp
+  - Lists sorted by most recent operation (from operation log database)
+  - Clickable list items that navigate to the list
+  - Keyboard accessibility (Enter/Space to activate)
+- ✅ Added CSS styles for list display with hover effects
+- ✅ Updated test coverage to reflect new placeholder behavior for missing lists

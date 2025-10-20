@@ -10,7 +10,6 @@ const REGISTRY_KEY = `grocery-list-registry`;
 /**
  * Metadata for a list in the registry.
  */
-// eslint-disable-next-line import/no-unused-modules
 export type ListMetadata = {
   listId: string;
   name: string;
@@ -93,10 +92,11 @@ export async function getRecentListsWithMetadata(): Promise<ListMetadata[]> {
     registry.map(async (listId) => {
       try {
         // Initialize the merged database
+        // Note: Using "-one" suffix to match ParallelGroceryLists component
         const kysely = await initMergedDatabase(
-          `${listId}.log.sqlite3`,
-          new SQLocalKysely(`${listId}.sqlite3`).dialect,
-          new SQLocalKysely(`${listId}.log.sqlite3`).dialect,
+          `${listId}-one.log.sqlite3`,
+          new SQLocalKysely(`${listId}-one.sqlite3`).dialect,
+          new SQLocalKysely(`${listId}-one.log.sqlite3`).dialect,
           false // Don't run migrations - assume database exists
         );
 
@@ -109,15 +109,15 @@ export async function getRecentListsWithMetadata(): Promise<ListMetadata[]> {
 
         return { listId, name, lastModified };
       } catch (error) {
-        // If database fails to load, skip it (might not exist in OPFS yet)
+        // If database fails to load, show placeholder (it might have been purged from OPFS but still exist on the server)
         console.error(`Failed to load metadata for list ${listId}:`, error);
-        return null;
+        return { listId, name: `(Missing List)`, lastModified: new Date(0) };
       }
     })
   );
 
-  // Filter out nulls and sort by lastModified (most recent first)
-  return listsWithMetadata
-    .filter((item): item is NonNullable<typeof item> => item !== null)
-    .sort((a, b) => b.lastModified.getTime() - a.lastModified.getTime());
+  // Sort by lastModified (most recent first)
+  return Array.from(listsWithMetadata).sort(
+    (a, b) => b.lastModified.getTime() - a.lastModified.getTime()
+  );
 }

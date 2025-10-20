@@ -3,6 +3,7 @@ import {
   expect as expectValue,
   it as itTest,
   beforeEach as setupBeforeEach,
+  vi,
 } from "vitest";
 import {
   addListToRegistry,
@@ -103,13 +104,38 @@ describeTest(`list-registry`, () => {
       expectValue(lists).toEqual([]);
     });
 
-    itTest(`should skip lists that don't exist in OPFS`, async () => {
-      addListToRegistry(`nonexistent-list-1`);
-      addListToRegistry(`nonexistent-list-2`);
+    itTest(
+      `should show placeholder for lists that don't exist in OPFS`,
+      async () => {
+        // Suppress console.error for this test since we're intentionally testing error path
+        const consoleErrorSpy = vi
+          .spyOn(console, `error`)
+          .mockImplementation(() => {});
 
-      const lists = await getRecentListsWithMetadata();
-      expectValue(lists).toEqual([]);
-    });
+        try {
+          addListToRegistry(`nonexistent-list-1`);
+          addListToRegistry(`nonexistent-list-2`);
+
+          const lists = await getRecentListsWithMetadata();
+          expectValue(lists).toMatchInlineSnapshot(`
+            [
+              {
+                "lastModified": 1970-01-01T00:00:00.000Z,
+                "listId": "nonexistent-list-1",
+                "name": "(Missing List)",
+              },
+              {
+                "lastModified": 1970-01-01T00:00:00.000Z,
+                "listId": "nonexistent-list-2",
+                "name": "(Missing List)",
+              },
+            ]
+          `);
+        } finally {
+          consoleErrorSpy.mockRestore();
+        }
+      }
+    );
 
     // Note: Testing with actual databases would require setting up OPFS and databases
     // For now, we test the error handling path (non-existent databases)

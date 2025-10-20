@@ -13,19 +13,28 @@ export async function createNewList(): Promise<string> {
   const listId = crypto.randomUUID();
 
   // Initialize client-side SQLite databases with migrations
-  const kysely = await initMergedDatabase(
-    `${listId}.log.sqlite3`,
-    new SQLocalKysely(`${listId}.sqlite3`).dialect,
-    new SQLocalKysely(`${listId}.log.sqlite3`).dialect,
-    true // Run migrations to create schema
-  );
+  // Note: Creating both "-one" and "-two" databases to match ParallelGroceryLists pattern
+  const [kysely1, kysely2] = await Promise.all([
+    initMergedDatabase(
+      `${listId}-one.log.sqlite3`,
+      new SQLocalKysely(`${listId}-one.sqlite3`).dialect,
+      new SQLocalKysely(`${listId}-one.log.sqlite3`).dialect,
+      true // Run migrations to create schema
+    ),
+    initMergedDatabase(
+      `${listId}-two.log.sqlite3`,
+      new SQLocalKysely(`${listId}-two.sqlite3`).dialect,
+      new SQLocalKysely(`${listId}-two.log.sqlite3`).dialect,
+      true // Run migrations to create schema
+    ),
+  ]);
 
   try {
     // Add list to user's local registry
     addListToRegistry(listId);
   } finally {
-    // Close the database connection (will be reopened when user navigates to list)
-    await kysely.destroy();
+    // Close the database connections (will be reopened when user navigates to list)
+    await Promise.all([kysely1.destroy(), kysely2.destroy()]);
   }
 
   return listId;
