@@ -31,7 +31,8 @@ export async function getServerDatabase(listId: string) {
   });
 
   // Initialize the merged database with migrations
-  return await initMergedDatabase(logDbPath, mainDialect, logDialect);
+  // Pass true to run migrations if the database is new or needs updates
+  return await initMergedDatabase(logDbPath, mainDialect, logDialect, true);
 }
 
 /**

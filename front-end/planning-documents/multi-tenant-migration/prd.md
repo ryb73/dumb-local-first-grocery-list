@@ -257,13 +257,13 @@ GET ~~/changes/poll~~ /list/<uuid>/changes/poll
 - ✅ Updated `ParallelGroceryLists` to remove title prop
 
 
-### Phase 4: UI & Routing
+### Phase 4: UI & Routing ✅ COMPLETED
 
 **Front-end Changes:**
 - ✅ Added `/list/:listId` route using @solidjs/router
 - ✅ Updated `ParallelGroceryLists` to accept `listId` prop (removed hardcoded list ID)
 - ✅ Created basic `LandingPage` component at `/` route
-- ✅ As a temporary measure, the landing page displays link to default list (`/list/default-list`)
+- ✅ ~~As a temporary measure, the landing page displays link to default list (`/list/default-list`)~~ Actual landing page now implemented
 
 
 ### Phase 5: List Registry ✅ COMPLETED
@@ -271,3 +271,21 @@ GET ~~/changes/poll~~ /list/<uuid>/changes/poll
 **Front-end Changes:**
 - ✅ Created `list-registry.ts` utility module that stores list UUIDs in localStorage and provides functions to add/remove lists and fetch metadata (name, last modified) by loading databases and querying operation log
 - ✅ Added comprehensive test coverage
+
+
+### Phase 6: List Creation ✅ COMPLETED
+
+**Front-end Changes:**
+- ✅ Created `create-list.ts` utility module with `createNewList()` function that:
+  - Generates UUIDv4 for new lists
+  - Initializes client-side SQLite databases with migrations
+  - Adds list to local registry
+  - Returns the new list UUID
+- ✅ Updated `LandingPage` component to implement "Create New List" functionality
+- ✅ Added styled primary action button for list creation
+- ✅ Implemented loading states and error handling for list creation
+- ✅ Added navigation to newly created list after initialization
+- ✅ Added comprehensive test coverage for `createNewList()` function
+
+**Back-end Changes:**
+- ✅ Fixed `getServerDatabase()` in `connection.ts` to pass `migrate: true` to `initMergedDatabase()`: Server now properly initializes databases with full schema on first sync of new lists
