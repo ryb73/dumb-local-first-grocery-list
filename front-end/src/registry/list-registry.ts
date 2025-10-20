@@ -42,6 +42,14 @@ function saveRegistry(registry: string[]): void {
 }
 
 /**
+ * Checks if a list exists in the local registry.
+ */
+export function listExistsLocally(listId: string): boolean {
+  const registry = getRegistry();
+  return registry.includes(listId);
+}
+
+/**
  * Adds a list to the registry. Idempotent - won't add duplicates.
  */
 export function addListToRegistry(listId: string): void {

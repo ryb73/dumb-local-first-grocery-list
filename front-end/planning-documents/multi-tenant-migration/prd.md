@@ -305,3 +305,22 @@ GET ~~/changes/poll~~ /list/<uuid>/changes/poll
   - Keyboard accessibility (Enter/Space to activate)
 - ✅ Added CSS styles for list display with hover effects
 - ✅ Updated test coverage to reflect new placeholder behavior for missing lists
+
+
+### Phase 8: Shared List Access ✅ COMPLETED
+
+**Front-end Changes:**
+- ✅ Added `listExistsLocally()` function to `list-registry.ts` to check if a list exists in local registry
+- ✅ Created `ListNotFound` component to display error state when accessing non-existent lists
+  - Shows user-friendly error message: "This list doesn't exist or has been deleted"
+  - Provides "Go Home" button to navigate back to landing page
+- ✅ Created `ListLoader` component that implements the "Accessing a Shared List" flow:
+  - Checks if list exists in local registry first
+  - If not found locally, checks if list exists on server via `GET /list/:listId/exists` endpoint
+  - If found on server, automatically adds to local registry for future access
+  - If not found anywhere, displays `ListNotFound` error component
+  - Shows loading state while checking
+- ✅ Updated `/list/:listId` route to use `ListLoader` instead of directly rendering `ParallelGroceryLists`
+- ✅ Enhanced `GroceryList` component to trigger initial sync on mount
+  - Ensures newly accessed shared lists immediately pull data from server
+  - Prevents empty list display when accessing existing lists with data

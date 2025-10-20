@@ -245,6 +245,11 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
     void (async () => {
       await refreshData();
 
+      // Trigger an initial sync on mount to ensure we have the latest data
+      // This is especially important when accessing a shared list for the first time
+      console.log(`Initial sync for ${listName()}`);
+      await handleSync();
+
       // Set up long-polling for automatic sync
       const longPollingListener = createLongPollingListener(
         props.listId,
