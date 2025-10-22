@@ -47,6 +47,7 @@ module.exports = {
     "no-await-in-loop": `off`,
     "no-console": `off`,
     "no-void": `off`,
+    "react/display-name": `off`,
     "react/jsx-key": `off`,
     "react/jsx-no-bind": `off`,
     "react/no-unknown-property": `off`,
