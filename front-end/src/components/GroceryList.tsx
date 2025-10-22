@@ -17,7 +17,9 @@ import { createLongPollingListener } from "../sync/client/long-polling";
 import { AddItemForm } from "./AddItemForm";
 import { GroceryItem } from "./GroceryItem";
 import styles from "./GroceryList.module.css";
+import { ShareButton } from "./ShareButton";
 import { SyncButton, type SyncStatus } from "./SyncButton";
+import { useToast } from "./Toast";
 
 type GroceryListProps = {
   className?: string;
@@ -35,6 +37,7 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
   const [syncStatus, setSyncStatus] = createSignal<SyncStatus>({
     type: `idle`,
   });
+  const toast = useToast();
 
   const sortedItems = () =>
     Array.from(items()).sort((a, b) => {
@@ -333,9 +336,16 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
             </>
           )}
         </div>
-        {props.showSyncButton ?? false ? (
-          <SyncButton onClick={() => void handleSync()} status={syncStatus()} />
-        ) : null}
+        <div class={defined(styles[`headerActions`])}>
+          <ShareButton
+            listId={props.listId}
+            onCopyError={(error) => toast.showToast(`Failed to copy: ${error.message}`, `error`)}
+            onCopySuccess={() => toast.showToast(`Link copied to clipboard!`, `success`)}
+          />
+          {props.showSyncButton ?? false ? (
+            <SyncButton onClick={() => void handleSync()} status={syncStatus()} />
+          ) : null}
+        </div>
       </div>
       <AddItemForm
         onAdd={(name) => void handleAdd(name)}
