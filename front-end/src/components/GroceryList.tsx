@@ -199,16 +199,19 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
 
   const handleAdd = async (name: string) => {
     await props.db.addItem(name);
+    await refreshData();
     await handleSync();
   };
 
   const handleToggle = async (id: string, checked: boolean) => {
     await props.db.toggleItem(id, checked);
+    await refreshData();
     await handleSync();
   };
 
   const handleEdit = async (id: string, newName: string) => {
     await props.db.updateItem(id, { name: newName });
+    await refreshData();
     await handleSync();
   };
 
@@ -236,6 +239,7 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
 
     if (trimmedName !== listName()) {
       await props.db.setListName(trimmedName);
+      await refreshData();
       await handleSync();
     }
   };
@@ -339,11 +343,18 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
         <div class={defined(styles[`headerActions`])}>
           <ShareButton
             listId={props.listId}
-            onCopyError={(error) => toast.showToast(`Failed to copy: ${error.message}`, `error`)}
-            onCopySuccess={() => toast.showToast(`Link copied to clipboard!`, `success`)}
+            onCopyError={(error) =>
+              toast.showToast(`Failed to copy: ${error.message}`, `error`)
+            }
+            onCopySuccess={() =>
+              toast.showToast(`Link copied to clipboard!`, `success`)
+            }
           />
           {props.showSyncButton ?? false ? (
-            <SyncButton onClick={() => void handleSync()} status={syncStatus()} />
+            <SyncButton
+              onClick={() => void handleSync()}
+              status={syncStatus()}
+            />
           ) : null}
         </div>
       </div>
