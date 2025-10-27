@@ -17,6 +17,19 @@
   align-items: center;
 }
 
+.pollingToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.pollingToggle input[type="checkbox"] {
+  cursor: pointer;
+}
+
 .title {
   font-size: 1.5rem;
   font-weight: bold;

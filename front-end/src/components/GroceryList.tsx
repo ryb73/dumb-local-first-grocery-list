@@ -1,3 +1,4 @@
+/* eslint-disable etc/no-commented-out-code */
 import { applyAndLogOperation } from "@grocery-list/shared";
 import type { Item, Operation, SyncResponse } from "@grocery-list/shared";
 import {
@@ -17,9 +18,9 @@ import { createLongPollingListener } from "../sync/client/long-polling";
 import { AddItemForm } from "./AddItemForm";
 import { GroceryItem } from "./GroceryItem";
 import styles from "./GroceryList.module.css";
-import { ShareButton } from "./ShareButton";
+// import { ShareButton } from "./ShareButton";
 import { SyncButton, type SyncStatus } from "./SyncButton";
-import { useToast } from "./Toast";
+// import { useToast } from "./Toast";
 
 type GroceryListProps = {
   className?: string;
@@ -34,10 +35,11 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
   const [listName, setListName] = createSignal(``);
   const [isEditingName, setIsEditingName] = createSignal(false);
   const [newListName, setNewListName] = createSignal(``);
+  const [autoSyncEnabled, setAutoSyncEnabled] = createSignal(false);
   const [syncStatus, setSyncStatus] = createSignal<SyncStatus>({
     type: `idle`,
   });
-  const toast = useToast();
+  // const toast = useToast();
 
   const sortedItems = () =>
     Array.from(items()).sort((a, b) => {
@@ -197,22 +199,46 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
     }
   };
 
+  // Create long-polling listener for start/stop control
+  const longPollingListener = createLongPollingListener(
+    props.listId,
+    () => {
+      console.log(
+        `Long-poll: Changes detected, triggering sync for ${listName()}`
+      );
+      void handleSync();
+    },
+    (status) => {
+      console.log(`Long-poll status for ${listName()}:`, status);
+      // Optionally update sync status based on long-polling status
+      if (status.type === `error`) {
+        console.warn(`Long-poll error for ${listName()}: ${status.error}`);
+      }
+    }
+  );
+
   const handleAdd = async (name: string) => {
     await props.db.addItem(name);
     await refreshData();
-    await handleSync();
+    if (autoSyncEnabled()) {
+      await handleSync();
+    }
   };
 
   const handleToggle = async (id: string, checked: boolean) => {
     await props.db.toggleItem(id, checked);
     await refreshData();
-    await handleSync();
+    if (autoSyncEnabled()) {
+      await handleSync();
+    }
   };
 
   const handleEdit = async (id: string, newName: string) => {
     await props.db.updateItem(id, { name: newName });
     await refreshData();
-    await handleSync();
+    if (autoSyncEnabled()) {
+      await handleSync();
+    }
   };
 
   const handleEditNameClick = () => {
@@ -240,7 +266,9 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
     if (trimmedName !== listName()) {
       await props.db.setListName(trimmedName);
       await refreshData();
-      await handleSync();
+      if (autoSyncEnabled()) {
+        await handleSync();
+      }
     }
   };
 
@@ -248,35 +276,30 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
     setIsEditingName(false);
   };
 
+  const handleAutoSyncToggle = (enabled: boolean) => {
+    setAutoSyncEnabled(enabled);
+    if (enabled) {
+      // Trigger an immediate sync to get the latest data before starting polling
+      void handleSync();
+      longPollingListener.start();
+    } else {
+      longPollingListener.stop();
+    }
+  };
+
   onMount(() => {
     void (async () => {
       await refreshData();
 
-      // Trigger an initial sync on mount to ensure we have the latest data
-      // This is especially important when accessing a shared list for the first time
-      console.log(`Initial sync for ${listName()}`);
-      await handleSync();
+      if (autoSyncEnabled()) {
+        // Trigger an initial sync on mount to ensure we have the latest data
+        // This is especially important when accessing a shared list for the first time
+        console.log(`Initial sync for ${listName()}`);
+        await handleSync();
 
-      // Set up long-polling for automatic sync
-      const longPollingListener = createLongPollingListener(
-        props.listId,
-        () => {
-          console.log(
-            `Long-poll: Changes detected, triggering sync for ${listName()}`
-          );
-          void handleSync();
-        },
-        (status) => {
-          console.log(`Long-poll status for ${listName()}:`, status);
-          // Optionally update sync status based on long-polling status
-          if (status.type === `error`) {
-            console.warn(`Long-poll error for ${listName()}: ${status.error}`);
-          }
-        }
-      );
-
-      // Start long-polling
-      longPollingListener.start();
+        // Start long-polling
+        longPollingListener.start();
+      }
 
       onCleanup(() => {
         longPollingListener.stop();
@@ -341,7 +364,7 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
           )}
         </div>
         <div class={defined(styles[`headerActions`])}>
-          <ShareButton
+          {/* <ShareButton
             listId={props.listId}
             onCopyError={(error) =>
               toast.showToast(`Failed to copy: ${error.message}`, `error`)
@@ -349,7 +372,15 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
             onCopySuccess={() =>
               toast.showToast(`Link copied to clipboard!`, `success`)
             }
-          />
+          /> */}
+          <label class={defined(styles[`pollingToggle`])}>
+            <input
+              checked={autoSyncEnabled()}
+              onChange={(e) => handleAutoSyncToggle(e.target.checked)}
+              type="checkbox"
+            />
+            Auto-sync
+          </label>
           {props.showSyncButton ?? false ? (
             <SyncButton
               onClick={() => void handleSync()}
