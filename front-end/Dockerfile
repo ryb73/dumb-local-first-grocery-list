@@ -4,7 +4,6 @@
 ARG NODE_VERSION=23.10.0
 FROM node:${NODE_VERSION}-slim AS base
 
-
 # Install packages needed to build node modules
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential node-gyp pkg-config python-is-python3
@@ -14,9 +13,9 @@ ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
-LABEL fly_launch_runtime="Node.js"
+LABEL fly_launch_runtime="Vite"
 
-# Node.js app lives here
+# Vite app lives here
 WORKDIR /app
 
 # Set production environment
@@ -32,7 +31,7 @@ COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 
 # Copy package.json files for all workspace packages (for layer caching)
 COPY shared/package.json ./shared/
-COPY back-end/package.json ./back-end/
+COPY front-end/package.json ./front-end/
 
 # Install all dependencies (including workspace packages)
 RUN pnpm install --frozen-lockfile=true --prod=false
@@ -41,24 +40,21 @@ RUN pnpm install --frozen-lockfile=true --prod=false
 COPY shared/ ./shared/
 RUN cd shared && pnpm run build && rm -rf src/
 
-# Build back-end
-COPY back-end/ ./back-end/
-RUN cd back-end && pnpm run build
+# Build front-end
+COPY front-end/ ./front-end/
+RUN cd front-end && pnpm run build
 
 
 # Final stage for app image
-FROM base
+FROM nginx
 
-# Copy built application (entire workspace)
-COPY --from=build /app /app
-
-# Set working directory to back-end for running the server
-WORKDIR /app/back-end
+# Copy built application
+COPY --from=build /app/front-end/dist /usr/share/nginx/html
 
 # Setup sqlite3 on a separate volume
 RUN mkdir -p /data
 VOLUME /data
 
 # Start the server by default, this can be overwritten at runtime
-EXPOSE 3001
-CMD [ "pnpm", "run", "start" ]
+EXPOSE 80
+CMD [ "/usr/sbin/nginx", "-g", "daemon off;" ]
