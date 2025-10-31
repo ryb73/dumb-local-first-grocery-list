@@ -38,6 +38,8 @@ jobs:
           node-version: 24
       - name: Install dependencies
         run: pnpm install --frozen-lockfile=true --prod=false
+      - name: Build shared package
+        run: cd shared && pnpm run build
       - name: Build
         run: cd front-end && pnpm run build
         env:
