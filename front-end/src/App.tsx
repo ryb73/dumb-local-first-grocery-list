@@ -1,4 +1,4 @@
-import { Route, Router, useParams } from "@solidjs/router";
+import { HashRouter, Route, Router, useParams } from "@solidjs/router";
 import { DatabaseRebuild } from "./components/DatabaseRebuild";
 import { LandingPage } from "./components/LandingPage";
 import { ListLoader } from "./components/ListLoader";
@@ -16,15 +16,24 @@ function ListRoute() {
 }
 
 function App() {
+  const RouterComponent =
+    import.meta.env[`VITE_ROUTER`] === `hash` ? HashRouter : Router;
+
+  // Unless we're using the hash router, we need to respect the base path
+  const basePath =
+    import.meta.env[`VITE_ROUTER`] === `hash`
+      ? `/`
+      : import.meta.env[`VITE_BASE_PATH`] ?? `/`;
+
   return (
     <ToastProvider>
-      <Router base={import.meta.env[`VITE_BASE_PATH`] ?? `/`}>
+      <RouterComponent base={basePath}>
         <Route component={LandingPage} path="/" />
         <Route component={ListRoute} path="/list/:listId" />
         <Route component={SqliteBrowser} path="/browser" />
         <Route component={MigrationManager} path="/migrations" />
         <Route component={DatabaseRebuild} path="/rebuild" />
-      </Router>
+      </RouterComponent>
     </ToastProvider>
   );
 }
