@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@grocery-list/shared": "workspace:*",
-    "@ryb73/super-duper-parakeet": "^12.1.1",
+    "@ryb73/super-duper-parakeet": "^14.0.1",
     "@solidjs/router": "^0.15.3",
     "better-sqlite3": "^11.9.1",
     "kysely": "^0.28.7",

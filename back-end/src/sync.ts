@@ -4,7 +4,7 @@ import type {
   Operation,
   SyncResponse,
 } from "@grocery-list/shared";
-import { defined } from "@ryb73/super-duper-parakeet/lib/src/type-checks";
+import { defined } from "@ryb73/super-duper-parakeet/lib/src/type-checks.js";
 import { sql } from "kysely";
 import { getServerDatabase } from "./database/connection.js";
 import { getServerMigrationState } from "./migration-state.js";
