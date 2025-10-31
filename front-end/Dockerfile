@@ -42,6 +42,7 @@ RUN cd shared && pnpm run build && rm -rf src/
 
 # Build front-end
 COPY front-end/ ./front-end/
+ENV VITE_SERVER_URL="https://back-end-restless-shadow-5201.fly.dev"
 RUN cd front-end && pnpm run build
 
 

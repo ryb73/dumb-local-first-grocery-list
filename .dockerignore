@@ -1,0 +1,32 @@
+.git
+node_modules
+.dockerignore
+.env
+Dockerfile
+fly.*.toml
+
+##### From .gitignore #####
+
+# dependencies
+node_modules
+.pnp
+.pnp.js
+
+# production
+dist
+dist-ssr
+
+# misc
+.DS_Store
+*.local
+.env
+
+# logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+*.sqlite3

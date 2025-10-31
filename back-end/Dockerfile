@@ -61,4 +61,5 @@ VOLUME /data
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3001
+ENV ALLOWED_ORIGINS="https://lofi-grocery-list.fly.dev"
 CMD [ "pnpm", "run", "start" ]
