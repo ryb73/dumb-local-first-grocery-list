@@ -50,13 +50,13 @@ export const ParallelGroceryLists: Component<ParallelGroceryListsProps> = (
         {(dbs) => (
           <div class={defined(styles[`container`])}>
             <GroceryList
-              className={defined(styles[`list`])}
+              className={defined(styles[`list-one`])}
               db={dbs.db1}
               listId={props.listId}
               showSyncButton
             />
             <GroceryList
-              className={defined(styles[`list`])}
+              className={defined(styles[`list-two`])}
               db={dbs.db2}
               listId={props.listId}
               showSyncButton

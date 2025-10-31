@@ -6,8 +6,23 @@
   padding: 2rem;
 }
 
-.list {
+.list-one {
   width: 50%;
+}
+
+.list-two {
+  width: 50%;
+}
+
+/* Hide the second list on mobile/portrait viewports */
+@media (orientation: portrait), (max-width: 768px) {
+  .list-one {
+    width: 100%;
+  }
+
+  .list-two {
+    display: none;
+  }
 }
 
 .loading {
