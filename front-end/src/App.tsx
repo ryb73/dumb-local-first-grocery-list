@@ -3,6 +3,7 @@ import { DatabaseRebuild } from "./components/DatabaseRebuild";
 import { LandingPage } from "./components/LandingPage";
 import { ListLoader } from "./components/ListLoader";
 import { MigrationManager } from "./components/MigrationManager";
+import { OpfsViewer } from "./components/OpfsViewer";
 import { SqliteBrowser } from "./components/SqliteBrowser";
 import { ToastProvider } from "./components/Toast";
 
@@ -33,6 +34,7 @@ function App() {
         <Route component={SqliteBrowser} path="/browser" />
         <Route component={MigrationManager} path="/migrations" />
         <Route component={DatabaseRebuild} path="/rebuild" />
+        <Route component={OpfsViewer} path="/debug/opfs" />
       </RouterComponent>
     </ToastProvider>
   );
