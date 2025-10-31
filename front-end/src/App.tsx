@@ -18,7 +18,7 @@ function ListRoute() {
 function App() {
   return (
     <ToastProvider>
-      <Router>
+      <Router base={import.meta.env[`VITE_BASE_PATH`] ?? `/`}>
         <Route component={LandingPage} path="/" />
         <Route component={ListRoute} path="/list/:listId" />
         <Route component={SqliteBrowser} path="/browser" />

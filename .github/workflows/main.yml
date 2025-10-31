@@ -43,6 +43,7 @@ jobs:
       - name: Build
         run: cd front-end && pnpm run build
         env:
+          VITE_BASE_PATH: "/dumb-local-first-grocery-list/"
           VITE_SERVER_URL: "https://back-end-restless-shadow-5201.fly.dev"
       - name: Setup Pages
         uses: actions/configure-pages@v5
