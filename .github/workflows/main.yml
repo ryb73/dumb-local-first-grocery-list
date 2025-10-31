@@ -39,7 +39,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile=true --prod=false
       - name: Build
-        run: npm run build
+        run: pnpm run build
+        env:
+          VITE_SERVER_URL: "https://back-end-restless-shadow-5201.fly.dev"
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
