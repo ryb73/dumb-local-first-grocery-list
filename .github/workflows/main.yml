@@ -39,7 +39,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile=true --prod=false
       - name: Build
-        run: pnpm run build
+        run: cd front-end && pnpm run build
         env:
           VITE_SERVER_URL: "https://back-end-restless-shadow-5201.fly.dev"
       - name: Setup Pages
@@ -48,7 +48,7 @@ jobs:
         uses: actions/upload-pages-artifact@v4
         with:
           # Upload dist folder
-          path: './dist'
+          path: './front-end/dist'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
