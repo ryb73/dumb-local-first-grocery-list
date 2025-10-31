@@ -51,6 +51,9 @@ FROM nginx
 # Copy built application
 COPY --from=build /app/front-end/dist /usr/share/nginx/html
 
+# Copy custom nginx configuration with COOP/COEP headers
+COPY front-end/nginx.conf /etc/nginx/conf.d/default.conf
+
 # Setup sqlite3 on a separate volume
 RUN mkdir -p /data
 VOLUME /data
