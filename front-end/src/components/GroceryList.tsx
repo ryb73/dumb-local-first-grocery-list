@@ -35,7 +35,7 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
   const [listName, setListName] = createSignal(``);
   const [isEditingName, setIsEditingName] = createSignal(false);
   const [newListName, setNewListName] = createSignal(``);
-  const [autoSyncEnabled, setAutoSyncEnabled] = createSignal(false);
+  const [autoSyncEnabled, setAutoSyncEnabled] = createSignal(true);
   const [syncStatus, setSyncStatus] = createSignal<SyncStatus>({
     type: `idle`,
   });
