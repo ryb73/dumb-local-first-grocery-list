@@ -35,6 +35,7 @@ export const AddItemForm: Component<Props> = (props) => {
           setShowSuggestions(true);
         }}
         placeholder="Add item..."
+        size={1}
         type="text"
         value={input()}
       />
