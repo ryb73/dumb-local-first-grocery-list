@@ -74,6 +74,7 @@ export type SyncRequest = z.infer<typeof syncRequestSchema>;
 export const longPollingRequestSchema = z.object({
   /** The server version the client expects */
   expectedServerVersion: z.preprocess((val) => {
+    console.log(`Expected server version: ${val}`, typeof val);
     // Handle the string "null" from query parameters
     if (val === "null" || val === "") {
       return null;

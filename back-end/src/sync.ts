@@ -46,7 +46,11 @@ export async function sync(
     }`
   );
 
-  const serverDb = await getServerDatabase(listId);
+  const serverDb = await getServerDatabase(listId, {
+    // I'm getting weird behavior where my databases seem to be getting emptied out.
+    // I don't know why it is, but maybe this will help short circuit if the database doesn't exist when it should?
+    fileMustExist: expectedServerVersion != null,
+  });
 
   try {
     return await serverDb
@@ -92,6 +96,13 @@ export async function sync(
         const remoteResponse = await getOperationsAfterVersionWithVersion(
           trx,
           expectedServerVersion
+        );
+        console.log(
+          `Got ${
+            remoteResponse.operations.length
+          } remote operations, server version ${
+            remoteResponse.serverVersion ?? `null`
+          }`
         );
 
         // If there are remote operations, reject any submitted local operations

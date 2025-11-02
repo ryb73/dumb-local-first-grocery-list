@@ -10,7 +10,10 @@ import { Kysely, SqliteDialect } from "kysely";
  *
  * @param listId - UUID of the list to connect to
  */
-export async function getServerDatabase(listId: string) {
+export async function getServerDatabase(
+  listId: string,
+  sqliteOptions?: Database.Options
+) {
   // Use a data directory for server databases
   const dataDir = process.env[`DATA_DIR`] ?? `./data`;
 
@@ -18,8 +21,8 @@ export async function getServerDatabase(listId: string) {
   const logDbPath = path.join(dataDir, `${listId}.log.sqlite3`);
 
   // Create better-sqlite3 connections
-  const mainDb = new Database(mainDbPath);
-  const logDb = new Database(logDbPath);
+  const mainDb = new Database(mainDbPath, sqliteOptions);
+  const logDb = new Database(logDbPath, sqliteOptions);
 
   // Create Kysely dialects from better-sqlite3 connections
   const mainDialect = new SqliteDialect({
