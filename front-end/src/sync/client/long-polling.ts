@@ -39,12 +39,14 @@ const getServerUrl = (): string =>
  * whenever the server indicates that changes are available.
  *
  * @param listId The ID of the list to listen for changes on
+ * @param getServerVersion Function to get the current server version the client has synced to
  * @param onChangesAvailable Callback to invoke when server changes are detected
  * @param onStatusChange Optional callback to invoke when connection status changes
  * @returns LongPollingListener instance
  */
 export function createLongPollingListener(
   listId: string,
+  getServerVersion: () => Promise<number | null>,
   onChangesAvailable: () => void,
   onStatusChange?: (status: LongPollingStatus) => void
 ): LongPollingListener {
@@ -69,7 +71,17 @@ export function createLongPollingListener(
 
     try {
       const serverUrl = getServerUrl();
-      const pollEndpoint = `${serverUrl}/list/${listId}/changes/poll`;
+      const serverVersion = await getServerVersion();
+
+      // Build query parameters - always include expectedServerVersion
+      // For null, we explicitly send the string 'null'
+      // For numbers, we convert to string
+      const queryParams = new URLSearchParams({
+        expectedServerVersion:
+          serverVersion === null ? `null` : serverVersion.toString(),
+      });
+
+      const pollEndpoint = `${serverUrl}/list/${listId}/changes/poll?${queryParams.toString()}`;
       console.log(`Long-poll: Starting request to ${pollEndpoint}`);
 
       abortController = new AbortController();

@@ -21,6 +21,7 @@ import {
   updateOperationLogAfterSync,
 } from "../sync";
 import { createLongPollingListener } from "../sync/client/long-polling";
+import { getLastKnownServerVersion } from "../sync/client/state-tracking";
 import { AddItemForm } from "./AddItemForm";
 import { GroceryItem } from "./GroceryItem";
 import styles from "./GroceryList.module.css";
@@ -208,6 +209,7 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
   // Create long-polling listener for start/stop control
   const longPollingListener = createLongPollingListener(
     props.listId,
+    () => getLastKnownServerVersion(props.db.getKyselyInstance()),
     () => {
       console.log(
         `Long-poll: Changes detected, triggering sync for ${listName()}`

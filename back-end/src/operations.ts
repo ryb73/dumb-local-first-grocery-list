@@ -4,22 +4,42 @@ import type {
   ServerChangesResponse,
 } from "@grocery-list/shared";
 import { operationSchema } from "@grocery-list/shared";
-import type { Kysely } from "kysely";
+import type { Kysely, Transaction } from "kysely";
 import { sql } from "kysely";
+
+/**
+ * Gets the current server version (the highest server_committed_at timestamp).
+ *
+ * @param trx - The transaction to execute within
+ * @returns The current server version, or null if no operations have been committed
+ */
+export async function getCurrentServerVersion(
+  trx: Transaction<MergedDB>
+): Promise<number | null> {
+  const serverVersionResult = await sql<{
+    max_server_committed_at: number | null;
+  }>`
+    SELECT MAX(server_committed_at) as max_server_committed_at
+    FROM op_log.operations
+    WHERE server_committed_at IS NOT NULL
+  `.execute(trx);
+
+  return serverVersionResult.rows[0]?.max_server_committed_at ?? null;
+}
 
 /**
  * Gets operations from the server that were committed after the specified version.
  * This is the server-side implementation that would run on the actual server.
  *
- * @param serverDb - The server database connection
+ * @param trx - The transaction to execute within
  * @param afterVersion - The version timestamp to fetch operations after (null for all)
  */
 async function getOperationsAfterVersion(
-  serverDb: Kysely<MergedDB>,
+  trx: Transaction<MergedDB>,
   afterVersion: number | null
 ): Promise<Operation[]> {
   // Query for operations that were committed to the server after the specified version
-  let query = serverDb
+  let query = trx
     .selectFrom(`op_log.operations`)
     .selectAll()
     .where(`server_committed_at`, `is not`, null)
@@ -57,21 +77,17 @@ export async function getOperationsAfterVersionWithVersion(
   serverDb: Kysely<MergedDB>,
   afterVersion: number | null
 ): Promise<ServerChangesResponse> {
-  // Get operations and current server version in parallel
-  const [operations, serverVersionResult] = await Promise.all([
-    getOperationsAfterVersion(serverDb, afterVersion),
-    sql<{ max_server_committed_at: number | null }>`
-      SELECT MAX(server_committed_at) as max_server_committed_at
-      FROM op_log.operations
-      WHERE server_committed_at IS NOT NULL
-    `.execute(serverDb),
-  ]);
+  // Execute within a transaction for consistency
+  return await serverDb.transaction().execute(async (trx) => {
+    // Get operations and current server version in parallel
+    const [operations, serverVersion] = await Promise.all([
+      getOperationsAfterVersion(trx, afterVersion),
+      getCurrentServerVersion(trx),
+    ]);
 
-  const serverVersion =
-    serverVersionResult.rows[0]?.max_server_committed_at ?? null;
-
-  return {
-    operations,
-    serverVersion,
-  };
+    return {
+      operations,
+      serverVersion,
+    };
+  });
 }

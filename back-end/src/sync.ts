@@ -5,10 +5,12 @@ import type {
   SyncResponse,
 } from "@grocery-list/shared";
 import { defined } from "@ryb73/super-duper-parakeet/lib/src/type-checks.js";
-import { sql } from "kysely";
 import { getServerDatabase } from "./database/connection.js";
 import { getServerMigrationState } from "./migration-state.js";
-import { getOperationsAfterVersionWithVersion } from "./operations.js";
+import {
+  getCurrentServerVersion,
+  getOperationsAfterVersionWithVersion,
+} from "./operations.js";
 
 /**
  * Combined sync endpoint that handles migration compatibility checking, requesting remote changes, and submitting local changes.
@@ -116,16 +118,7 @@ export async function sync(
     const result = await serverDb.transaction().execute(async (trx) => {
       // Double-check server version within transaction for race conditions
       // TODO: I think the entire function should be wrapped in a single transaction so that this check isn't necessary.
-      const currentVersionResult = await sql<{
-        max_server_committed_at: number | null;
-      }>`
-        SELECT MAX(server_committed_at) as max_server_committed_at
-        FROM op_log.operations
-        WHERE server_committed_at IS NOT NULL
-      `.execute(trx);
-
-      const currentServerVersion =
-        currentVersionResult.rows[0]?.max_server_committed_at ?? null;
+      const currentServerVersion = await getCurrentServerVersion(trx);
 
       // Version mismatch check
       if (currentServerVersion !== expectedServerVersion) {
@@ -173,16 +166,9 @@ export async function sync(
     );
 
     // Get the new server version after applying operations
-    const newVersionResult = await sql<{
-      max_server_committed_at: number | null;
-    }>`
-      SELECT MAX(server_committed_at) as max_server_committed_at
-      FROM op_log.operations
-      WHERE server_committed_at IS NOT NULL
-    `.execute(serverDb);
-
-    const newServerVersion =
-      newVersionResult.rows[0]?.max_server_committed_at ?? null;
+    const newServerVersion = await serverDb
+      .transaction()
+      .execute(async (trx) => await getCurrentServerVersion(trx));
 
     return {
       commitTimestamps: defined(result.commitTimestamps),

@@ -69,6 +69,22 @@ export const syncRequestSchema = z.object({
 export type SyncRequest = z.infer<typeof syncRequestSchema>;
 
 /**
+ * Schema for long-polling request
+ */
+export const longPollingRequestSchema = z.object({
+  /** The server version the client expects */
+  expectedServerVersion: z.preprocess((val) => {
+    // Handle the string "null" from query parameters
+    if (val === "null" || val === "") {
+      return null;
+    }
+    return val;
+  }, z.coerce.number().nullable()),
+});
+
+export type LongPollingRequest = z.infer<typeof longPollingRequestSchema>;
+
+/**
  * Schema for long-polling response
  */
 export const longPollingResponseSchema = z.object({

@@ -10,6 +10,7 @@ import {
   createMigrator,
   createOperationLogMigrator,
   listExistsResponseSchema,
+  longPollingRequestSchema,
   migrationScript,
   syncRequestSchema,
   syncResponseSchema,
@@ -21,7 +22,9 @@ import { z } from "zod";
 import {
   getMainDatabase,
   getOperationLogDatabase,
+  getServerDatabase,
 } from "./database/connection.js";
+import { getCurrentServerVersion } from "./operations.js";
 import { sync } from "./sync.js";
 
 const app = express();
@@ -174,51 +177,109 @@ app.post(
 /**
  * GET /list/:listId/changes/poll - Long-polling endpoint for change notifications
  * Clients can connect to this endpoint and will be notified when changes occur on the specific list.
- * The connection will be held open until either:
+ * First checks if the server has changes beyond the expected version, returning immediately if so.
+ * Otherwise, the connection will be held open until either:
  * 1. Changes are detected (returns immediately with { hasChanges: true })
  * 2. Timeout is reached (returns with { hasChanges: false })
  */
 app.get(
   `/list/:listId/changes/poll`,
-  (req, res: ExpressResponse<LongPollingResponse>, next) => {
+  async (req, res: ExpressResponse<LongPollingResponse>, next) => {
     const { listId } = req.params;
-    try {
-      // Count active listeners for this list before adding new one
-      const activeListeners = changeNotifier.listenerCount(`changes`);
+    let listenerRegistered = false;
+    let hasResponded = false;
+
+    // Declare timeout variable for use in onChanges callback
+    let timeout: NodeJS.Timeout;
+
+    // Listen for changes and filter by list ID
+    const onChanges = (changedListId: string) => {
+      // Only respond if the changed list matches this connection's list
+      if (changedListId !== listId) return;
+
+      // Guard against double-response
+      if (hasResponded) return;
+      hasResponded = true;
+
+      clearTimeout(timeout);
+      res.json({ hasChanges: true });
+
+      // Remove listener after responding
+      changeNotifier.removeListener(`changes`, onChanges);
       console.log(
-        `Long-poll connection established for list ${listId}. Existing active listeners: ${activeListeners}`
+        `Long-poll responded with changes for list ${listId}. Remaining listeners: ${changeNotifier.listenerCount(
+          `changes`
+        )}`
+      );
+    };
+
+    try {
+      // Validate query parameters
+      const validatedRequest = longPollingRequestSchema.parse(req.query);
+      const { expectedServerVersion } = validatedRequest;
+
+      console.log(
+        `Long-poll request for list ${listId}: expected version ${String(
+          expectedServerVersion
+        )}`
       );
 
       // Set headers for long-polling
       res.setHeader(`Cache-Control`, `no-cache`);
       res.setHeader(`Content-Type`, `application/json`);
 
-      // Declare timeout variable for use in onChanges callback
-      // eslint-disable-next-line prefer-const
-      let timeout: NodeJS.Timeout;
-
-      // Listen for changes and filter by list ID
-      const onChanges = (changedListId: string) => {
-        // Only respond if the changed list matches this connection's list
-        if (changedListId !== listId) return;
-
-        clearTimeout(timeout);
-        res.json({ hasChanges: true });
-
-        // Remove listener after responding
-        changeNotifier.removeListener(`changes`, onChanges);
-        console.log(
-          `Long-poll responded with changes for list ${listId}. Remaining listeners: ${changeNotifier.listenerCount(
-            `changes`
-          )}`
-        );
-      };
-
+      // Register listener BEFORE checking version to avoid race condition
+      // This ensures we won't miss any changes that occur during the version check
       changeNotifier.on(`changes`, onChanges);
+      listenerRegistered = true;
+
+      // Count active listeners after adding new one
+      const activeListeners = changeNotifier.listenerCount(`changes`);
+      console.log(
+        `Long-poll connection established for list ${listId}. Active listeners: ${activeListeners}`
+      );
+
+      // Check if server has changes beyond the expected version
+      // This check happens AFTER registering the listener to prevent race conditions
+      const serverDb = await getServerDatabase(listId);
+      try {
+        const currentServerVersion = await serverDb
+          .transaction()
+          .execute(async (trx) => await getCurrentServerVersion(trx));
+
+        // Guard against double-response (in case onChanges fired during DB check)
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (hasResponded) return;
+
+        // If server version is greater than expected, clean up listener and respond immediately
+        if (
+          expectedServerVersion !== null &&
+          currentServerVersion !== null &&
+          currentServerVersion > expectedServerVersion
+        ) {
+          hasResponded = true;
+          changeNotifier.removeListener(`changes`, onChanges);
+          listenerRegistered = false;
+          console.log(
+            `Long-poll immediate response: server has newer version (${currentServerVersion} > ${expectedServerVersion})`
+          );
+          res.json({ hasChanges: true });
+          return;
+        }
+      } finally {
+        await serverDb.destroy();
+      }
+
+      // No immediate changes, proceed with long-polling timeout
 
       // Set up timeout after onChanges is defined
       timeout = setTimeout(() => {
+        // Guard against double-response
+        if (hasResponded) return;
+        hasResponded = true;
+
         changeNotifier.removeListener(`changes`, onChanges);
+        listenerRegistered = false;
         console.log(
           `Long-poll timeout reached for list ${listId} (${changeNotifier.listenerCount(
             `changes`
@@ -230,7 +291,10 @@ app.get(
       // Clean up on client disconnect
       req.on(`close`, () => {
         clearTimeout(timeout);
-        changeNotifier.removeListener(`changes`, onChanges);
+        if (listenerRegistered) {
+          changeNotifier.removeListener(`changes`, onChanges);
+          listenerRegistered = false;
+        }
         console.log(
           `Long-poll client disconnected for list ${listId} (${changeNotifier.listenerCount(
             `changes`
@@ -238,6 +302,13 @@ app.get(
         );
       });
     } catch (error) {
+      // Clean up listener if error occurred after registration
+      if (listenerRegistered) {
+        changeNotifier.removeListener(`changes`, onChanges);
+        console.log(
+          `Long-poll error cleanup: removed listener for list ${listId}`
+        );
+      }
       next(error);
     }
   }
