@@ -79,6 +79,9 @@ export function createLongPollingListener(
       const queryParams = new URLSearchParams({
         expectedServerVersion:
           serverVersion === null ? `null` : serverVersion.toString(),
+        // Because we render the list twice, and each list has its own long-polling connection,
+        // we include this unique request ID so that the browser considers them separate requests.
+        uniqueRequestId: crypto.randomUUID(),
       });
 
       const pollEndpoint = `${serverUrl}/list/${listId}/changes/poll?${queryParams.toString()}`;
