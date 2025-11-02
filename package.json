@@ -7,5 +7,9 @@
       "better-sqlite3",
       "esbuild"
     ]
+  },
+  "scripts": {
+    "deploy:back-end": "flyctl deploy --config fly.back-end.toml --dockerfile back-end/Dockerfile",
+    "deploy:front-end": "flyctl deploy --config fly.front-end.toml --dockerfile front-end/Dockerfile"
   }
 }
