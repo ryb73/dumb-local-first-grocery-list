@@ -6,7 +6,13 @@ import {
   isDefined,
 } from "@ryb73/super-duper-parakeet/lib/src/type-checks";
 import type { Component } from "solid-js";
-import { Index, createSignal, onCleanup, onMount } from "solid-js";
+import {
+  Index,
+  createEffect,
+  createSignal,
+  onCleanup,
+  onMount,
+} from "solid-js";
 import type { Database } from "../db/database";
 import {
   rebaseLocalOperations,
@@ -213,6 +219,7 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
       // Optionally update sync status based on long-polling status
       if (status.type === `error`) {
         console.warn(`Long-poll error for ${listName()}: ${status.error}`);
+        setAutoSyncEnabled(false);
       }
     }
   );
@@ -280,12 +287,18 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
     setAutoSyncEnabled(enabled);
     if (enabled) {
       // Trigger an immediate sync to get the latest data before starting polling
+      // TODO: this won't be necessary once we transition to including the latest synced state in the long-poll request (because the server will immediately tell us if we need to sync)
       void handleSync();
+    }
+  };
+
+  createEffect(() => {
+    if (autoSyncEnabled()) {
       longPollingListener.start();
     } else {
       longPollingListener.stop();
     }
-  };
+  });
 
   onMount(() => {
     void (async () => {

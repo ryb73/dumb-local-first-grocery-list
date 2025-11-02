@@ -157,7 +157,10 @@ app.post(
         validatedResponse.status === `accepted` &&
         localOperations.length > 0
       ) {
-        console.log(`Notifying clients of database changes for list ${listId}`);
+        const listenerCount = changeNotifier.listenerCount(`changes`);
+        console.log(
+          `Notifying clients of database changes for list ${listId}. (${listenerCount} active listeners)`
+        );
         changeNotifier.emit(`changes`, listId);
       }
 
@@ -180,7 +183,11 @@ app.get(
   (req, res: ExpressResponse<LongPollingResponse>, next) => {
     const { listId } = req.params;
     try {
-      console.log(`Long-poll connection established for list ${listId}`);
+      // Count active listeners for this list before adding new one
+      const activeListeners = changeNotifier.listenerCount(`changes`);
+      console.log(
+        `Long-poll connection established for list ${listId}. Existing active listeners: ${activeListeners}`
+      );
 
       // Set headers for long-polling
       res.setHeader(`Cache-Control`, `no-cache`);
@@ -196,27 +203,39 @@ app.get(
         if (changedListId !== listId) return;
 
         clearTimeout(timeout);
-        console.log(`Long-poll responding with changes for list ${listId}`);
         res.json({ hasChanges: true });
 
         // Remove listener after responding
         changeNotifier.removeListener(`changes`, onChanges);
+        console.log(
+          `Long-poll responded with changes for list ${listId}. Remaining listeners: ${changeNotifier.listenerCount(
+            `changes`
+          )}`
+        );
       };
 
       changeNotifier.on(`changes`, onChanges);
 
       // Set up timeout after onChanges is defined
       timeout = setTimeout(() => {
-        console.log(`Long-poll timeout reached for list ${listId}`);
         changeNotifier.removeListener(`changes`, onChanges);
+        console.log(
+          `Long-poll timeout reached for list ${listId} (${changeNotifier.listenerCount(
+            `changes`
+          )} remaining listeners)`
+        );
         res.json({ hasChanges: false });
       }, LONG_POLL_TIMEOUT);
 
       // Clean up on client disconnect
       req.on(`close`, () => {
-        console.log(`Long-poll client disconnected for list ${listId}`);
         clearTimeout(timeout);
         changeNotifier.removeListener(`changes`, onChanges);
+        console.log(
+          `Long-poll client disconnected for list ${listId} (${changeNotifier.listenerCount(
+            `changes`
+          )} remaining listeners)`
+        );
       });
     } catch (error) {
       next(error);

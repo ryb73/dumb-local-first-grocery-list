@@ -86,16 +86,18 @@ export function createLongPollingListener(
         const errorMessage = `HTTP ${response.status}: ${response.statusText}`;
         console.error(`Long-poll: Request failed - ${errorMessage}`);
         setStatus({ type: `error`, error: errorMessage });
-        return isRunning; // Continue polling after a delay
+        return false; // Stop polling on error
       }
 
       const responseData = await response.json();
       const result = longPollingResponseSchema.parse(responseData);
-      console.log(`Long-poll: Response received`, result);
+      console.log(`Long-poll: Response received:`, result);
 
       if (result.hasChanges) {
         console.log(`Long-poll: Changes detected, triggering callback`);
         onChangesAvailable();
+      } else {
+        console.log(`Long-poll: No changes detected, continuing polling`);
       }
 
       // Continue polling regardless of whether changes were detected
@@ -104,6 +106,7 @@ export function createLongPollingListener(
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!isRunning) {
         // Polling was stopped, this is expected
+        console.log(`Long-poll: Polling stopped (abort expected)`);
         return false;
       }
 
@@ -112,13 +115,13 @@ export function createLongPollingListener(
       console.error(`Long-poll: Error occurred - ${errorMessage}`);
       setStatus({ type: `error`, error: errorMessage });
 
-      // Continue polling after a delay on error
-      return true;
+      // Stop polling on error
+      return false;
     }
   };
 
   /**
-   * Main polling loop with error handling and reconnection logic.
+   * Main polling loop with error handling.
    */
   const pollLoop = async () => {
     console.log(`Long-poll: Starting polling loop`);
@@ -126,21 +129,7 @@ export function createLongPollingListener(
 
     while (isRunning) {
       const shouldContinue = await pollOnce();
-
       isRunning &&= shouldContinue;
-
-      // If there was an error, wait before retrying
-      if (currentStatus.type === `error` && isRunning) {
-        console.log(`Long-poll: Waiting 5 seconds before retry due to error`);
-        await new Promise((resolve) => {
-          setTimeout(resolve, 5000);
-        });
-
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (isRunning) {
-          setStatus({ type: `connected` });
-        }
-      }
     }
 
     console.log(`Long-poll: Polling loop ended`);
