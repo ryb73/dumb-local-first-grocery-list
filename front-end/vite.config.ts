@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import { VitePWA } from "vite-plugin-pwa";
 import solidPlugin from "vite-plugin-solid";
 
 export default defineConfig({
@@ -9,7 +10,7 @@ export default defineConfig({
   optimizeDeps: {
     exclude: [`@sqlite.org/sqlite-wasm`, `sqlocal`],
   },
-  plugins: [solidPlugin()],
+  plugins: [solidPlugin(), VitePWA({ registerType: `autoUpdate` })],
   server: {
     port: 3000,
     headers: {
