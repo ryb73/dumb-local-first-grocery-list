@@ -52,6 +52,15 @@ export async function sync(
     fileMustExist: expectedServerVersion != null,
   });
 
+  if (serverDb == null) {
+    return {
+      status: `rejected`,
+      serverVersion: null,
+      errorMessage: `Server database does not exist`,
+      remoteOperations: [],
+    };
+  }
+
   try {
     return await serverDb
       .transaction()

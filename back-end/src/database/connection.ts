@@ -1,3 +1,4 @@
+import { existsSync } from "fs";
 import path from "path";
 import { initMergedDatabase } from "@grocery-list/shared";
 import type { MainDB, OperationLogDB } from "@grocery-list/shared";
@@ -19,6 +20,16 @@ export async function getServerDatabase(
 
   const mainDbPath = path.join(dataDir, `${listId}.sqlite3`);
   const logDbPath = path.join(dataDir, `${listId}.log.sqlite3`);
+
+  if (sqliteOptions?.fileMustExist === true) {
+    if (!existsSync(mainDbPath)) {
+      return null;
+    }
+
+    if (!existsSync(logDbPath)) {
+      return null;
+    }
+  }
 
   // Create better-sqlite3 connections
   const mainDb = new Database(mainDbPath, sqliteOptions);

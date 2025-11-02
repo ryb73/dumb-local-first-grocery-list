@@ -241,33 +241,35 @@ app.get(
 
       // Check if server has changes beyond the expected version
       // This check happens AFTER registering the listener to prevent race conditions
-      const serverDb = await getServerDatabase(listId);
-      try {
-        const currentServerVersion = await serverDb
-          .transaction()
-          .execute(async (trx) => await getCurrentServerVersion(trx));
+      const serverDb = await getServerDatabase(listId, { fileMustExist: true });
+      if (serverDb != null) {
+        try {
+          const currentServerVersion = await serverDb
+            .transaction()
+            .execute(async (trx) => await getCurrentServerVersion(trx));
 
-        // Guard against double-response (in case onChanges fired during DB check)
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (hasResponded) return;
+          // Guard against double-response (in case onChanges fired during DB check)
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          if (hasResponded) return;
 
-        // If server version is greater than expected, clean up listener and respond immediately
-        if (
-          expectedServerVersion !== null &&
-          currentServerVersion !== null &&
-          currentServerVersion > expectedServerVersion
-        ) {
-          hasResponded = true;
-          changeNotifier.removeListener(`changes`, onChanges);
-          listenerRegistered = false;
-          console.log(
-            `Long-poll immediate response: server has newer version (${currentServerVersion} > ${expectedServerVersion})`
-          );
-          res.json({ hasChanges: true });
-          return;
+          // If server version is greater than expected, clean up listener and respond immediately
+          if (
+            expectedServerVersion !== null &&
+            currentServerVersion !== null &&
+            currentServerVersion > expectedServerVersion
+          ) {
+            hasResponded = true;
+            changeNotifier.removeListener(`changes`, onChanges);
+            listenerRegistered = false;
+            console.log(
+              `Long-poll immediate response: server has newer version (${currentServerVersion} > ${expectedServerVersion})`
+            );
+            res.json({ hasChanges: true });
+            return;
+          }
+        } finally {
+          await serverDb.destroy();
         }
-      } finally {
-        await serverDb.destroy();
       }
 
       // No immediate changes, proceed with long-polling timeout
