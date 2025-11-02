@@ -4,7 +4,7 @@ import type {
   ServerChangesResponse,
 } from "@grocery-list/shared";
 import { operationSchema } from "@grocery-list/shared";
-import type { Kysely, Transaction } from "kysely";
+import type { Transaction } from "kysely";
 import { sql } from "kysely";
 
 /**
@@ -70,24 +70,21 @@ async function getOperationsAfterVersion(
  * along with the current server version identifier.
  * This supports step 1 of the sync algorithm with version tracking.
  *
- * @param serverDb - The server database connection
+ * @param trx - The transaction to execute within
  * @param afterVersion - The version timestamp to fetch operations after (null for all)
  */
 export async function getOperationsAfterVersionWithVersion(
-  serverDb: Kysely<MergedDB>,
+  trx: Transaction<MergedDB>,
   afterVersion: number | null
 ): Promise<ServerChangesResponse> {
-  // Execute within a transaction for consistency
-  return await serverDb.transaction().execute(async (trx) => {
-    // Get operations and current server version in parallel
-    const [operations, serverVersion] = await Promise.all([
-      getOperationsAfterVersion(trx, afterVersion),
-      getCurrentServerVersion(trx),
-    ]);
+  // Get operations and current server version in parallel
+  const [operations, serverVersion] = await Promise.all([
+    getOperationsAfterVersion(trx, afterVersion),
+    getCurrentServerVersion(trx),
+  ]);
 
-    return {
-      operations,
-      serverVersion,
-    };
-  });
+  return {
+    operations,
+    serverVersion,
+  };
 }

@@ -1,14 +1,13 @@
 import type { MergedDB, MigrationState } from "@grocery-list/shared";
-import type { Kysely } from "kysely";
+import type { Kysely, Transaction } from "kysely";
 import { sql } from "kysely";
-import { getServerDatabase } from "./database/connection.js";
 
 /**
  * Gets the latest applied migration name from a Kysely migration table.
  * Returns null if no migrations have been applied.
  */
 async function getLatestMigration(
-  db: Kysely<any>,
+  db: Kysely<any> | Transaction<any>,
   tableName = `kysely_migration`
 ) {
   const result = await sql<{ name: string }>`
@@ -23,33 +22,19 @@ async function getLatestMigration(
 
 /**
  * Gets the migration state for both main and operation log databases on the server.
+ *
+ * @param trx - The transaction to execute within
  */
-async function getServerMigrationStateFromDb(serverDb: Kysely<MergedDB>) {
+export async function getServerMigrationState(
+  trx: Transaction<MergedDB>
+): Promise<MigrationState> {
   const [mainMigration, operationLogMigration] = await Promise.all([
-    getLatestMigration(serverDb, `kysely_migration`),
-    getLatestMigration(serverDb, `op_log.kysely_migration`),
+    getLatestMigration(trx, `kysely_migration`),
+    getLatestMigration(trx, `op_log.kysely_migration`),
   ]);
 
   return {
     mainMigration,
     operationLogMigration,
   };
-}
-
-/**
- * Gets the server's migration state.
- * This is the server-side implementation that would run on the actual server.
- *
- * @param listId - UUID of the list to check migration state for
- */
-export async function getServerMigrationState(
-  listId: string
-): Promise<MigrationState> {
-  const serverDb = await getServerDatabase(listId);
-
-  try {
-    return await getServerMigrationStateFromDb(serverDb);
-  } finally {
-    await serverDb.destroy();
-  }
 }

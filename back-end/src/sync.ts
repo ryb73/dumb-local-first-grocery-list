@@ -46,135 +46,120 @@ export async function sync(
     }`
   );
 
-  // Step 0: Check migration compatibility
-  const serverMigrationState = await getServerMigrationState(listId);
-
-  const mainCompatible =
-    clientMigrationState.mainMigration === serverMigrationState.mainMigration;
-  const opLogCompatible =
-    clientMigrationState.operationLogMigration ===
-    serverMigrationState.operationLogMigration;
-
-  if (!mainCompatible || !opLogCompatible) {
-    const messages: string[] = [];
-
-    if (!mainCompatible) {
-      messages.push(
-        `Main database: client=${
-          clientMigrationState.mainMigration ?? `none`
-        }, server=${serverMigrationState.mainMigration ?? `none`}`
-      );
-    }
-
-    if (!opLogCompatible) {
-      messages.push(
-        `Operation log: client=${
-          clientMigrationState.operationLogMigration ?? `none`
-        }, server=${serverMigrationState.operationLogMigration ?? `none`}`
-      );
-    }
-
-    return {
-      status: `migration_incompatible`,
-      serverState: serverMigrationState,
-      errorMessage: `Migration version mismatch. ${messages.join(`; `)}`,
-    };
-  }
-
   const serverDb = await getServerDatabase(listId);
 
   try {
-    // First, check if there are any remote operations the client needs
-    const remoteResponse = await getOperationsAfterVersionWithVersion(
-      serverDb,
-      expectedServerVersion
-    );
-
-    // If there are remote operations, reject any submitted local operations
-    if (remoteResponse.operations.length > 0) {
-      console.log(
-        `Rejecting ${localOperations.length} local operations due to ${remoteResponse.operations.length} remote changes`
-      );
-
-      return {
-        remoteOperations: remoteResponse.operations,
-        serverVersion: defined(remoteResponse.serverVersion),
-        status: `rejected`,
-      };
-    }
-
-    // No remote operations, so we can try to apply local operations
-    if (localOperations.length === 0) {
-      console.log(`No local or remote operations to process`);
-
-      return {
-        commitTimestamps: {},
-        serverVersion: remoteResponse.serverVersion,
-        status: `accepted`,
-      };
-    }
-
-    // Apply local operations in a transaction
-    const result = await serverDb.transaction().execute(async (trx) => {
-      // Double-check server version within transaction for race conditions
-      // TODO: I think the entire function should be wrapped in a single transaction so that this check isn't necessary.
-      const currentServerVersion = await getCurrentServerVersion(trx);
-
-      // Version mismatch check
-      if (currentServerVersion !== expectedServerVersion) {
-        return {
-          success: false,
-          errorMessage: `Version mismatch: expected ${
-            expectedServerVersion ?? `null`
-          }, current ${currentServerVersion ?? `null`}.`,
-        };
-      }
-
-      // Apply operations and log them with server timestamps
-      const commitTimestamps: Record<string, number> = {};
-
-      for (const operation of localOperations) {
-        // Generate commit timestamp for this operation
-        const commitTimestamp = Date.now();
-        commitTimestamps[operation.id] = commitTimestamp;
-
-        // Apply the operation and log it with the server commit timestamp
-        const operationWithServerTimestamp = {
-          ...operation,
-          serverCommittedAt: commitTimestamp,
-        };
-        await applyAndLogOperation(trx, operationWithServerTimestamp);
-      }
-
-      return {
-        success: true,
-        commitTimestamps,
-      };
-    });
-
-    if (!result.success) {
-      return {
-        status: `rejected`,
-        errorMessage: result.errorMessage,
-        remoteOperations: [],
-        serverVersion: remoteResponse.serverVersion!,
-      };
-    }
-
-    console.log(
-      `Successfully applied ${localOperations.length} local operations on server`
-    );
-
-    // Get the new server version after applying operations
-    const newServerVersion = await serverDb
+    return await serverDb
       .transaction()
-      .execute(async (trx) => await getCurrentServerVersion(trx));
+      .execute(async (trx): Promise<SyncResponse> => {
+        // Step 0: Check migration compatibility
+        const serverMigrationState = await getServerMigrationState(trx);
 
-    return {
-      commitTimestamps: defined(result.commitTimestamps),
-      serverVersion: newServerVersion,
-      status: `accepted`,
-    };
+        const mainCompatible =
+          clientMigrationState.mainMigration ===
+          serverMigrationState.mainMigration;
+        const opLogCompatible =
+          clientMigrationState.operationLogMigration ===
+          serverMigrationState.operationLogMigration;
+
+        if (!mainCompatible || !opLogCompatible) {
+          const messages: string[] = [];
+
+          if (!mainCompatible) {
+            messages.push(
+              `Main database: client=${
+                clientMigrationState.mainMigration ?? `none`
+              }, server=${serverMigrationState.mainMigration ?? `none`}`
+            );
+          }
+
+          if (!opLogCompatible) {
+            messages.push(
+              `Operation log: client=${
+                clientMigrationState.operationLogMigration ?? `none`
+              }, server=${serverMigrationState.operationLogMigration ?? `none`}`
+            );
+          }
+
+          return {
+            status: `migration_incompatible`,
+            serverState: serverMigrationState,
+            errorMessage: `Migration version mismatch. ${messages.join(`; `)}`,
+          };
+        }
+
+        // First, check if there are any remote operations the client needs
+        const remoteResponse = await getOperationsAfterVersionWithVersion(
+          trx,
+          expectedServerVersion
+        );
+
+        // If there are remote operations, reject any submitted local operations
+        if (remoteResponse.operations.length > 0) {
+          console.log(
+            `Rejecting ${localOperations.length} local operations due to ${remoteResponse.operations.length} remote changes`
+          );
+
+          return {
+            remoteOperations: remoteResponse.operations,
+            serverVersion: defined(remoteResponse.serverVersion),
+            status: `rejected`,
+          };
+        }
+
+        // No remote operations, so we can try to apply local operations
+        if (localOperations.length === 0) {
+          console.log(`No local or remote operations to process`);
+
+          return {
+            commitTimestamps: {},
+            serverVersion: remoteResponse.serverVersion,
+            status: `accepted`,
+          };
+        }
+
+        // There are no remote operatons to send back. Before accepting the pushed operations,
+        // make sure the server version is what we expect.
+        if (remoteResponse.serverVersion !== expectedServerVersion) {
+          return {
+            status: `rejected`,
+            serverVersion: remoteResponse.serverVersion,
+            errorMessage: `Version mismatch: expected ${
+              expectedServerVersion ?? `null`
+            }, current ${remoteResponse.serverVersion ?? `null`}.`,
+            remoteOperations: [],
+          };
+        }
+
+        // Apply operations and log them with server timestamps
+        const commitTimestamps: Record<string, number> = {};
+
+        for (const operation of localOperations) {
+          // Generate commit timestamp for this operation
+          const commitTimestamp = Date.now();
+          commitTimestamps[operation.id] = commitTimestamp;
+
+          // Apply the operation and log it with the server commit timestamp
+          const operationWithServerTimestamp = {
+            ...operation,
+            serverCommittedAt: commitTimestamp,
+          };
+          await applyAndLogOperation(trx, operationWithServerTimestamp);
+        }
+
+        console.log(
+          `Successfully applied ${localOperations.length} local operations on server`
+        );
+
+        // Get the new server version after applying operations
+        const newServerVersion = await getCurrentServerVersion(trx);
+
+        return {
+          commitTimestamps,
+          serverVersion: newServerVersion,
+          status: `accepted`,
+        };
+      });
   } finally {
     await serverDb.destroy();
   }
