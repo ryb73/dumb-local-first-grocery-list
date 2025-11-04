@@ -25,9 +25,9 @@ import { getLastKnownServerVersion } from "../sync/client/state-tracking";
 import { AddItemForm } from "./AddItemForm";
 import { GroceryItem } from "./GroceryItem";
 import styles from "./GroceryList.module.css";
-// import { ShareButton } from "./ShareButton";
+import { ShareButton } from "./ShareButton";
 import { SyncButton, type SyncStatus } from "./SyncButton";
-// import { useToast } from "./Toast";
+import { useToast } from "./Toast";
 
 type GroceryListProps = {
   className?: string;
@@ -46,7 +46,7 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
   const [syncStatus, setSyncStatus] = createSignal<SyncStatus>({
     type: `idle`,
   });
-  // const toast = useToast();
+  const toast = useToast();
 
   const sortedItems = () =>
     Array.from(items()).sort((a, b) => {
@@ -379,7 +379,7 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
           )}
         </div>
         <div class={defined(styles[`headerActions`])}>
-          {/* <ShareButton
+          <ShareButton
             listId={props.listId}
             onCopyError={(error) =>
               toast.showToast(`Failed to copy: ${error.message}`, `error`)
@@ -387,7 +387,7 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
             onCopySuccess={() =>
               toast.showToast(`Link copied to clipboard!`, `success`)
             }
-          /> */}
+          />
           <label class={defined(styles[`pollingToggle`])}>
             <input
               checked={autoSyncEnabled()}

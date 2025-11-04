@@ -1,5 +1,6 @@
+import QRCode from "qrcode";
 import type { Component } from "solid-js";
-import { Show, createSignal, onCleanup } from "solid-js";
+import { Show, createEffect, createSignal, onCleanup } from "solid-js";
 import styles from "./ShareButton.module.css";
 
 type ShareButtonProps = {
@@ -12,11 +13,35 @@ export const ShareButton: Component<ShareButtonProps> = (props) => {
   const [showPopover, setShowPopover] = createSignal(false);
   let popoverRef: HTMLDivElement | undefined;
   let buttonRef: HTMLButtonElement | undefined;
+  let canvasRef: HTMLCanvasElement | undefined;
 
   const getShareUrl = () => {
     const urlOrigin = window.location.origin;
     return `${urlOrigin}/list/${props.listId}`;
   };
+
+  // Generate QR code when popover is shown
+  createEffect(() => {
+    if (showPopover() && canvasRef !== undefined) {
+      QRCode.toCanvas(
+        canvasRef,
+        getShareUrl(),
+        {
+          width: 512,
+          margin: 2,
+          color: {
+            dark: `#000000`,
+            light: `#FFFFFF`,
+          },
+        },
+        (error) => {
+          if (error !== null && error !== undefined) {
+            console.error(`QR code generation failed:`, error);
+          }
+        }
+      );
+    }
+  });
 
   const handleButtonClick = () => {
     setShowPopover(!showPopover());
@@ -58,7 +83,7 @@ export const ShareButton: Component<ShareButtonProps> = (props) => {
   };
 
   // Set up event listeners when popover is shown
-  const setupListeners = () => {
+  createEffect(() => {
     if (showPopover()) {
       document.addEventListener(`mousedown`, handleClickOutside);
       document.addEventListener(`keydown`, handleEscapeKey);
@@ -68,10 +93,7 @@ export const ShareButton: Component<ShareButtonProps> = (props) => {
         document.removeEventListener(`keydown`, handleEscapeKey);
       });
     }
-  };
-
-  // Re-setup listeners whenever showPopover changes
-  setupListeners();
+  });
 
   return (
     <div class={styles[`container`]}>
@@ -108,6 +130,9 @@ export const ShareButton: Component<ShareButtonProps> = (props) => {
             </button>
           </div>
           <div class={styles[`popoverContent`]}>
+            <div class={styles[`qrcodeContainer`]}>
+              <canvas class={styles[`qrcodeCanvas`]} ref={canvasRef} />
+            </div>
             <div class={styles[`urlDisplay`]}>{getShareUrl()}</div>
             <button
               class={styles[`copyButton`]}
