@@ -379,15 +379,6 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
           )}
         </div>
         <div class={defined(styles[`headerActions`])}>
-          <ShareButton
-            listId={props.listId}
-            onCopyError={(error) =>
-              toast.showToast(`Failed to copy: ${error.message}`, `error`)
-            }
-            onCopySuccess={() =>
-              toast.showToast(`Link copied to clipboard!`, `success`)
-            }
-          />
           <label class={defined(styles[`pollingToggle`])}>
             <input
               checked={autoSyncEnabled()}
@@ -402,6 +393,15 @@ export const GroceryList: Component<GroceryListProps> = (props) => {
               status={syncStatus()}
             />
           ) : null}
+          <ShareButton
+            listId={props.listId}
+            onCopyError={(error) =>
+              toast.showToast(`Failed to copy: ${error.message}`, `error`)
+            }
+            onCopySuccess={() =>
+              toast.showToast(`Link copied to clipboard!`, `success`)
+            }
+          />
         </div>
       </div>
       <AddItemForm
