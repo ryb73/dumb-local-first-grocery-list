@@ -4,6 +4,7 @@ import { initMergedDatabase } from "@grocery-list/shared";
 import type { MainDB, OperationLogDB } from "@grocery-list/shared";
 import Database from "better-sqlite3";
 import { Kysely, SqliteDialect } from "kysely";
+import { dataDir } from "../config.js";
 
 /**
  * Creates a connection to the server database using better-sqlite3.
@@ -16,8 +17,6 @@ export async function getServerDatabase(
   sqliteOptions?: Database.Options
 ) {
   // Use a data directory for server databases
-  const dataDir = process.env[`DATA_DIR`] ?? `./data`;
-
   const mainDbPath = path.join(dataDir, `${listId}.sqlite3`);
   const logDbPath = path.join(dataDir, `${listId}.log.sqlite3`);
 
@@ -55,7 +54,6 @@ export async function getServerDatabase(
  * @param listId - UUID of the list to connect to
  */
 export function getMainDatabase(listId: string): Kysely<MainDB> {
-  const dataDir = process.env[`DATA_DIR`] ?? `./data`;
   const mainDbPath = path.join(dataDir, `${listId}.sqlite3`);
 
   const mainDb = new Database(mainDbPath);
@@ -76,7 +74,6 @@ export function getMainDatabase(listId: string): Kysely<MainDB> {
 export function getOperationLogDatabase(
   listId: string
 ): Kysely<OperationLogDB> {
-  const dataDir = process.env[`DATA_DIR`] ?? `./data`;
   const logDbPath = path.join(dataDir, `${listId}.log.sqlite3`);
 
   const logDb = new Database(logDbPath);

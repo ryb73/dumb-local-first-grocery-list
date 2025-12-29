@@ -23,6 +23,11 @@ primary_region = 'lhr'
   min_machines_running = 1
   processes = ['app']
 
+[env]
+  ALLOWED_ORIGINS = 'https://lofi-grocery-list.fly.dev'
+  DATA_DIR = '/data'
+  NODE_ENV = 'production'
+
 [[vm]]
   memory = '1gb'
   cpu_kind = 'shared'

@@ -30,3 +30,4 @@ yarn-error.log*
 pnpm-debug.log*
 
 *.sqlite3
+data/

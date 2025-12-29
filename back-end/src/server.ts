@@ -19,6 +19,7 @@ import cors from "cors";
 import type { Response as ExpressResponse } from "express";
 import express from "express";
 import { z } from "zod";
+import { allowedOrigins, dataDir, port } from "./config.js";
 import {
   getMainDatabase,
   getOperationLogDatabase,
@@ -28,8 +29,6 @@ import { getCurrentServerVersion } from "./operations.js";
 import { sync } from "./sync.js";
 
 const app = express();
-const PORT =
-  process.env[`PORT`] != null ? Number.parseInt(process.env[`PORT`], 10) : 3001;
 
 // Define event types for the change notifier
 // Maps event names to their argument tuple types
@@ -46,13 +45,7 @@ const changeNotifier = new EventEmitter<ChangeNotifierEvents>();
 const LONG_POLL_TIMEOUT = 45_000;
 
 // Middleware
-app.use(
-  cors({
-    origin: process.env[`ALLOWED_ORIGINS`]?.split(`,`) ?? [
-      `http://localhost:3000`,
-    ],
-  })
-);
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json({ limit: `10mb` }));
 
 // Request logging middleware
@@ -97,7 +90,6 @@ app.get(
   (req, res: ExpressResponse<ListExistsResponse>, next) => {
     try {
       const { listId } = req.params;
-      const dataDir = process.env[`DATA_DIR`] ?? `./data`;
 
       const mainDbPath = path.join(dataDir, `${listId}.sqlite3`);
       const logDbPath = path.join(dataDir, `${listId}.log.sqlite3`);
@@ -354,15 +346,15 @@ async function startServer() {
     console.log(`Database initialized successfully`);
 
     // Start the server
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log(`Health check: http://localhost:${PORT}/health`);
+    app.listen(port, () => {
+      console.log(`Server running on port ${port}`);
+      console.log(`Health check: http://localhost:${port}/health`);
       console.log(
-        `List existence: http://localhost:${PORT}/list/:listId/exists`
+        `List existence: http://localhost:${port}/list/:listId/exists`
       );
-      console.log(`Sync endpoint: http://localhost:${PORT}/list/:listId/sync`);
+      console.log(`Sync endpoint: http://localhost:${port}/list/:listId/sync`);
       console.log(
-        `Long-polling endpoint: http://localhost:${PORT}/list/:listId/changes/poll`
+        `Long-polling endpoint: http://localhost:${port}/list/:listId/changes/poll`
       );
     });
   } catch (error) {
